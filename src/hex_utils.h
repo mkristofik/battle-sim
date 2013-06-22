@@ -56,4 +56,8 @@ Point adjacent(const Point &hSrc, Dir d);
 // Given a list of hexes, return the index of the hex closest to the target.
 int findClosest(const Point &hTarget, const std::vector<Point> &hexes);
 
+// Return the pixel location where a hex is drawn.  You have to compute your
+// own offsets if hex (0,0) isn't drawn in the upper-left corner of the window.
+Point pixelFromHex(int hx, int hy);
+
 #endif

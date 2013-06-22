@@ -51,7 +51,7 @@ Sint16 hexDist(const Point &h1, const Point &h2)
         vPenalty = 1;
     }
 
-    return std::max<Sint16>(dx, dy + vPenalty + dx / 2);
+    return std::max(dx, static_cast<Sint16>(dy + vPenalty + dx / 2));
 }
 
 Point adjacent(const Point &hSrc, Dir d)
@@ -111,4 +111,11 @@ int findClosest(const Point &hTarget, const std::vector<Point> &hexes)
     }
 
     return closest;
+}
+
+Point pixelFromHex(int hx, int hy)
+{
+    int px = hx * pHexSize * 3 / 4;
+    int py = (hy + 0.5 * abs(hx % 2)) * pHexSize;
+    return {px, py};
 }
