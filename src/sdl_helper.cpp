@@ -254,7 +254,7 @@ void sdlBlit(const SdlSurface &surf, Sint16 px, Sint16 py)
 
 void sdlBlit(const SdlSurface &surf, const Point &pos)
 {
-    sdlBlit(surf, pos.first, pos.second);
+    sdlBlit(surf, pos.x, pos.y);
 }
 
 void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
@@ -277,7 +277,7 @@ void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
 void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
                   const Point &pos)
 {
-    sdlBlitFrame(surf, frame, numFrames, pos.first, pos.second);
+    sdlBlitFrame(surf, frame, numFrames, pos.x, pos.y);
 }
 
 void sdlClear(SDL_Rect region)

@@ -19,6 +19,16 @@ namespace
     SdlSurface grid;
 }
 
+void loadImages()
+{
+    tile = sdlLoadImage("../img/grass.png");
+    grid = sdlLoadImage("../img/hex-grid.png");
+}
+
+void drawMap()
+{
+}
+
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 {
     if (!sdlInit(288, 360, "../img/icon.png", "Battle Sim")) {

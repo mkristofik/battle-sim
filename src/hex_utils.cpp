@@ -15,7 +15,7 @@
 
 bool operator==(const Point &lhs, const Point &rhs)
 {
-    return lhs.first == rhs.first && lhs.second == rhs.second;
+    return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
 bool operator!=(const Point &lhs, const Point &rhs)
@@ -25,19 +25,12 @@ bool operator!=(const Point &lhs, const Point &rhs)
 
 Point operator+(const Point &lhs, const Point &rhs)
 {
-    return {lhs.first + rhs.first, lhs.second + rhs.second};
+    return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 
 Point operator-(const Point &lhs, const Point &rhs)
 {
-    return {lhs.first - rhs.first, lhs.second - rhs.second};
-}
-
-std::string str(const Point &p)
-{
-    std::ostringstream strm;
-    strm << '(' << p.first << ',' << p.second << ')';
-    return strm.str();
+    return {lhs.x - rhs.x, lhs.y - rhs.y};
 }
 
 // source: Battle for Wesnoth, distance_between() in map_location.cpp.
@@ -47,14 +40,14 @@ Sint16 hexDist(const Point &h1, const Point &h2)
         return Sint16_max;
     }
 
-    Sint16 dx = abs(h1.first - h2.first);
-    Sint16 dy = abs(h1.second - h2.second);
+    Sint16 dx = abs(h1.x - h2.x);
+    Sint16 dy = abs(h1.y - h2.y);
 
     // Since the x-axis of the hex grid is staggered, we need to add a step in
     // certain cases.
     Sint16 vPenalty = 0;
-    if ((h1.second < h2.second && h1.first % 2 == 0 && h2.first % 2 == 1) ||
-        (h1.second > h2.second && h1.first % 2 == 1 && h2.first % 2 == 0)) {
+    if ((h1.y < h2.y && h1.x % 2 == 0 && h2.x % 2 == 1) ||
+        (h1.y > h2.y && h1.x % 2 == 1 && h2.x % 2 == 0)) {
         vPenalty = 1;
     }
 
@@ -63,7 +56,7 @@ Sint16 hexDist(const Point &h1, const Point &h2)
 
 Point adjacent(const Point &hSrc, Dir d)
 {
-    auto hx = hSrc.first;
+    auto hx = hSrc.x;
 
     switch (d) {
         case Dir::N:

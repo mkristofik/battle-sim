@@ -21,10 +21,14 @@
 #include <utility>
 #include <vector>
 
+struct Point
+{
+    int x;
+    int y;
+};
+
 const Sint16 Sint16_min = std::numeric_limits<Sint16>::min();
 const Sint16 Sint16_max = std::numeric_limits<Sint16>::max();
-
-using Point = std::pair<Sint16, Sint16>;
 const Point hInvalid = {Sint16_min, Sint16_min};
 const Sint16 pHexSize = 72;
 
@@ -36,16 +40,8 @@ Point operator-(const Point &lhs, const Point &rhs);
 template <typename T>
 Point operator/(const Point &lhs, T rhs)
 {
-    return {lhs.first / rhs, lhs.second / rhs};
+    return {lhs.x / rhs, lhs.y / rhs};
 }
-
-// String representation of a Point.  Use this instead of writing operator<<
-// because...
-// - Point is really a std::pair.
-// - ADL won't find operator<< that isn't in namespace std.
-// - It's illegal to add overloads to namespace std.
-// source: http://stackoverflow.com/q/5076206/46821
-std::string str(const Point &p);
 
 enum class Dir {N, NE, SE, S, SW, NW, _last, _first = N};
 ITERABLE_ENUM_CLASS(Dir);
