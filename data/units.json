@@ -1,0 +1,15 @@
+{
+    "0": {
+        "name": "Bowman",
+        "plural": "Bowmen",
+        "img": "bowman.png",
+        "anim-attack": "bowman-attack-ranged.png"
+    },
+    "1": {
+        "name": "Marshal",
+        "plural": "Marshals",
+        "img": "marshal.png",
+        "anim-attack": "marshal-attack-melee.png",
+        "img-defend": "marshal-defend.png"
+    }
+}
