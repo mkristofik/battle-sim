@@ -1,6 +1,6 @@
 /*
-    Copyright (C) 2012-2013 by Michael Kristofik <kristo605@gmail.com>
-    Part of the libsdl-demos project.
+    Copyright (C) 2013 by Michael Kristofik <kristo605@gmail.com>
+    Part of the battle-sim project.
  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
@@ -33,7 +33,7 @@
     inline T operator++(T &t) \
     { \
         using U = std::underlying_type<T>::type; \
-        return t = static_cast<T>(U(t) + 1); \
+        return t = static_cast<T>(static_cast<U>(t) + 1); \
     } \
     inline T operator*(T t) { return t; } \
     inline T begin(T t) { return T::_first; } \
