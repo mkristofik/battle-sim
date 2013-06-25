@@ -18,10 +18,10 @@
 #include <vector>
 #include "boost/tokenizer.hpp"
 
-SDL_Surface *screen = nullptr;
-
 namespace
 {
+    SDL_Surface *screen = nullptr;
+
     using DashSize = std::pair<Sint16, Uint16>;  // line-relative pos, width
     std::vector<DashSize> dashedLine(Uint16 lineLen)
     {
@@ -113,6 +113,51 @@ namespace
             }
         }
     }
+
+    // Create a new surface of the given width and height.  Return a null
+    // surface on failure.
+    // source: SDL_CreateRGBSurface documentation.
+    SdlSurface sdlCreateSurface(Sint16 width, Sint16 height)
+    {
+        // This can only be called after SDL_SetVideoMode()
+        assert(screen != nullptr);
+
+        SDL_Surface *surf;
+        Uint32 rmask, gmask, bmask, amask;
+
+        // SDL interprets each pixel as a 32-bit number, so our masks must depend
+        // on the endianness (byte order) of the machine.
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+#else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+#endif
+
+        surf = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
+                                    rmask, gmask, bmask, amask);
+        if (surf == nullptr) {
+            std::cerr << "Error creating new surface: " << SDL_GetError() << '\n';
+        }
+        return make_surface(surf);
+    }
+
+    // Convert the given surface to the screen format.  Return a null surface
+    // on failure.
+    SdlSurface sdlDisplayFormat(const SdlSurface &src)
+    {
+        auto surf = make_surface(SDL_DisplayFormatAlpha(src.get()));
+        if (!surf) {
+            std::cerr << "Error converting to display format: " << SDL_GetError()
+                << '\n';
+        }
+        return surf;
+    }
 }
 
 bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
@@ -170,47 +215,6 @@ bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
 SdlSurface make_surface(SDL_Surface *surf)
 {
     return SdlSurface(surf, SDL_FreeSurface);
-}
-
-// source: SDL_CreateRGBSurface documentation.
-SdlSurface sdlCreateSurface(Sint16 width, Sint16 height)
-{
-    // This can only be called after SDL_SetVideoMode()
-    assert(screen != nullptr);
-
-    SDL_Surface *surf;
-    Uint32 rmask, gmask, bmask, amask;
-
-    // SDL interprets each pixel as a 32-bit number, so our masks must depend
-    // on the endianness (byte order) of the machine.
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    surf = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
-                                rmask, gmask, bmask, amask);
-    if (surf == nullptr) {
-        std::cerr << "Error creating new surface: " << SDL_GetError() << '\n';
-    }
-    return make_surface(surf);
-}
-
-SdlSurface sdlDisplayFormat(const SdlSurface &src)
-{
-    auto surf = make_surface(SDL_DisplayFormatAlpha(src.get()));
-    if (!surf) {
-        std::cerr << "Error converting to display format: " << SDL_GetError()
-            << '\n';
-    }
-    return surf;
 }
 
 SdlSurface sdlFlipH(const SdlSurface &src)
@@ -298,6 +302,11 @@ SdlSurface sdlLoadImage(const char *filename)
         return img;
     }
     return sdlDisplayFormat(img);
+}
+
+SdlSurface sdlLoadImage(const std::string &filename)
+{
+    return sdlLoadImage(filename.c_str());
 }
 
 SdlFont sdlLoadFont(const char *filename, int ptSize)

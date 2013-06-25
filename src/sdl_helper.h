@@ -28,8 +28,6 @@ using SdlFont = std::unique_ptr<TTF_Font, void(*)(TTF_Font *)>;
 using SdlMusic = std::shared_ptr<Mix_Music>;
 using SdlSound = std::shared_ptr<Mix_Chunk>;
 
-extern SDL_Surface *screen;
-
 // Must call this before any other SDL functions will work.  There is no
 // recovery if this returns false (you should exit the program).
 bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
@@ -37,14 +35,6 @@ bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
 
 // Like std::make_shared, but with SDL_Surface.
 SdlSurface make_surface(SDL_Surface *surf);
-
-// Create a new surface of the given width and height.  Return a null surface
-// on failure.
-SdlSurface sdlCreateSurface(Sint16 width, Sint16 height);
-
-// Convert the given surface to the screen format.  Return a null surface on
-// failure.
-SdlSurface sdlDisplayFormat(const SdlSurface &src);
 
 // Flip a surface or sprite sheet.  Creates a new surface.
 SdlSurface sdlFlipH(const SdlSurface &src);
@@ -69,18 +59,20 @@ void sdlClear(SDL_Rect region);
 struct SdlSetClipRect
 {
     SDL_Rect original_;
+    SDL_Surface *screen_;
 
     template <typename Func>
-    SdlSetClipRect(const SDL_Rect &rect, const Func &f)
+    SdlSetClipRect(const SDL_Rect &rect, const Func &f) : 
+        screen_{SDL_GetVideoSurface()}
     {
-        SDL_GetClipRect(screen, &original_);
-        SDL_SetClipRect(screen, &rect);
+        SDL_GetClipRect(screen_, &original_);
+        SDL_SetClipRect(screen_, &rect);
         f();
     }
 
     ~SdlSetClipRect()
     {
-        SDL_SetClipRect(screen, &original_);
+        SDL_SetClipRect(screen_, &original_);
     }
 };
 
@@ -116,6 +108,7 @@ struct SdlLock
 
 // Load a resource from disk.  Returns null on failure.
 SdlSurface sdlLoadImage(const char *filename);
+SdlSurface sdlLoadImage(const std::string &filename);
 SdlFont sdlLoadFont(const char *filename, int ptSize);
 SdlMusic sdlLoadMusic(const char *filename);
 SdlMusic sdlLoadMusic(const std::string &filename);
