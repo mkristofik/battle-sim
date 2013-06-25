@@ -1,11 +1,11 @@
 {
-    "0": {
+    "human1": {
         "name": "Bowman",
         "plural": "Bowmen",
         "img": "bowman.png",
         "anim-attack": "bowman-attack-ranged.png"
     },
-    "1": {
+    "human2": {
         "name": "Marshal",
         "plural": "Marshals",
         "img": "marshal.png",
