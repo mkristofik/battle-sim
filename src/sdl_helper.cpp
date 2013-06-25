@@ -91,16 +91,6 @@ namespace
         return lines;
     }
 
-    SdlSurface deepCopy(const SdlSurface &src)
-    {
-        auto surf = SDL_ConvertSurface(src.get(), src->format, src->flags);
-        if (!surf) {
-            std::cerr << "Error copying surface: " << SDL_GetError() << '\n';
-            return nullptr;
-        }
-        return make_surface(surf);
-    }
-
     // source: Battle for Wesnoth, flip_surface() in sdl_utils.cpp.
     void flipH(SdlSurface &src, int frameStart, int frameWidth)
     {
@@ -217,9 +207,19 @@ SdlSurface make_surface(SDL_Surface *surf)
     return SdlSurface(surf, SDL_FreeSurface);
 }
 
+SdlSurface sdlDeepCopy(const SdlSurface &src)
+{
+    auto surf = SDL_ConvertSurface(src.get(), src->format, src->flags);
+    if (!surf) {
+        std::cerr << "Error copying surface: " << SDL_GetError() << '\n';
+        return nullptr;
+    }
+    return make_surface(surf);
+}
+
 SdlSurface sdlFlipH(const SdlSurface &src)
 {
-    auto surf = deepCopy(src);
+    auto surf = sdlDeepCopy(src);
     if (!surf) {
         return nullptr;
     }
@@ -232,7 +232,7 @@ SdlSurface sdlFlipH(const SdlSurface &src)
 
 SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
 {
-    auto surf = deepCopy(src);
+    auto surf = sdlDeepCopy(src);
     if (!surf) {
         return nullptr;
     }
