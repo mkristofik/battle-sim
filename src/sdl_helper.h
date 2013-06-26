@@ -30,7 +30,7 @@ using SdlSound = std::shared_ptr<Mix_Chunk>;
 
 // Must call this before any other SDL functions will work.  There is no
 // recovery if this returns false (you should exit the program).
-bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
+bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconFile,
              const char *caption);
 
 // Like std::make_shared, but with SDL_Surface.

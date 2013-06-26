@@ -14,10 +14,6 @@
 #include "sdl_helper.h"
 #include "team_color.h"
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#define BOOST_SYSTEM_NO_DEPRECATED
-#include "boost/filesystem.hpp"
-
 #include "rapidjson/document.h"
 #include "rapidjson/filestream.h"
 
@@ -75,45 +71,13 @@ void drawMap()
     sdlBlit(grid, pixelFromHex(2, 0));
     sdlBlit(grid, pixelFromHex(3, 0));
     sdlBlit(grid, pixelFromHex(2, 4));
-}
 
-void loadUnitImage(const std::string &file,
-                   ImageSet &images, ImageSet &reversed)
-{
-    namespace bfs = boost::filesystem;
-    const bfs::path imagePath{"../img"};
-
-    auto p = imagePath;
-    p /= file;
-    auto baseImg = sdlLoadImage(p.string());
-    if (baseImg) {
-        images = applyTeamColors(baseImg);
-        reversed = applyTeamColors(sdlFlipH(baseImg));
-    }
-    else {
-        std::cerr << "Error loading unit image: " << p.string() << '\n';
-    }
-}
-
-void loadUnitAnim(const std::string &file, ImageSet &anims, ImageSet &reversed,
-                  int &numFrames)
-{
-    namespace bfs = boost::filesystem;
-    const bfs::path imagePath{"../img"};
-
-    auto p = imagePath;
-    p /= file;
-    auto baseAnim = sdlLoadImage(p.string());
-    if (!baseAnim) {
-        std::cerr << "Error loading unit image: " << p.string() << '\n';
-        return;
-    }
-
-    anims = applyTeamColors(baseAnim);
-
-    // Assume each animation frame is sized to fit the standard hex.
-    numFrames = baseAnim->w / pHexSize;
-    reversed = applyTeamColors(sdlFlipSheetH(baseAnim, numFrames));
+    // TODO: notes on where to place units
+    // team 1 in upper left, team 2 in lower right
+    // team 1 row 1: (3,0), (2,1), (1,1), (0,2)
+    // team 1 row 2: (2,0), (1,0), (0,1)
+    // team 2 row 1: (4,2), (3,2), (2,3), (1,3)
+    // team 2 row 2: (4,3), (3,3), (2,4)
 }
 
 void loadUnit(const std::string &id, const rapidjson::Value &json)
@@ -126,15 +90,29 @@ void loadUnit(const std::string &id, const rapidjson::Value &json)
         u.plural = json["plural"].GetString();
     }
     if (json.HasMember("img")) {
-        loadUnitImage(json["img"].GetString(), u.img, u.reverseImg);
+        auto baseImg = sdlLoadImage(json["img"].GetString());
+        if (baseImg) {
+            u.img = applyTeamColors(baseImg);
+            u.reverseImg = applyTeamColors(sdlFlipH(baseImg));
+        }
     }
     if (json.HasMember("img-defend")) {
-        loadUnitImage(json["img-defend"].GetString(), u.imgDefend,
-                      u.reverseImgDefend);
+        auto baseImg = sdlLoadImage(json["img-defend"].GetString());
+        if (baseImg) {
+            u.imgDefend = applyTeamColors(baseImg);
+            u.reverseImgDefend = applyTeamColors(sdlFlipH(baseImg));
+        }
     }
     if (json.HasMember("anim-attack")) {
-        loadUnitAnim(json["anim-attack"].GetString(), u.animAttack,
-                     u.reverseAnimAttack, u.numAttackFrames);
+        auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
+        if (baseAnim) {
+            u.animAttack = applyTeamColors(baseAnim);
+
+            // Assume each animation frame is sized to fit the standard hex.
+            int n = baseAnim->w / pHexSize;
+            u.numAttackFrames = n;
+            u.reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim, n));
+        }
     }
     if (json.HasMember("anim-die")) {
     }
@@ -170,7 +148,7 @@ bool parseJson()
 
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 {
-    if (!sdlInit(288, 360, "../img/icon.png", "Battle Sim")) {
+    if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 

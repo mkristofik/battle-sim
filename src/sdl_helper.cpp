@@ -11,12 +11,17 @@
     See the COPYING.txt file for more details.
 */
 #include "sdl_helper.h"
+
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#define BOOST_SYSTEM_NO_DEPRECATED
+#include "boost/filesystem.hpp"
+#include "boost/tokenizer.hpp"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
-#include "boost/tokenizer.hpp"
 
 namespace
 {
@@ -148,9 +153,17 @@ namespace
         }
         return surf;
     }
+
+    // Get the full path to an image file.
+    std::string getImagePath(const char *filename)
+    {
+        boost::filesystem::path imagePath{"../img"};
+        imagePath /= filename;
+        return imagePath.string();
+    }
 }
 
-bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
+bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconFile,
              const char *caption)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == -1) {
@@ -184,7 +197,7 @@ bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconPath,
     atexit(Mix_CloseAudio);
 
     // Have to do this prior to SetVideoMode.
-    auto icon = make_surface(IMG_Load(iconPath));
+    auto icon = make_surface(IMG_Load(getImagePath(iconFile).c_str()));
     if (icon != nullptr) {
         SDL_WM_SetIcon(icon.get(), nullptr);
     }
@@ -295,7 +308,7 @@ void sdlClear(SDL_Rect region)
 
 SdlSurface sdlLoadImage(const char *filename)
 {
-    auto img = make_surface(IMG_Load(filename));
+    auto img = make_surface(IMG_Load(getImagePath(filename).c_str()));
     if (!img) {
         std::cerr << "Error loading image " << filename
             << "\n    " << IMG_GetError() << '\n';
