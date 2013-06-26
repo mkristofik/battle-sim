@@ -10,22 +10,25 @@
  
     See the COPYING.txt file for more details.
 */
+#include "hex_utils.h"
 #include "sdl_helper.h"
 #include "team_color.h"
-#include <cassert>
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <memory>
-#include "rapidjson/document.h"
-#include "rapidjson/filestream.h"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
+
+#include "rapidjson/document.h"
+#include "rapidjson/filestream.h"
+
+#include <cassert>
+#include <cstdlib>
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 struct Unit
 {
@@ -78,7 +81,7 @@ void loadUnitImage(const std::string &file,
                    ImageSet &images, ImageSet &reversed)
 {
     namespace bfs = boost::filesystem;
-    const bfs::path imagePath{"../img"};  // TODO: make this configurable
+    const bfs::path imagePath{"../img"};
 
     auto p = imagePath;
     p /= file;
@@ -88,8 +91,29 @@ void loadUnitImage(const std::string &file,
         reversed = applyTeamColors(sdlFlipH(baseImg));
     }
     else {
-        std::cerr << "Error loading unit images: " << p.string() << '\n';
+        std::cerr << "Error loading unit image: " << p.string() << '\n';
     }
+}
+
+void loadUnitAnim(const std::string &file, ImageSet &anims, ImageSet &reversed,
+                  int &numFrames)
+{
+    namespace bfs = boost::filesystem;
+    const bfs::path imagePath{"../img"};
+
+    auto p = imagePath;
+    p /= file;
+    auto baseAnim = sdlLoadImage(p.string());
+    if (!baseAnim) {
+        std::cerr << "Error loading unit image: " << p.string() << '\n';
+        return;
+    }
+
+    anims = applyTeamColors(baseAnim);
+
+    // Assume each animation frame is sized to fit the standard hex.
+    numFrames = baseAnim->w / pHexSize;
+    reversed = applyTeamColors(sdlFlipSheetH(baseAnim, numFrames));
 }
 
 void loadUnit(const std::string &id, const rapidjson::Value &json)
@@ -109,6 +133,8 @@ void loadUnit(const std::string &id, const rapidjson::Value &json)
                       u.reverseImgDefend);
     }
     if (json.HasMember("anim-attack")) {
+        loadUnitAnim(json["anim-attack"].GetString(), u.animAttack,
+                     u.reverseAnimAttack, u.numAttackFrames);
     }
     if (json.HasMember("anim-die")) {
     }
@@ -132,20 +158,11 @@ bool parseJson()
 
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
-            std::cerr << "units: skipping tag '" << i->name.GetString() <<
+            std::cerr << "units: skipping id '" << i->name.GetString() <<
                 "'\n";
             continue;
         }
-        std::cout << "\nUnit " << i->name.GetString() << '\n';
-        for (auto j = i->value.MemberBegin(); j != i->value.MemberEnd(); ++j) {
-            std::cout << j->name.GetString() << ' ' << j->value.GetString() << '\n';
-        }
         loadUnit(i->name.GetString(), i->value);
-        const rapidjson::Value &v = i->value;
-        const rapidjson::Value &tag = v["img-defend"];
-        if (tag.IsNull()) {
-            std::cout << "Unit has no defend image\n";
-        }
     }
 
     return true;
