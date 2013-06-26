@@ -10,40 +10,47 @@
  
     See the COPYING.txt file for more details.
 */
+#include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
-#include "team_color.h"
 
-#include "rapidjson/document.h"
-#include "rapidjson/filestream.h"
-
-#include <cassert>
 #include <cstdlib>
-#include <cstdio>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-struct Unit
-{
-    std::string name;
-    std::string plural;
-    ImageSet img;
-    ImageSet reverseImg;
-    ImageSet animAttack;
-    ImageSet reverseAnimAttack;
-    int numAttackFrames;
-    ImageSet imgDefend;
-    ImageSet reverseImgDefend;
-};
 
 namespace
 {
     SdlSurface tile;
     SdlSurface grid;
-    std::unordered_map<std::string, Unit> allUnits;
+    std::unordered_map<std::string, int> mapUnitPos;
+
+    // Unit placement on the grid.
+    // team 1 in upper left, team 2 in lower right
+    const Point unitPos[] = {{3,0}, {2,1}, {1,1}, {0,2},  // team 1 row 1
+                             {2,0}, {1,0}, {0,1},         // team 1 row 2
+                             {4,2}, {3,2}, {2,3}, {1,3},  // team 2 row 1
+                             {4,3}, {3,3}, {2,4}};        // team 2 row 2
+}
+
+void translateUnitPos()
+{
+    // Map unit position strings used by JSON data to array indexes.
+    mapUnitPos.emplace("t1p1", 0);
+    mapUnitPos.emplace("t1p2", 1);
+    mapUnitPos.emplace("t1p3", 2);
+    mapUnitPos.emplace("t1p4", 3);
+    mapUnitPos.emplace("t1p5", 4);
+    mapUnitPos.emplace("t1p6", 5);
+    mapUnitPos.emplace("t1p7", 6);
+    mapUnitPos.emplace("t2p1", 7);
+    mapUnitPos.emplace("t2p2", 8);
+    mapUnitPos.emplace("t2p3", 9);
+    mapUnitPos.emplace("t2p4", 10);
+    mapUnitPos.emplace("t2p5", 11);
+    mapUnitPos.emplace("t2p6", 12);
+    mapUnitPos.emplace("t2p7", 13);
 }
 
 void loadImages()
@@ -71,79 +78,6 @@ void drawMap()
     sdlBlit(grid, pixelFromHex(2, 0));
     sdlBlit(grid, pixelFromHex(3, 0));
     sdlBlit(grid, pixelFromHex(2, 4));
-
-    // TODO: notes on where to place units
-    // team 1 in upper left, team 2 in lower right
-    // team 1 row 1: (3,0), (2,1), (1,1), (0,2)
-    // team 1 row 2: (2,0), (1,0), (0,1)
-    // team 2 row 1: (4,2), (3,2), (2,3), (1,3)
-    // team 2 row 2: (4,3), (3,3), (2,4)
-}
-
-void loadUnit(const std::string &id, const rapidjson::Value &json)
-{
-    Unit u;
-    if (json.HasMember("name")) {
-        u.name = json["name"].GetString();
-    }
-    if (json.HasMember("plural")) {
-        u.plural = json["plural"].GetString();
-    }
-    if (json.HasMember("img")) {
-        auto baseImg = sdlLoadImage(json["img"].GetString());
-        if (baseImg) {
-            u.img = applyTeamColors(baseImg);
-            u.reverseImg = applyTeamColors(sdlFlipH(baseImg));
-        }
-    }
-    if (json.HasMember("img-defend")) {
-        auto baseImg = sdlLoadImage(json["img-defend"].GetString());
-        if (baseImg) {
-            u.imgDefend = applyTeamColors(baseImg);
-            u.reverseImgDefend = applyTeamColors(sdlFlipH(baseImg));
-        }
-    }
-    if (json.HasMember("anim-attack")) {
-        auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
-        if (baseAnim) {
-            u.animAttack = applyTeamColors(baseAnim);
-
-            // Assume each animation frame is sized to fit the standard hex.
-            int n = baseAnim->w / pHexSize;
-            u.numAttackFrames = n;
-            u.reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim, n));
-        }
-    }
-    if (json.HasMember("anim-die")) {
-    }
-
-    allUnits.emplace(id, std::move(u));
-}
-
-bool parseJson()
-{
-    std::shared_ptr<FILE> fp{fopen("../data/units.json", "r"), fclose};
-    rapidjson::Document doc;
-    rapidjson::FileStream file(fp.get());
-    if (doc.ParseStream<0>(file).HasParseError()) {
-        std::cerr << "Error reading units: " << doc.GetParseError() << '\n';
-        return false;
-    }
-    if (!doc.IsObject()) {
-        std::cerr << "Expected top-level object in units file\n";
-        return false;
-    }
-
-    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
-        if (!i->value.IsObject()) {
-            std::cerr << "units: skipping id '" << i->name.GetString() <<
-                "'\n";
-            continue;
-        }
-        loadUnit(i->name.GetString(), i->value);
-    }
-
-    return true;
 }
 
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
@@ -152,10 +86,12 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
         return EXIT_FAILURE;
     }
 
-    if (!parseJson()) {
+    auto unitsMap = parseUnitsJson();
+    if (unitsMap.empty()) {
         return EXIT_FAILURE;
     }
 
+    translateUnitPos();
     loadImages();
     drawMap();
 
