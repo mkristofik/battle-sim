@@ -99,7 +99,7 @@ void translateUnitPos()
     mapUnitPos.emplace("t2p7", 13);
 }
 
-std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
+std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference)
 {
     std::vector<UnitStack> unitStacks;
 
@@ -128,8 +128,8 @@ std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const Units
         if (json.HasMember("id")) {
             unitType = json["id"].GetString();
         }
-        auto unitIter = allUnits.find(unitType);
-        if (unitIter == std::end(allUnits)) {
+        auto unitIter = unitReference.find(unitType);
+        if (unitIter == std::end(unitReference)) {
             std::cerr << "scenario: skipping unit with unknown id '" <<
                 unitType << "'\n";
             continue;

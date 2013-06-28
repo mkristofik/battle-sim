@@ -19,6 +19,8 @@
 #include <string>
 #include <unordered_map>
 
+// Definition of each unit type.  Contains all combat stats, descriptive info,
+// images, and animations.
 struct Unit
 {
     std::string name;
@@ -30,6 +32,8 @@ struct Unit
     int numAttackFrames;
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
+
+    Unit(const rapidjson::Value &json);
 };
 
 using UnitsMap = std::unordered_map<std::string, Unit>;

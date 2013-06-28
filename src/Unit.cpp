@@ -12,51 +12,52 @@
 */
 #include "Unit.h"
 #include "sdl_helper.h"
-
-#include <cstdio>
 #include <iostream>
-#include <memory>
 
-namespace {
-    Unit loadUnit(const rapidjson::Value &json)
-    {
-        Unit u;
-        if (json.HasMember("name")) {
-            u.name = json["name"].GetString();
+Unit::Unit(const rapidjson::Value &json)
+    : name{},
+    plural{},
+    baseImg{},
+    reverseImg{},
+    animAttack{},
+    reverseAnimAttack{},
+    numAttackFrames{0},
+    imgDefend{},
+    reverseImgDefend{}
+{
+    if (json.HasMember("name")) {
+        name = json["name"].GetString();
+    }
+    if (json.HasMember("plural")) {
+        plural = json["plural"].GetString();
+    }
+    if (json.HasMember("img")) {
+        auto img = sdlLoadImage(json["img"].GetString());
+        if (img) {
+            baseImg = applyTeamColors(img);
+            reverseImg = applyTeamColors(sdlFlipH(img));
         }
-        if (json.HasMember("plural")) {
-            u.plural = json["plural"].GetString();
+    }
+    if (json.HasMember("img-defend")) {
+        auto img = sdlLoadImage(json["img-defend"].GetString());
+        if (img) {
+            imgDefend = applyTeamColors(img);
+            reverseImgDefend = applyTeamColors(sdlFlipH(img));
         }
-        if (json.HasMember("img")) {
-            auto baseImg = sdlLoadImage(json["img"].GetString());
-            if (baseImg) {
-                u.baseImg = applyTeamColors(baseImg);
-                u.reverseImg = applyTeamColors(sdlFlipH(baseImg));
-            }
-        }
-        if (json.HasMember("img-defend")) {
-            auto baseImg = sdlLoadImage(json["img-defend"].GetString());
-            if (baseImg) {
-                u.imgDefend = applyTeamColors(baseImg);
-                u.reverseImgDefend = applyTeamColors(sdlFlipH(baseImg));
-            }
-        }
-        if (json.HasMember("anim-attack")) {
-            auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
-            if (baseAnim) {
-                u.animAttack = applyTeamColors(baseAnim);
+    }
+    if (json.HasMember("anim-attack")) {
+        auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
+        if (baseAnim) {
+            animAttack = applyTeamColors(baseAnim);
 
-                // Assume each animation frame is sized to fit the standard hex.
-                int n = baseAnim->w / pHexSize;
-                u.numAttackFrames = n;
-                u.reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
-                                                                    n));
-            }
+            // Assume each animation frame is sized to fit the standard hex.
+            int n = baseAnim->w / pHexSize;
+            numAttackFrames = n;
+            reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
+                                                              numAttackFrames));
         }
-        if (json.HasMember("anim-die")) {
-        }
-
-        return u;
+    }
+    if (json.HasMember("anim-die")) {
     }
 }
 
@@ -69,7 +70,7 @@ UnitsMap parseUnits(const rapidjson::Document &doc)
                 "'\n";
             continue;
         }
-        um.emplace(i->name.GetString(), loadUnit(i->value));
+        um.emplace(i->name.GetString(), Unit(i->value));
     }
 
     return um;
