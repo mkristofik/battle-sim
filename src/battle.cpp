@@ -28,15 +28,6 @@
 #include <unordered_map>
 #include <vector>
 
-// TODO: load scenario, define entities
-// an entity might have any or all of:
-// - a hex position on the map
-// - drawing stuff (possible images, offset from hex position)
-// - combat stats
-// - spellcasting abilities
-// - other special abilities
-// an entity by itself is just an id
-
 struct Drawable
 {
     Point hex;
@@ -108,14 +99,10 @@ void translateUnitPos()
     mapUnitPos.emplace("t2p7", 13);
 }
 
-void parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
+std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
 {
-    // TODO: for each object in the scenario
-    // - look up its unit position, skip if invalid
-    // - if unit position < 7, team 1, otherwise team 2
-    // - create a Drawable entity for it
-    // - for now, assume we won't ever have an entity that isn't drawn
-    // - build a unit stack for it
+    std::vector<UnitStack> unitStacks;
+
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
             std::cerr << "scenario: skipping unit at position '"
@@ -132,7 +119,7 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
             continue;
         }
         int posIdx = posIter->second;
-        auto battlefieldHex = unitPos[posIdx];
+        const auto &battlefieldHex = unitPos[posIdx];
 
         const auto &json = i->value;
 
@@ -166,8 +153,11 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
             entity.img = u.unitDef->reverseImg[1];
         }
 
-        entities.emplace_back(entity);
+        entities.emplace_back(std::move(entity));
+        unitStacks.emplace_back(std::move(u));
     }
+
+    return unitStacks;
 }
 
 void loadImages()
@@ -226,7 +216,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!parseJson("scenario.json", scenario)) {
         return EXIT_FAILURE;
     }
-    parseScenario(scenario, unitsMap);
+    auto stackList = parseScenario(scenario, unitsMap);
 
     loadImages();
     drawMap();
