@@ -65,4 +65,8 @@ int findClosest(const Point &hTarget, const std::vector<Point> &hexes);
 Point pixelFromHex(int hx, int hy);
 Point pixelFromHex(Point hex);
 
+// Return the hex that contains the given pixel.  Assumes hex (0,0) is drawn at
+// pixel (0,0).
+Point hexFromPixel(int px, int py);
+
 #endif

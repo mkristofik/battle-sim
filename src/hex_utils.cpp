@@ -124,3 +124,48 @@ Point pixelFromHex(Point hex)
 {
     return pixelFromHex(hex.x, hex.y);
 }
+
+Point hexFromPixel(int px, int py)
+{
+    // tilingWidth
+    // |   |
+    //  _     _
+    // / \_    tilingHeight
+    // \_/ \  _
+    //   \_/
+    const Sint16 tilingWidth = pHexSize * 3 / 2;
+    const Sint16 tilingHeight = pHexSize;
+
+    // I'm not going to pretend to know why the rest of this works.
+    Sint16 hx = px / tilingWidth * 2;
+    Sint16 xMod = px % tilingWidth;
+    Sint16 hy = py / tilingHeight;
+    Sint16 yMod = py % tilingHeight;
+
+    if (yMod < tilingHeight / 2) {
+        if ((xMod * 2 + yMod) < (pHexSize / 2)) {
+            --hx;
+            --hy;
+        }
+        else if ((xMod * 2 - yMod) < (pHexSize * 3 / 2)) {
+            // do nothing
+        }
+        else {
+            ++hx;
+            --hy;
+        }
+    }
+    else {
+        if ((xMod * 2 - (yMod - pHexSize / 2)) < 0) {
+            --hx;
+        }
+        else if ((xMod * 2 + (yMod - pHexSize / 2)) < pHexSize * 2) {
+            // do nothing
+        }
+        else {
+            ++hx;
+        }
+    }
+
+    return {hx, hy};
+}
