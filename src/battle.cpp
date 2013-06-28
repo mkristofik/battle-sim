@@ -62,11 +62,11 @@ namespace
     std::vector<Drawable> entities;
 
     // Unit placement on the grid.
-    // team 1 in upper left, team 2 in lower right
-    const Point unitPos[] = {{3,0}, {2,1}, {1,1}, {0,2},  // team 1 row 1
-                             {2,0}, {1,0}, {0,1},         // team 1 row 2
-                             {4,2}, {3,2}, {2,3}, {1,3},  // team 2 row 1
-                             {4,3}, {3,3}, {2,4}};        // team 2 row 2
+    // team 1 on the left, team 2 on the right
+    const Point unitPos[] = {{1,0}, {1,1}, {1,2}, {1,3},  // team 1 row 1
+                             {0,1}, {0,2}, {0,3},         // team 1 row 2
+                             {3,0}, {3,1}, {3,2}, {3,3},  // team 2 row 1
+                             {4,1}, {4,2}, {4,3}};        // team 2 row 2
 }
 
 bool parseJson(const char *filename, rapidjson::Document &doc)
