@@ -120,6 +120,8 @@ namespace
 
 ImageSet applyTeamColors(const SdlSurface &baseImg)
 {
+    initColors();
+
     ImageSet ret;
     for (int i = 0; i < numTeams; ++i) {
         ret.emplace_back(sdlDeepCopy(baseImg));

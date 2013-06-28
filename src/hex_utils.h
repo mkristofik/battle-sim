@@ -21,15 +21,19 @@
 #include <utility>
 #include <vector>
 
+const Sint16 Sint16_min = std::numeric_limits<Sint16>::min();
+const Sint16 Sint16_max = std::numeric_limits<Sint16>::max();
+
 struct Point
 {
     int x;
     int y;
+
+    Point() : x{Sint16_min}, y{Sint16_min} {}
+    Point(int xPos, int yPos) : x{xPos}, y{yPos} {}
 };
 
-const Sint16 Sint16_min = std::numeric_limits<Sint16>::min();
-const Sint16 Sint16_max = std::numeric_limits<Sint16>::max();
-const Point hInvalid = {Sint16_min, Sint16_min};
+const Point hInvalid;
 const Sint16 pHexSize = 72;
 
 bool operator==(const Point &lhs, const Point &rhs);
@@ -59,5 +63,6 @@ int findClosest(const Point &hTarget, const std::vector<Point> &hexes);
 // Return the pixel location where a hex is drawn.  You have to compute your
 // own offsets if hex (0,0) isn't drawn in the upper-left corner of the window.
 Point pixelFromHex(int hx, int hy);
+Point pixelFromHex(Point hex);
 
 #endif

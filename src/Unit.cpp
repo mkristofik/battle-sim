@@ -13,8 +13,6 @@
 #include "Unit.h"
 #include "sdl_helper.h"
 
-#include "rapidjson/document.h"
-#include "rapidjson/filestream.h"
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -32,7 +30,7 @@ namespace {
         if (json.HasMember("img")) {
             auto baseImg = sdlLoadImage(json["img"].GetString());
             if (baseImg) {
-                u.img = applyTeamColors(baseImg);
+                u.baseImg = applyTeamColors(baseImg);
                 u.reverseImg = applyTeamColors(sdlFlipH(baseImg));
             }
         }
@@ -62,20 +60,8 @@ namespace {
     }
 }
 
-UnitsMap parseUnitsJson()
+UnitsMap parseUnits(const rapidjson::Document &doc)
 {
-    std::shared_ptr<FILE> fp{fopen("../data/units.json", "r"), fclose};
-    rapidjson::Document doc;
-    rapidjson::FileStream file(fp.get());
-    if (doc.ParseStream<0>(file).HasParseError()) {
-        std::cerr << "Error reading units: " << doc.GetParseError() << '\n';
-        return {};
-    }
-    if (!doc.IsObject()) {
-        std::cerr << "Expected top-level object in units file\n";
-        return {};
-    }
-
     UnitsMap um;
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {

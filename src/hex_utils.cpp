@@ -119,3 +119,8 @@ Point pixelFromHex(int hx, int hy)
     int py = (hy + 0.5 * abs(hx % 2)) * pHexSize;
     return {px, py};
 }
+
+Point pixelFromHex(Point hex)
+{
+    return pixelFromHex(hex.x, hex.y);
+}

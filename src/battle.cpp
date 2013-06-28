@@ -14,17 +14,52 @@
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#define BOOST_SYSTEM_NO_DEPRECATED
+#include "boost/filesystem.hpp"
+#include "boost/tokenizer.hpp"
+
+#include "rapidjson/document.h"
+#include "rapidjson/filestream.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+// TODO: load scenario, define entities
+// an entity might have any or all of:
+// - a hex position on the map
+// - drawing stuff (possible images, offset from hex position)
+// - combat stats
+// - spellcasting abilities
+// - other special abilities
+// an entity by itself is just an id
+
+struct Drawable
+{
+    Point hex;
+    Point offset;
+    SdlSurface img;
+};
+
+struct UnitStack
+{
+    int entityId;
+    int num;
+    int team;
+    const Unit *unitDef;
+
+    UnitStack() : entityId{-1}, num{0}, team{-1}, unitDef{nullptr} {}
+};
+
 namespace
 {
     SdlSurface tile;
     SdlSurface grid;
     std::unordered_map<std::string, int> mapUnitPos;
+    std::vector<Drawable> entities;
 
     // Unit placement on the grid.
     // team 1 in upper left, team 2 in lower right
@@ -32,6 +67,26 @@ namespace
                              {2,0}, {1,0}, {0,1},         // team 1 row 2
                              {4,2}, {3,2}, {2,3}, {1,3},  // team 2 row 1
                              {4,3}, {3,3}, {2,4}};        // team 2 row 2
+}
+
+bool parseJson(const char *filename, rapidjson::Document &doc)
+{
+    boost::filesystem::path dataPath{"../data"};
+    dataPath /= filename;
+    std::shared_ptr<FILE> fp{fopen(dataPath.string().c_str(), "r"), fclose};
+
+    rapidjson::FileStream file(fp.get());
+    if (doc.ParseStream<0>(file).HasParseError()) {
+        std::cerr << "Error reading json file " << dataPath.c_str() << ": "
+            << doc.GetParseError() << '\n';
+        return false;
+    }
+    if (!doc.IsObject()) {
+        std::cerr << "Expected top-level object in units file\n";
+        return false;
+    }
+
+    return true;
 }
 
 void translateUnitPos()
@@ -51,6 +106,68 @@ void translateUnitPos()
     mapUnitPos.emplace("t2p5", 11);
     mapUnitPos.emplace("t2p6", 12);
     mapUnitPos.emplace("t2p7", 13);
+}
+
+void parseScenario(const rapidjson::Document &doc, const UnitsMap &allUnits)
+{
+    // TODO: for each object in the scenario
+    // - look up its unit position, skip if invalid
+    // - if unit position < 7, team 1, otherwise team 2
+    // - create a Drawable entity for it
+    // - for now, assume we won't ever have an entity that isn't drawn
+    // - build a unit stack for it
+    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
+        if (!i->value.IsObject()) {
+            std::cerr << "scenario: skipping unit at position '"
+                << i->name.GetString() << "'\n";
+            continue;
+        }
+
+        // Compute battlefield position from location id.
+        std::string posStr = i->name.GetString();
+        auto posIter = mapUnitPos.find(posStr);
+        if (posIter == std::end(mapUnitPos)) {
+            std::cerr << "scenario: skipping unit at position '"
+                << i->name.GetString() << "'\n";
+            continue;
+        }
+        int posIdx = posIter->second;
+        auto battlefieldHex = unitPos[posIdx];
+
+        const auto &json = i->value;
+
+        // Ensure we recognize the unit id.
+        std::string unitType;
+        if (json.HasMember("id")) {
+            unitType = json["id"].GetString();
+        }
+        auto unitIter = allUnits.find(unitType);
+        if (unitIter == std::end(allUnits)) {
+            std::cerr << "scenario: skipping unit with unknown id '" <<
+                unitType << "'\n";
+            continue;
+        }
+
+        UnitStack u;
+        u.entityId = entities.size();
+        u.team = (posIdx < 7) ? 0 : 1;
+        u.unitDef = &unitIter->second;
+        if (json.HasMember("num")) {
+            u.num = json["num"].GetInt();
+        }
+
+        Drawable entity;
+        entity.hex = battlefieldHex;
+        entity.offset = {0, 0};
+        if (u.team == 0) {
+            entity.img = u.unitDef->baseImg[0];
+        }
+        else {
+            entity.img = u.unitDef->reverseImg[1];
+        }
+
+        entities.emplace_back(entity);
+    }
 }
 
 void loadImages()
@@ -80,20 +197,40 @@ void drawMap()
     sdlBlit(grid, pixelFromHex(2, 4));
 }
 
+void drawUnits()
+{
+    for (const auto &e : entities) {
+        auto pos = pixelFromHex(e.hex) + e.offset;
+        sdlBlit(e.img, pos);
+    }
+}
+
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 {
     if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 
-    auto unitsMap = parseUnitsJson();
+    rapidjson::Document unitsDoc;
+    if (!parseJson("units.json", unitsDoc)) {
+        return EXIT_FAILURE;
+    }
+    auto unitsMap = parseUnits(unitsDoc);
     if (unitsMap.empty()) {
         return EXIT_FAILURE;
     }
 
     translateUnitPos();
+
+    rapidjson::Document scenario;
+    if (!parseJson("scenario.json", scenario)) {
+        return EXIT_FAILURE;
+    }
+    parseScenario(scenario, unitsMap);
+
     loadImages();
     drawMap();
+    drawUnits();
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);

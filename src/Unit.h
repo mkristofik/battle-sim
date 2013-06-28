@@ -14,6 +14,8 @@
 #define UNIT_H
 
 #include "team_color.h"
+
+#include "rapidjson/document.h"
 #include <string>
 #include <unordered_map>
 
@@ -21,7 +23,7 @@ struct Unit
 {
     std::string name;
     std::string plural;
-    ImageSet img;
+    ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet animAttack;
     ImageSet reverseAnimAttack;
@@ -31,6 +33,6 @@ struct Unit
 };
 
 using UnitsMap = std::unordered_map<std::string, Unit>;
-UnitsMap parseUnitsJson();
+UnitsMap parseUnits(const rapidjson::Document &doc);
 
 #endif
