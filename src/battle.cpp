@@ -10,6 +10,7 @@
  
     See the COPYING.txt file for more details.
 */
+#include "Battlefield.h"
 #include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
@@ -28,6 +29,17 @@
 #include <unordered_map>
 #include <vector>
 
+// TODO: ideas
+// - make a bigger window with some portraits to indicate heroes
+//      * need some scaling because the portraits are big
+// - leave space to write unit stats for the highlighted hex
+// - need to compute offsets for drawing the battlefield and entities
+// - draw a hex shadow to follow the mouse
+// - we'll need hex graphics:
+//      * attack arrows
+//      * yellow for active unit
+//      * green for a move target
+//      * red for a ranged attack target
 struct Drawable
 {
     Point hex;
@@ -47,8 +59,7 @@ struct UnitStack
 
 namespace
 {
-    SdlSurface tile;
-    SdlSurface grid;
+    std::shared_ptr<Battlefield> bf;
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<Drawable> entities;
 
@@ -58,6 +69,25 @@ namespace
                              {0,1}, {0,2}, {0,3},         // team 1 row 2
                              {3,0}, {3,1}, {3,2}, {3,3},  // team 2 row 1
                              {4,1}, {4,2}, {4,3}};        // team 2 row 2
+
+    // Map unit position strings used by JSON data to 'unitPos' array indexes.
+    void translateUnitPos()
+    {
+        mapUnitPos.emplace("t1p1", 0);
+        mapUnitPos.emplace("t1p2", 1);
+        mapUnitPos.emplace("t1p3", 2);
+        mapUnitPos.emplace("t1p4", 3);
+        mapUnitPos.emplace("t1p5", 4);
+        mapUnitPos.emplace("t1p6", 5);
+        mapUnitPos.emplace("t1p7", 6);
+        mapUnitPos.emplace("t2p1", 7);
+        mapUnitPos.emplace("t2p2", 8);
+        mapUnitPos.emplace("t2p3", 9);
+        mapUnitPos.emplace("t2p4", 10);
+        mapUnitPos.emplace("t2p5", 11);
+        mapUnitPos.emplace("t2p6", 12);
+        mapUnitPos.emplace("t2p7", 13);
+    }
 }
 
 bool parseJson(const char *filename, rapidjson::Document &doc)
@@ -78,25 +108,6 @@ bool parseJson(const char *filename, rapidjson::Document &doc)
     }
 
     return true;
-}
-
-void translateUnitPos()
-{
-    // Map unit position strings used by JSON data to array indexes.
-    mapUnitPos.emplace("t1p1", 0);
-    mapUnitPos.emplace("t1p2", 1);
-    mapUnitPos.emplace("t1p3", 2);
-    mapUnitPos.emplace("t1p4", 3);
-    mapUnitPos.emplace("t1p5", 4);
-    mapUnitPos.emplace("t1p6", 5);
-    mapUnitPos.emplace("t1p7", 6);
-    mapUnitPos.emplace("t2p1", 7);
-    mapUnitPos.emplace("t2p2", 8);
-    mapUnitPos.emplace("t2p3", 9);
-    mapUnitPos.emplace("t2p4", 10);
-    mapUnitPos.emplace("t2p5", 11);
-    mapUnitPos.emplace("t2p6", 12);
-    mapUnitPos.emplace("t2p7", 13);
 }
 
 std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference)
@@ -160,33 +171,6 @@ std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const Units
     return unitStacks;
 }
 
-void loadImages()
-{
-    tile = sdlLoadImage("../img/grass.png");
-    grid = sdlLoadImage("../img/hex-grid.png");
-}
-
-void drawMap()
-{
-    // Background layer.
-    for (int tileX = -1; tileX <= 5; ++tileX) {
-        for (int tileY = -1; tileY <= 5; ++tileY) {
-            sdlBlit(tile, pixelFromHex(tileX, tileY));
-        }
-    }
-
-    // 5-hex wide hexagonal grid (draw a square, cut off the corners).
-    for (int gridX = 0; gridX < 5; ++gridX) {
-        for (int gridY = 1; gridY < 4; ++gridY) {
-            sdlBlit(grid, pixelFromHex(gridX, gridY));
-        }
-    }
-    sdlBlit(grid, pixelFromHex(1, 0));
-    sdlBlit(grid, pixelFromHex(2, 0));
-    sdlBlit(grid, pixelFromHex(3, 0));
-    sdlBlit(grid, pixelFromHex(2, 4));
-}
-
 void drawUnits()
 {
     for (const auto &e : entities) {
@@ -218,8 +202,8 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     }
     auto stackList = parseScenario(scenario, unitsMap);
 
-    loadImages();
-    drawMap();
+    bf = std::make_shared<Battlefield>(SDL_Rect{0, 0, 288, 360});
+    bf->draw();
     drawUnits();
 
     SDL_Surface *screen = SDL_GetVideoSurface();
