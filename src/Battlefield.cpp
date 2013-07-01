@@ -12,6 +12,20 @@
 */
 #include "Battlefield.h"
 
+Drawable::Drawable()
+    : hex{},
+    pOffset{0, 0},
+    img{}
+{
+}
+
+Drawable::Drawable(Point h, SdlSurface surf)
+    : hex{std::move(h)},
+    pOffset{0, 0},
+    img{std::move(surf)}
+{
+}
+
 Battlefield::Battlefield(const SDL_Rect &dispArea)
     : displayArea_(dispArea),
     tile_{},
@@ -44,6 +58,12 @@ bool Battlefield::isHexValid(const Point &hex) const
     return isHexValid(hex.x, hex.y);
 }
 
+int Battlefield::addEntity(Point hex, SdlSurface img)
+{
+    entities_.emplace_back(std::move(hex), std::move(img));
+    return entities_.size() - 1;
+}
+
 void Battlefield::draw()
 {
     if (!tile_ || !grid_) {
@@ -55,15 +75,32 @@ void Battlefield::draw()
     SdlSetClipRect(displayArea_, [&] {
         for (int hx = -1; hx <= 5; ++hx) {
             for (int hy = -1; hy <= 5; ++hy) {
-                auto basePixel = pixelFromHex(hx, hy);
-                int px = basePixel.x + displayArea_.x;
-                int py = basePixel.y + displayArea_.y;
-
-                sdlBlit(tile_, px, py);
+                auto sp = sPixelFromHex(hx, hy);
+                sdlBlit(tile_, sp);
                 if (isHexValid(hx, hy)) {
-                    sdlBlit(grid_, px, py);
+                    sdlBlit(grid_, sp);
                 }
             }
         }
+
+        for (const auto &e : entities_) {
+            if (e.img) {
+                sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
+            }
+        }
     });
+}
+
+Point Battlefield::sPixelFromHex(int hx, int hy) const
+{
+    auto basePixel = pixelFromHex(hx, hy);
+    int px = basePixel.x + displayArea_.x;
+    int py = basePixel.y + displayArea_.y;
+
+    return {px, py};
+}
+
+Point Battlefield::sPixelFromHex(const Point &hex) const
+{
+    return sPixelFromHex(hex.x, hex.y);
 }

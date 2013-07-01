@@ -40,12 +40,6 @@
 //      * yellow for active unit
 //      * green for a move target
 //      * red for a ranged attack target
-struct Drawable
-{
-    Point hex;
-    Point offset;
-    SdlSurface img;
-};
 
 struct UnitStack
 {
@@ -147,36 +141,25 @@ std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const Units
         }
 
         UnitStack u;
-        u.entityId = entities.size();
         u.team = (posIdx < 7) ? 0 : 1;
         u.unitDef = &unitIter->second;
         if (json.HasMember("num")) {
             u.num = json["num"].GetInt();
         }
 
-        Drawable entity;
-        entity.hex = battlefieldHex;
-        entity.offset = {0, 0};
+        SdlSurface img;
         if (u.team == 0) {
-            entity.img = u.unitDef->baseImg[0];
+            img = u.unitDef->baseImg[0];
         }
         else {
-            entity.img = u.unitDef->reverseImg[1];
+            img = u.unitDef->reverseImg[1];
         }
 
-        entities.emplace_back(std::move(entity));
+        u.entityId = bf->addEntity(battlefieldHex, img);
         unitStacks.emplace_back(std::move(u));
     }
 
     return unitStacks;
-}
-
-void drawUnits()
-{
-    for (const auto &e : entities) {
-        auto pos = pixelFromHex(e.hex) + e.offset;
-        sdlBlit(e.img, pos);
-    }
 }
 
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
@@ -184,6 +167,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
+    bf = std::make_shared<Battlefield>(SDL_Rect{0, 0, 288, 360});
 
     rapidjson::Document unitsDoc;
     if (!parseJson("units.json", unitsDoc)) {
@@ -202,9 +186,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     }
     auto stackList = parseScenario(scenario, unitsMap);
 
-    bf = std::make_shared<Battlefield>(SDL_Rect{0, 0, 288, 360});
     bf->draw();
-    drawUnits();
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
