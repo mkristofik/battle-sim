@@ -165,7 +165,7 @@ std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const Units
             img = u.unitDef->reverseImg[1];
         }
 
-        u.entityId = bf->addEntity(battlefieldHex, img);
+        u.entityId = bf->addEntity(battlefieldHex, img, ZOrder::CREATURE);
         unitStacks.emplace_back(std::move(u));
     }
 

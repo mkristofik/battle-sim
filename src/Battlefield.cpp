@@ -11,11 +11,13 @@
     See the COPYING.txt file for more details.
 */
 #include "Battlefield.h"
+#include <algorithm>
 
-Drawable::Drawable(Point h, SdlSurface surf)
+Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
     : hex{std::move(h)},
     pOffset{0, 0},
     img{std::move(surf)},
+    z{std::move(order)},
     visible{true}
 {
 }
@@ -23,9 +25,11 @@ Drawable::Drawable(Point h, SdlSurface surf)
 Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
+    entityIds_{},
     tile_{},
     grid_{},
-    hexShadow_{-1},
+    hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
+                               ZOrder::HIGHLIGHT)},
     redHex_{-1},
     yellowHex_{-1},
     greenHex_{-1}
@@ -57,10 +61,20 @@ bool Battlefield::isHexValid(const Point &hex) const
     return isHexValid(hex.x, hex.y);
 }
 
-int Battlefield::addEntity(Point hex, SdlSurface img)
+int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
 {
-    entities_.emplace_back(std::move(hex), std::move(img));
-    return entities_.size() - 1;
+    int id = entities_.size();
+    entities_.emplace_back(std::move(hex), std::move(img), std::move(z));
+    entityIds_.push_back(id);
+
+    return id;
+}
+
+int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
+{
+    auto id = addEntity(hInvalid, std::move(img), std::move(z));
+    entities_[id].visible = false;
+    return id;
 }
 
 void Battlefield::showMouseover(int spx, int spy)
@@ -74,19 +88,13 @@ void Battlefield::showMouseover(int spx, int spy)
         return;
     }
 
-    if (hexShadow_ < 0) {
-        hexShadow_ = addEntity(hex, sdlLoadImage("hex-shadow.png"));
-    }
-
     entities_[hexShadow_].hex = hex;
     entities_[hexShadow_].visible = true;
 }
 
 void Battlefield::hideMouseover()
 {
-    if (hexShadow_ >= 0) {
-        entities_[hexShadow_].visible = false;
-    }
+    entities_[hexShadow_].visible = false;
 }
 
 void Battlefield::draw()
@@ -108,7 +116,12 @@ void Battlefield::draw()
             }
         }
 
-        for (const auto &e : entities_) {
+        // Arrange entities logically by z-order.
+        sort(std::begin(entityIds_), std::end(entityIds_), [&] (int a, int b)
+             { return entities_[a].z < entities_[b].z; });
+
+        for (auto id : entityIds_) {
+            const auto &e = entities_[id];
             if (e.visible) {
                 sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
             }

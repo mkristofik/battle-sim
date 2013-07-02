@@ -19,14 +19,17 @@
 // Handle the drawing of the hexagonal battlefield and all of the drawable
 // entities on the battlefield.
 
+enum class ZOrder {TERRAIN, GRID, CREATURE, HIGHLIGHT, PROJECTILE, ANIMATING};
+
 struct Drawable
 {
     Point hex;
     Point pOffset;
     SdlSurface img;
+    ZOrder z;
     bool visible;
 
-    Drawable(Point h, SdlSurface surf);
+    Drawable(Point h, SdlSurface surf, ZOrder order);
 };
 
 class Battlefield
@@ -38,7 +41,8 @@ public:
     bool isHexValid(const Point &hex) const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
-    int addEntity(Point hex, SdlSurface img);
+    int addEntity(Point hex, SdlSurface img, ZOrder z);
+    int addHiddenEntity(SdlSurface img, ZOrder z);
 
     void showMouseover(int spx, int spy);
     void hideMouseover();
@@ -52,6 +56,7 @@ private:
 
     SDL_Rect displayArea_;
     std::vector<Drawable> entities_;
+    std::vector<int> entityIds_;
 
     SdlSurface tile_;
     SdlSurface grid_;
