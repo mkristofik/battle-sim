@@ -26,14 +26,25 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
     entityIds_{},
-    tile_{},
-    grid_{},
+    tile_{sdlLoadImage("grass.png")},
+    grid_{sdlLoadImage("hex-grid.png")},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
                                ZOrder::HIGHLIGHT)},
     redHex_{-1},
     yellowHex_{-1},
     greenHex_{-1}
 {
+    // Create the background terrain and hex grid.  They can be treated as
+    // drawable entities like everything else.
+    for (int hx = -1; hx <= 5; ++hx) {
+        for (int hy = -1; hy <= 5; ++hy) {
+            Point hex = {hx, hy};
+            addEntity(hex, tile_, ZOrder::TERRAIN);
+            if (isHexValid(hex)) {
+                addEntity(hex, grid_, ZOrder::GRID);
+            }
+        }
+    }
 }
 
 bool Battlefield::isHexValid(int hx, int hy) const
@@ -99,27 +110,12 @@ void Battlefield::hideMouseover()
 
 void Battlefield::draw()
 {
-    if (!tile_ || !grid_) {
-        tile_ = sdlLoadImage("grass.png");
-        grid_ = sdlLoadImage("hex-grid.png");
-    }
+    // Arrange entities logically by z-order.
+    sort(std::begin(entityIds_), std::end(entityIds_), [&] (int a, int b)
+         { return entities_[a].z < entities_[b].z; });
 
     sdlClear(displayArea_);
     SdlSetClipRect(displayArea_, [&] {
-        for (int hx = -1; hx <= 5; ++hx) {
-            for (int hy = -1; hy <= 5; ++hy) {
-                auto sp = sPixelFromHex(hx, hy);
-                sdlBlit(tile_, sp);
-                if (isHexValid(hx, hy)) {
-                    sdlBlit(grid_, sp);
-                }
-            }
-        }
-
-        // Arrange entities logically by z-order.
-        sort(std::begin(entityIds_), std::end(entityIds_), [&] (int a, int b)
-             { return entities_[a].z < entities_[b].z; });
-
         for (auto id : entityIds_) {
             const auto &e = entities_[id];
             if (e.visible) {
