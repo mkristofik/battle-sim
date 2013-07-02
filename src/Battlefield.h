@@ -24,21 +24,24 @@ struct Drawable
     Point hex;
     Point pOffset;
     SdlSurface img;
+    bool visible;
 
-    Drawable();
     Drawable(Point h, SdlSurface surf);
 };
 
 class Battlefield
 {
 public:
-    Battlefield(const SDL_Rect &dispArea);
+    Battlefield(SDL_Rect dispArea);
 
     bool isHexValid(int hx, int hy) const;
     bool isHexValid(const Point &hex) const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img);
+
+    void showMouseover(int spx, int spy);
+    void hideMouseover();
 
     void draw();
 
@@ -48,9 +51,16 @@ private:
     Point sPixelFromHex(const Point &hex) const;
 
     SDL_Rect displayArea_;
+    std::vector<Drawable> entities_;
+
     SdlSurface tile_;
     SdlSurface grid_;
-    std::vector<Drawable> entities_;
+
+    // Entities for display features.
+    int hexShadow_;
+    int redHex_;
+    int yellowHex_;
+    int greenHex_;
 };
 
 #endif

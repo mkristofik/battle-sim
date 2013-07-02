@@ -33,7 +33,6 @@
 // - make a bigger window with some portraits to indicate heroes
 //      * need some scaling because the portraits are big
 // - leave space to write unit stats for the highlighted hex
-// - need to compute offsets for drawing the battlefield and entities
 // - draw a hex shadow to follow the mouse
 // - we'll need hex graphics:
 //      * attack arrows
@@ -54,6 +53,7 @@ struct UnitStack
 namespace
 {
     std::shared_ptr<Battlefield> bf;
+    SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<Drawable> entities;
 
@@ -81,6 +81,16 @@ namespace
         mapUnitPos.emplace("t2p5", 11);
         mapUnitPos.emplace("t2p6", 12);
         mapUnitPos.emplace("t2p7", 13);
+    }
+}
+
+void handleMouseMotion(const SDL_MouseMotionEvent &event)
+{
+    if (insideRect(event.x, event.y, bfWindow)) {
+        bf->showMouseover(event.x, event.y);
+    }
+    else {
+        bf->hideMouseover();
     }
 }
 
@@ -167,7 +177,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
-    bf = std::make_shared<Battlefield>(SDL_Rect{0, 0, 288, 360});
+    bf = std::make_shared<Battlefield>(bfWindow);
 
     rapidjson::Document unitsDoc;
     if (!parseJson("units.json", unitsDoc)) {
@@ -198,7 +208,14 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
             if (event.type == SDL_QUIT) {
                 isDone = true;
             }
+            else if (event.type == SDL_MOUSEMOTION) {
+                handleMouseMotion(event.motion);
+            }
         }
+
+        // TODO: maybe only draw when the screen needs it?
+        bf->draw();
+        SDL_UpdateRect(screen, 0, 0, 0, 0);
         SDL_Delay(1);
     }
 

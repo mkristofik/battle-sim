@@ -12,24 +12,23 @@
 */
 #include "Battlefield.h"
 
-Drawable::Drawable()
-    : hex{},
-    pOffset{0, 0},
-    img{}
-{
-}
-
 Drawable::Drawable(Point h, SdlSurface surf)
     : hex{std::move(h)},
     pOffset{0, 0},
-    img{std::move(surf)}
+    img{std::move(surf)},
+    visible{true}
 {
 }
 
-Battlefield::Battlefield(const SDL_Rect &dispArea)
-    : displayArea_(dispArea),
+Battlefield::Battlefield(SDL_Rect dispArea)
+    : displayArea_(std::move(dispArea)),
+    entities_{},
     tile_{},
-    grid_{}
+    grid_{},
+    hexShadow_{-1},
+    redHex_{-1},
+    yellowHex_{-1},
+    greenHex_{-1}
 {
 }
 
@@ -64,6 +63,32 @@ int Battlefield::addEntity(Point hex, SdlSurface img)
     return entities_.size() - 1;
 }
 
+void Battlefield::showMouseover(int spx, int spy)
+{
+    int mpx = spx - displayArea_.x;
+    int mpy = spy - displayArea_.y;
+    auto hex = hexFromPixel(mpx, mpy);
+
+    if (!isHexValid(hex)) {
+        hideMouseover();
+        return;
+    }
+
+    if (hexShadow_ < 0) {
+        hexShadow_ = addEntity(hex, sdlLoadImage("hex-shadow.png"));
+    }
+
+    entities_[hexShadow_].hex = hex;
+    entities_[hexShadow_].visible = true;
+}
+
+void Battlefield::hideMouseover()
+{
+    if (hexShadow_ >= 0) {
+        entities_[hexShadow_].visible = false;
+    }
+}
+
 void Battlefield::draw()
 {
     if (!tile_ || !grid_) {
@@ -84,7 +109,7 @@ void Battlefield::draw()
         }
 
         for (const auto &e : entities_) {
-            if (e.img) {
+            if (e.visible) {
                 sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
             }
         }
