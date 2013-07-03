@@ -46,6 +46,8 @@ public:
 
     void showMouseover(int spx, int spy);
     void hideMouseover();
+    void selectEntity(int id);
+    void deselectEntity();
 
     void draw();
 

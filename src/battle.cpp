@@ -197,6 +197,8 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     auto stackList = parseScenario(scenario, unitsMap);
 
     bf->draw();
+    int firstAttacker = stackList[0].entityId;
+    bf->selectEntity(firstAttacker);
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);

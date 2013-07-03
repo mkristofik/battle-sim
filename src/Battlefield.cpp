@@ -12,6 +12,7 @@
 */
 #include "Battlefield.h"
 #include <algorithm>
+#include <cassert>
 
 Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
     : hex{std::move(h)},
@@ -30,9 +31,10 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     grid_{sdlLoadImage("hex-grid.png")},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
                                ZOrder::HIGHLIGHT)},
-    redHex_{-1},
-    yellowHex_{-1},
-    greenHex_{-1}
+    redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
+    yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
+                               ZOrder::HIGHLIGHT)},
+    greenHex_{addHiddenEntity(sdlLoadImage("hex-green.png"), ZOrder::HIGHLIGHT)}
 {
     // Create the background terrain and hex grid.  They can be treated as
     // drawable entities like everything else.
@@ -106,6 +108,20 @@ void Battlefield::showMouseover(int spx, int spy)
 void Battlefield::hideMouseover()
 {
     entities_[hexShadow_].visible = false;
+}
+
+void Battlefield::selectEntity(int id)
+{
+    assert(id >= 0 && id < static_cast<int>(entities_.size()));
+
+    const auto &hex = entities_[id].hex;
+    entities_[yellowHex_].hex = hex;
+    entities_[yellowHex_].visible = true;
+}
+
+void Battlefield::deselectEntity()
+{
+    entities_[yellowHex_].visible = false;
 }
 
 void Battlefield::draw()
