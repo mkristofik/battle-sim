@@ -33,12 +33,30 @@
 // - make a bigger window with some portraits to indicate heroes
 //      * need some scaling because the portraits are big
 // - leave space to write unit stats for the highlighted hex
-// - draw a hex shadow to follow the mouse
 // - we'll need hex graphics:
 //      * attack arrows
-//      * yellow for active unit
 //      * green for a move target
 //      * red for a ranged attack target
+
+// TODO: determining which highlight to use:
+// - if active unit has the ranged attack trait
+//      * and mouseover hex is an enemy more than 1 hex away
+//          + draw red hex on target
+//      * if mouseover hex is an adjacent enemy
+//          + draw appropriate attack arrow on active unit
+// - else
+//      * if mouseover hex is an enemy within move distance + 1
+//          + draw appropriate attack arrow on hex to move to
+//          + this might be the hex unit is standing in
+//      * if mouseover hex is empty within move distance
+//          + draw green hex
+//          + dead units count as empty hexes
+
+// TODO: things we need to figure all this out
+// - which unit is standing in the given hex?
+// - path to mouseover hex
+//      * a hex is unwalkable if it has an alive unit in it, unless it's the
+//        target
 
 struct UnitStack
 {

@@ -69,6 +69,13 @@ bool Battlefield::isHexValid(int hx, int hy) const
     return false;
 }
 
+Point Battlefield::hexFromPixel(int spx, int spy) const
+{
+    int mpx = spx - displayArea_.x;
+    int mpy = spy - displayArea_.y;
+    return ::hexFromPixel(mpx, mpy);
+}
+
 bool Battlefield::isHexValid(const Point &hex) const
 {
     return isHexValid(hex.x, hex.y);
@@ -92,10 +99,7 @@ int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
 
 void Battlefield::showMouseover(int spx, int spy)
 {
-    int mpx = spx - displayArea_.x;
-    int mpy = spy - displayArea_.y;
-    auto hex = hexFromPixel(mpx, mpy);
-
+    auto hex = hexFromPixel(spx, spy);
     if (!isHexValid(hex)) {
         hideMouseover();
         return;

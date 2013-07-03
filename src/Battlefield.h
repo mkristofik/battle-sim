@@ -40,6 +40,9 @@ public:
     bool isHexValid(int hx, int hy) const;
     bool isHexValid(const Point &hex) const;
 
+    // Return the hex containing the given screen coordinates.
+    Point hexFromPixel(int spx, int spy) const;
+
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
     int addHiddenEntity(SdlSurface img, ZOrder z);
