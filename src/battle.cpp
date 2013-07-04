@@ -49,7 +49,7 @@
 //          + draw appropriate attack arrow on hex to move to
 //          + this might be the hex unit is standing in
 //      * if mouseover hex is empty within move distance
-//          + draw green hex
+//          . (done) draw green hex
 //          + dead units count as empty hexes
 
 // TODO: things we need to figure all this out
@@ -74,6 +74,7 @@ namespace
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<Drawable> entities;
+    std::vector<UnitStack> stackList;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -102,10 +103,31 @@ namespace
     }
 }
 
+bool isUnitAt(const Point &hex)
+{
+    for (const auto &s : stackList) {
+        if (bf->getEntity(s.entityId).hex == hex) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (insideRect(event.x, event.y, bfWindow)) {
         bf->showMouseover(event.x, event.y);
+
+        auto hex = bf->hexFromPixel(event.x, event.y);
+        auto curHex = bf->getEntity(stackList[0].entityId).hex;
+        if (bf->isHexValid(hex) && hexDist(hex, curHex) == 1 && !isUnitAt(hex))
+        {
+            bf->setMoveTarget(hex);
+        }
+        else {
+            bf->clearMoveTarget();
+        }
     }
     else {
         bf->hideMouseover();
@@ -212,7 +234,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!parseJson("scenario.json", scenario)) {
         return EXIT_FAILURE;
     }
-    auto stackList = parseScenario(scenario, unitsMap);
+    stackList = parseScenario(scenario, unitsMap);
 
     bf->draw();
     int firstAttacker = stackList[0].entityId;
@@ -222,6 +244,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     bool isDone = false;
+    bool needRedraw = false;
     SDL_Event event;
     while (!isDone) {
         while (SDL_PollEvent(&event)) {
@@ -230,12 +253,14 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
             }
             else if (event.type == SDL_MOUSEMOTION) {
                 handleMouseMotion(event.motion);
+                needRedraw = true;
             }
         }
 
-        // TODO: maybe only draw when the screen needs it?
-        bf->draw();
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
+        if (needRedraw) {
+            bf->draw();
+            SDL_UpdateRect(screen, 0, 0, 0, 0);
+        }
         SDL_Delay(1);
     }
 

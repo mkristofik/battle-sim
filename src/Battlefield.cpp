@@ -27,8 +27,6 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
     entityIds_{},
-    tile_{sdlLoadImage("grass.png")},
-    grid_{sdlLoadImage("hex-grid.png")},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
                                ZOrder::HIGHLIGHT)},
     redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
@@ -36,14 +34,17 @@ Battlefield::Battlefield(SDL_Rect dispArea)
                                ZOrder::HIGHLIGHT)},
     greenHex_{addHiddenEntity(sdlLoadImage("hex-green.png"), ZOrder::HIGHLIGHT)}
 {
+    auto tile = sdlLoadImage("grass.png");
+    auto grid = sdlLoadImage("hex-grid.png");
+
     // Create the background terrain and hex grid.  They can be treated as
     // drawable entities like everything else.
     for (int hx = -1; hx <= 5; ++hx) {
         for (int hy = -1; hy <= 5; ++hy) {
             Point hex = {hx, hy};
-            addEntity(hex, tile_, ZOrder::TERRAIN);
+            addEntity(hex, tile, ZOrder::TERRAIN);
             if (isHexValid(hex)) {
-                addEntity(hex, grid_, ZOrder::GRID);
+                addEntity(hex, grid, ZOrder::GRID);
             }
         }
     }
@@ -81,6 +82,23 @@ bool Battlefield::isHexValid(const Point &hex) const
     return isHexValid(hex.x, hex.y);
 }
 
+std::vector<Point> Battlefield::hexNeighbors(const Point &hex) const
+{
+    if (!isHexValid(hex)) {
+        return {};
+    }
+
+    std::vector<Point> nbrs;
+    for (auto d : Dir()) {
+        Point n = adjacent(hex, d);
+        if (isHexValid(n)) {
+            nbrs.emplace_back(std::move(n));
+        }
+    }
+
+    return nbrs;
+}
+
 int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
 {
     int id = entities_.size();
@@ -95,6 +113,12 @@ int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
     auto id = addEntity(hInvalid, std::move(img), std::move(z));
     entities_[id].visible = false;
     return id;
+}
+
+const Drawable & Battlefield::getEntity(int id) const
+{
+    assert(id >= 0 && id < static_cast<int>(entities_.size()));
+    return entities_[id];
 }
 
 void Battlefield::showMouseover(int spx, int spy)
@@ -116,9 +140,7 @@ void Battlefield::hideMouseover()
 
 void Battlefield::selectEntity(int id)
 {
-    assert(id >= 0 && id < static_cast<int>(entities_.size()));
-
-    const auto &hex = entities_[id].hex;
+    const auto &hex = getEntity(id).hex;
     entities_[yellowHex_].hex = hex;
     entities_[yellowHex_].visible = true;
 }
@@ -126,6 +148,22 @@ void Battlefield::selectEntity(int id)
 void Battlefield::deselectEntity()
 {
     entities_[yellowHex_].visible = false;
+}
+
+void Battlefield::setMoveTarget(const Point &hex)
+{
+    if (!isHexValid(hex)) {
+        clearMoveTarget();
+        return;
+    }
+
+    entities_[greenHex_].hex = hex;
+    entities_[greenHex_].visible = true;
+}
+
+void Battlefield::clearMoveTarget()
+{
+    entities_[greenHex_].visible = false;
 }
 
 void Battlefield::draw()

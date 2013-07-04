@@ -43,14 +43,21 @@ public:
     // Return the hex containing the given screen coordinates.
     Point hexFromPixel(int spx, int spy) const;
 
+    // Get a list of hexes adjacent to the given hex.
+    std::vector<Point> hexNeighbors(const Point &hex) const;
+
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
     int addHiddenEntity(SdlSurface img, ZOrder z);
+
+    const Drawable & getEntity(int id) const;
 
     void showMouseover(int spx, int spy);
     void hideMouseover();
     void selectEntity(int id);
     void deselectEntity();
+    void setMoveTarget(const Point &hex);
+    void clearMoveTarget();
 
     void draw();
 
@@ -62,9 +69,6 @@ private:
     SDL_Rect displayArea_;
     std::vector<Drawable> entities_;
     std::vector<int> entityIds_;
-
-    SdlSurface tile_;
-    SdlSurface grid_;
 
     // Entities for display features.
     int hexShadow_;
