@@ -19,7 +19,13 @@
 // Handle the drawing of the hexagonal battlefield and all of the drawable
 // entities on the battlefield.
 
-enum class ZOrder {TERRAIN, GRID, CREATURE, HIGHLIGHT, PROJECTILE, ANIMATING};
+enum class ZOrder {TERRAIN,
+                   GRID,
+                   CREATURE,
+                   SHADOW,
+                   HIGHLIGHT,
+                   PROJECTILE,
+                   ANIMATING};
 
 struct Drawable
 {
@@ -59,6 +65,8 @@ public:
     void deselectEntity();
     void setMoveTarget(const Point &hex);
     void clearMoveTarget();
+    void setRangedTarget(const Point &hex);
+    void clearRangedTarget();
 
     void draw();
 

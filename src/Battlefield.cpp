@@ -27,8 +27,7 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
     entityIds_{},
-    hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
-                               ZOrder::HIGHLIGHT)},
+    hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"), ZOrder::SHADOW)},
     redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
     yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
                                ZOrder::HIGHLIGHT)},
@@ -164,6 +163,22 @@ void Battlefield::setMoveTarget(const Point &hex)
 void Battlefield::clearMoveTarget()
 {
     entities_[greenHex_].visible = false;
+}
+
+void Battlefield::setRangedTarget(const Point &hex)
+{
+    if (!isHexValid(hex)) {
+        clearRangedTarget();
+        return;
+    }
+
+    entities_[redHex_].hex = hex;
+    entities_[redHex_].visible = true;
+}
+
+void Battlefield::clearRangedTarget()
+{
+    entities_[redHex_].visible = false;
 }
 
 void Battlefield::draw()

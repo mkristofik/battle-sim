@@ -35,7 +35,6 @@
 // - leave space to write unit stats for the highlighted hex
 // - we'll need hex graphics:
 //      * attack arrows
-//      * red for a ranged attack target
 
 // TODO: determining which highlight to use:
 // - if active unit has the ranged attack trait
@@ -73,7 +72,6 @@ namespace
     std::shared_ptr<Battlefield> bf;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
-    std::vector<Drawable> entities;
     std::vector<UnitStack> stackList;
 
     // Unit placement on the grid.
@@ -103,15 +101,20 @@ namespace
     }
 }
 
-bool isUnitAt(const Point &hex)
+const UnitStack * getUnitAt(const Point &hex)
 {
     for (const auto &s : stackList) {
         if (bf->getEntity(s.entityId).hex == hex) {
-            return true;
+            return &s;
         }
     }
 
-    return false;
+    return nullptr;
+}
+
+bool isUnitAt(const Point &hex)
+{
+    return getUnitAt(hex) != nullptr;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -119,6 +122,8 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
     if (insideRect(event.x, event.y, bfWindow)) {
         bf->showMouseover(event.x, event.y);
 
+        // Demo hex highlight for move destinations using the first stack as
+        // the active unit.
         auto hex = bf->hexFromPixel(event.x, event.y);
         auto curHex = bf->getEntity(stackList[0].entityId).hex;
         if (bf->isHexValid(hex) && hexDist(hex, curHex) == 1 && !isUnitAt(hex))
@@ -128,9 +133,25 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         else {
             bf->clearMoveTarget();
         }
+
+        // Demo hex highlight for ranged attack.
+        if (bf->isHexValid(hex)) {
+            auto u = getUnitAt(hex);
+            if (u && u->team == 1) {
+                bf->setRangedTarget(hex);
+            }
+            else {
+                bf->clearRangedTarget();
+            }
+        }
+        else {
+            bf->clearRangedTarget();
+        }
     }
     else {
         bf->hideMouseover();
+        bf->clearMoveTarget();
+        bf->clearRangedTarget();
     }
 }
 
@@ -154,10 +175,8 @@ bool parseJson(const char *filename, rapidjson::Document &doc)
     return true;
 }
 
-std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference)
+void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference)
 {
-    std::vector<UnitStack> unitStacks;
-
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
             std::cerr << "scenario: skipping unit at position '"
@@ -206,10 +225,8 @@ std::vector<UnitStack> parseScenario(const rapidjson::Document &doc, const Units
         }
 
         u.entityId = bf->addEntity(battlefieldHex, img, ZOrder::CREATURE);
-        unitStacks.emplace_back(std::move(u));
+        stackList.emplace_back(std::move(u));
     }
-
-    return unitStacks;
 }
 
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
@@ -234,7 +251,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!parseJson("scenario.json", scenario)) {
         return EXIT_FAILURE;
     }
-    stackList = parseScenario(scenario, unitsMap);
+    parseScenario(scenario, unitsMap);
 
     bf->draw();
     int firstAttacker = stackList[0].entityId;
