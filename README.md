@@ -1,5 +1,4 @@
 # Heroes Battle Sim
-**Michael Kristofik** ([kristo605@gmail.com](mailto:kristo605@gmail.com))
 
 This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.
 
@@ -12,3 +11,25 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Special abilities must be **special**.  Anything that reduces to a numerical increase in damage or hit points is not special.
 - Magic should be **magical**.  Direct-damage spells (e.g., Fireball, Lightning) are boring, and not very effective as stack sizes get larger.
 - Good spells should have a large-scale effect.  Spells that affect the entire battlefield indiscriminantly are even better.
+
+## Requirements
+
+[SDL 1.2.15](http://www.libsdl.org/)  
+[SDL\_image 1.2.12](http://www.libsdl.org/projects/SDL_image/)  
+[SDL\_ttf 2.0.11](http://www.libsdl.org/projects/SDL_ttf/)  
+[SDL\_mixer 1.2.12](http://www.libsdl.org/projects/SDL_mixer/)  
+[DejaVuSans](http://dejavu-fonts.org/wiki/Main_Page) font (drop the .ttf file
+in the top-level directory)
+
+## Special Thanks To
+[Battle for Wesnoth](www.wesnoth.org) for all of the art assets.  They can
+draw, and I can't.
+
+## License
+
+Copyright 2013 by Michael Kristofik  
+The license for code and art assets is described in the file COPYING.txt.
+
+## Contact Info
+
+[Michael Kristofik](mailto:kristo605@gmail.com)

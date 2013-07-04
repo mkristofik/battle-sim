@@ -35,7 +35,6 @@
 // - leave space to write unit stats for the highlighted hex
 // - we'll need hex graphics:
 //      * attack arrows
-//      * green for a move target
 //      * red for a ranged attack target
 
 // TODO: determining which highlight to use:
@@ -49,11 +48,12 @@
 //          + draw appropriate attack arrow on hex to move to
 //          + this might be the hex unit is standing in
 //      * if mouseover hex is empty within move distance
-//          . (done) draw green hex
+//          + draw green hex
 //          + dead units count as empty hexes
 
 // TODO: things we need to figure all this out
 // - which unit is standing in the given hex?
+// - traits (X macros?)
 // - path to mouseover hex
 //      * a hex is unwalkable if it has an alive unit in it, unless it's the
 //        target

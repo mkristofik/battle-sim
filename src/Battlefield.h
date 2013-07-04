@@ -52,6 +52,7 @@ public:
 
     const Drawable & getEntity(int id) const;
 
+    // Functions for hex highlights.
     void showMouseover(int spx, int spy);
     void hideMouseover();
     void selectEntity(int id);
