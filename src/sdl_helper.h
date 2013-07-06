@@ -48,11 +48,9 @@ void sdlBlit(const SdlSurface &surf, Sint16 px, Sint16 py);
 void sdlBlit(const SdlSurface &surf, const Point &pos);
 
 // Draw a portion of a sprite sheet to the screen.  Assumes each frame is the
-// same size.
-void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
-                  Sint16 px, Sint16 py);
-void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
-                  const Point &pos);
+// size of a hex.
+void sdlBlitFrame(const SdlSurface &surf, int frame, Sint16 px, Sint16 py);
+void sdlBlitFrame(const SdlSurface &surf, int frame, const Point &pos);
 
 // Clear the given region of the screen.
 void sdlClear(SDL_Rect region);

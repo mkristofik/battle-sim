@@ -35,6 +35,8 @@
 // - leave space to write unit stats for the highlighted hex
 // - we'll need hex graphics:
 //      * attack arrows
+//      * arrows come in two parts, a small bar for the source hex and a big
+//        arrow for the target hex
 
 // TODO: determining which highlight to use:
 // - if active unit has the ranged attack trait
@@ -134,10 +136,11 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
             bf->clearMoveTarget();
         }
 
-        // Demo hex highlight for ranged attack.
+        // Demo hex highlight for ranged attack using the enemy bowman as the
+        // target.
         if (bf->isHexValid(hex)) {
             auto u = getUnitAt(hex);
-            if (u && u->team == 1) {
+            if (u && u->entityId == stackList[3].entityId) {
                 bf->setRangedTarget(hex);
             }
             else {
@@ -147,11 +150,18 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         else {
             bf->clearRangedTarget();
         }
+
+        // Demo attack arrow using the enemy marshal as the target.
+        auto u = getUnitAt(hex);
+        if (u && u->entityId == stackList[2].entityId) {
+            bf->showAttackArrow(event.x, event.y);
+        }
+        else {
+            bf->hideAttackArrow();
+        }
     }
     else {
-        bf->hideMouseover();
-        bf->clearMoveTarget();
-        bf->clearRangedTarget();
+        bf->clearHighlights();
     }
 }
 

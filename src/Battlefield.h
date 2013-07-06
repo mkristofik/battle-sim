@@ -32,6 +32,7 @@ struct Drawable
     Point hex;
     Point pOffset;
     SdlSurface img;
+    int frame;
     ZOrder z;
     bool visible;
 
@@ -60,6 +61,7 @@ public:
 
     // Functions for hex highlights.
     void showMouseover(int spx, int spy);
+    void showMouseover(const Point &hex);
     void hideMouseover();
     void selectEntity(int id);
     void deselectEntity();
@@ -67,6 +69,9 @@ public:
     void clearMoveTarget();
     void setRangedTarget(const Point &hex);
     void clearRangedTarget();
+    void showAttackArrow(int spx, int spy);
+    void hideAttackArrow();
+    void clearHighlights();
 
     void draw();
 
@@ -84,6 +89,8 @@ private:
     int redHex_;
     int yellowHex_;
     int greenHex_;
+    int attackSrc_;
+    int attackTgt_;
 };
 
 #endif

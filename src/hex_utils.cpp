@@ -96,6 +96,32 @@ Point adjacent(const Point &hSrc, Dir d)
     }
 }
 
+Dir getSector(int hpx, int hpy)
+{
+    if (hpy < pHexSize / 2) {  // top half
+        if (hpy > 2 * hpx - pHexSize / 2) {  // greater than y = 2x-36
+            return Dir::NW;
+        }
+        else if (hpy > 3 * pHexSize / 2 - 2 * hpx) {  // greater than y = 108-2x
+            return Dir::NE;
+        }
+        else {
+            return Dir::N;
+        }
+    }
+    else {  // bottom half
+        if (hpy < 3 * pHexSize / 2 - 2 * hpx) {  // less than y = 108-2x
+            return Dir::SW;
+        }
+        else if (hpy < 2 * hpx - pHexSize / 2) {  // less than y = 2x-36
+            return Dir::SE;
+        }
+        else {
+            return Dir::S;
+        }
+    }
+}
+
 int findClosest(const Point &hTarget, const std::vector<Point> &hexes)
 {
     int closest = -1;

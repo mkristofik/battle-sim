@@ -53,9 +53,14 @@ ITERABLE_ENUM_CLASS(Dir);
 // Distance between hexes, 1 step per tile.
 Sint16 hexDist(const Point &h1, const Point &h2);
 
-// Return the hex adjancent to the source hex in the given direction.  No
+// Return the hex adjacent to the source hex in the given direction.  No
 // bounds checking.
 Point adjacent(const Point &hSrc, Dir d);
+
+// Find which of the six triangles of a hex contains the given point.  (0,0) is
+// the point where the hex is drawn (and thus is not itself within the hex).
+// Assumes the given point is inside the hex.
+Dir getSector(int hpx, int hpy);
 
 // Given a list of hexes, return the index of the hex closest to the target.
 int findClosest(const Point &hTarget, const std::vector<Point> &hexes);

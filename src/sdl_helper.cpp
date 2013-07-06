@@ -274,15 +274,13 @@ void sdlBlit(const SdlSurface &surf, const Point &pos)
     sdlBlit(surf, pos.x, pos.y);
 }
 
-void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
-                  Sint16 px, Sint16 py)
+void sdlBlitFrame(const SdlSurface &surf, int frame, Sint16 px, Sint16 py)
 {
     assert(screen != nullptr);
-    Sint16 frameWidth = surf->w / numFrames;
     SDL_Rect src;
-    src.x = frame * frameWidth;
+    src.x = frame * pHexSize;
     src.y = 0;
-    src.w = frameWidth;
+    src.w = pHexSize;
     src.h = surf->h;
     auto dest = SDL_Rect{px, py, 0, 0};
     if (SDL_BlitSurface(surf.get(), &src, screen, &dest) < 0) {
@@ -291,10 +289,9 @@ void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
     }
 }
 
-void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
-                  const Point &pos)
+void sdlBlitFrame(const SdlSurface &surf, int frame, const Point &pos)
 {
-    sdlBlitFrame(surf, frame, numFrames, pos.x, pos.y);
+    sdlBlitFrame(surf, frame, pos.x, pos.y);
 }
 
 void sdlClear(SDL_Rect region)
