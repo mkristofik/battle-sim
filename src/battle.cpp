@@ -60,9 +60,10 @@ struct UnitStack
     int entityId;
     int num;
     int team;
+    int aHex;
     const Unit *unitDef;
 
-    UnitStack() : entityId{-1}, num{0}, team{-1}, unitDef{nullptr} {}
+    UnitStack() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
 };
 
 namespace
@@ -217,6 +218,7 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference
 
         UnitStack u;
         u.team = (posIdx < 7) ? 0 : 1;
+        u.aHex = bf->aryFromHex(battlefieldHex);
         u.unitDef = &unitIter->second;
         if (json.HasMember("num")) {
             u.num = json["num"].GetInt();

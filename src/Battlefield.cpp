@@ -81,6 +81,11 @@ bool Battlefield::isHexValid(int aIndex) const
     return isHexValid(grid_.hexFromAry(aIndex));
 }
 
+int Battlefield::aryFromHex(const Point &hex) const
+{
+    return grid_.aryFromHex(hex);
+}
+
 Point Battlefield::hexFromPixel(int spx, int spy) const
 {
     int mpx = spx - displayArea_.x;

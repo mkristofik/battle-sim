@@ -49,6 +49,9 @@ public:
     bool isHexValid(const Point &hex) const;
     bool isHexValid(int aIndex) const;
 
+    // Convert between hex and array index representations.
+    int aryFromHex(const Point &hex) const;
+
     // Return the hex containing the given screen coordinates.
     Point hexFromPixel(int spx, int spy) const;
     int aryFromPixel(int spx, int spy) const;

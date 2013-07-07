@@ -18,9 +18,9 @@
 #include <random>
 
 HexGrid::HexGrid(int width, int height)
-    : width_(width),
-    height_(height),
-    size_(width_ * height_)
+    : width_{width},
+    height_{height},
+    size_{width_ * height_}
 {
     assert(width_ > 0 && height_ > 0);
 }
