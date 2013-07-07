@@ -20,17 +20,17 @@
 class HexGrid
 {
 public:
-    HexGrid(Sint16 width, Sint16 height);
+    HexGrid(int width, int height);
 
-    Sint16 width() const;
-    Sint16 height() const;
-    Sint16 size() const;
+    int width() const;
+    int height() const;
+    int size() const;
 
     // Two ways to view a hex map: a 2D map of (x,y) coordinates, and a
     // contiguous array.  These functions convert between the two
     // representations.
     Point hexFromAry(int aIndex) const;
-    int aryFromHex(Sint16 hx, Sint16 hy) const;
+    int aryFromHex(int hx, int hy) const;
     int aryFromHex(const Point &hex) const;
 
     // Accessors for the four corners of the grid.
@@ -53,9 +53,9 @@ public:
     bool offGrid(const Point &hex) const;
 
 private:
-    Sint16 width_;
-    Sint16 height_;
-    Sint16 size_;
+    int width_;
+    int height_;
+    int size_;
 };
 
 #endif

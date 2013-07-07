@@ -28,6 +28,7 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
     entityIds_{},
+    grid_{5, 5},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"), ZOrder::SHADOW)},
     redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
     yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
@@ -75,6 +76,11 @@ bool Battlefield::isHexValid(int hx, int hy) const
     return false;
 }
 
+bool Battlefield::isHexValid(int aIndex) const
+{
+    return isHexValid(grid_.hexFromAry(aIndex));
+}
+
 Point Battlefield::hexFromPixel(int spx, int spy) const
 {
     int mpx = spx - displayArea_.x;
@@ -82,22 +88,27 @@ Point Battlefield::hexFromPixel(int spx, int spy) const
     return ::hexFromPixel(mpx, mpy);
 }
 
+int Battlefield::aryFromPixel(int spx, int spy) const
+{
+    return grid_.aryFromHex(hexFromPixel(spx, spy));
+}
+
 bool Battlefield::isHexValid(const Point &hex) const
 {
     return isHexValid(hex.x, hex.y);
 }
 
-std::vector<Point> Battlefield::hexNeighbors(const Point &hex) const
+std::vector<int> Battlefield::aryNeighbors(int aIndex) const
 {
-    if (!isHexValid(hex)) {
+    if (!isHexValid(aIndex)) {
         return {};
     }
 
-    std::vector<Point> nbrs;
+    std::vector<int> nbrs;
     for (auto d : Dir()) {
-        Point n = adjacent(hex, d);
-        if (isHexValid(n)) {
-            nbrs.emplace_back(std::move(n));
+        auto aNeighbor = grid_.aryGetNeighbor(aIndex, d);
+        if (isHexValid(aNeighbor)) {
+            nbrs.push_back(aNeighbor);
         }
     }
 
@@ -193,6 +204,10 @@ void Battlefield::clearRangedTarget()
 
 void Battlefield::showAttackArrow(int spx, int spy)
 {
+    // TODO: this should really be a user function, especially since we want to
+    // override the mouseover shadow.  The real function here should just be to
+    // draw the arrow from attack source to target.
+
     auto tgtHex = hexFromPixel(spx, spy);
     if (!isHexValid(tgtHex)) {
         hideAttackArrow();

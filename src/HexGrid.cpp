@@ -17,7 +17,7 @@
 #include <limits>
 #include <random>
 
-HexGrid::HexGrid(Sint16 width, Sint16 height)
+HexGrid::HexGrid(int width, int height)
     : width_(width),
     height_(height),
     size_(width_ * height_)
@@ -25,17 +25,17 @@ HexGrid::HexGrid(Sint16 width, Sint16 height)
     assert(width_ > 0 && height_ > 0);
 }
 
-Sint16 HexGrid::width() const
+int HexGrid::width() const
 {
     return width_;
 }
 
-Sint16 HexGrid::height() const
+int HexGrid::height() const
 {
     return height_;
 }
 
-Sint16 HexGrid::size() const
+int HexGrid::size() const
 {
     return size_;
 }
@@ -49,7 +49,7 @@ Point HexGrid::hexFromAry(int aIndex) const
     return {aIndex % width_, aIndex / width_};
 }
 
-int HexGrid::aryFromHex(Sint16 hx, Sint16 hy) const
+int HexGrid::aryFromHex(int hx, int hy) const
 {
     return aryFromHex({hx, hy});
 }
@@ -86,8 +86,8 @@ Point HexGrid::hexCorner(Dir d) const
 
 Point HexGrid::hexRandom() const
 {
-    static std::uniform_int_distribution<Sint16> dist(0, size_ - 1);
-    Sint16 aRand = dist(randomGenerator());
+    static std::uniform_int_distribution<int> dist(0, size_ - 1);
+    int aRand = dist(randomGenerator());
     return hexFromAry(aRand);
 }
 

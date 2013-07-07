@@ -33,10 +33,6 @@
 // - make a bigger window with some portraits to indicate heroes
 //      * need some scaling because the portraits are big
 // - leave space to write unit stats for the highlighted hex
-// - we'll need hex graphics:
-//      * attack arrows
-//      * arrows come in two parts, a small bar for the source hex and a big
-//        arrow for the target hex
 
 // TODO: determining which highlight to use:
 // - if active unit has the ranged attack trait

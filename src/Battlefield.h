@@ -13,6 +13,7 @@
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
 
+#include "HexGrid.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
@@ -46,12 +47,14 @@ public:
 
     bool isHexValid(int hx, int hy) const;
     bool isHexValid(const Point &hex) const;
+    bool isHexValid(int aIndex) const;
 
     // Return the hex containing the given screen coordinates.
     Point hexFromPixel(int spx, int spy) const;
+    int aryFromPixel(int spx, int spy) const;
 
     // Get a list of hexes adjacent to the given hex.
-    std::vector<Point> hexNeighbors(const Point &hex) const;
+    std::vector<int> aryNeighbors(int aIndex) const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
@@ -83,6 +86,7 @@ private:
     SDL_Rect displayArea_;
     std::vector<Drawable> entities_;
     std::vector<int> entityIds_;
+    HexGrid grid_;
 
     // Entities for display features.
     int hexShadow_;
