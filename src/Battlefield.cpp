@@ -86,6 +86,11 @@ int Battlefield::aryFromHex(const Point &hex) const
     return grid_.aryFromHex(hex);
 }
 
+Point Battlefield::hexFromAry(int aIndex) const
+{
+    return grid_.hexFromAry(aIndex);
+}
+
 Point Battlefield::hexFromPixel(int spx, int spy) const
 {
     int mpx = spx - displayArea_.x;
@@ -158,6 +163,11 @@ void Battlefield::showMouseover(const Point &hex)
     entities_[hexShadow_].visible = true;
 }
 
+void Battlefield::showMouseover(int aIndex)
+{
+    showMouseover(grid_.hexFromAry(aIndex));
+}
+
 void Battlefield::hideMouseover()
 {
     entities_[hexShadow_].visible = false;
@@ -184,6 +194,11 @@ void Battlefield::setMoveTarget(const Point &hex)
 
     entities_[greenHex_].hex = hex;
     entities_[greenHex_].visible = true;
+}
+
+void Battlefield::setMoveTarget(int aIndex)
+{
+    setMoveTarget(hexFromAry(aIndex));
 }
 
 void Battlefield::clearMoveTarget()
@@ -243,6 +258,19 @@ void Battlefield::showAttackArrow(int spx, int spy)
     // Override the mouseover shadow.  It looks better to highlight the hex
     // you're going to attack from.
     showMouseover(srcHex);
+}
+
+void Battlefield::showAttackArrow2(int aSrc, int aTgt)
+{
+    auto hSrc = hexFromAry(aSrc);
+    auto hTgt = hexFromAry(aTgt);
+    auto attackDir = static_cast<int>(direction(hTgt, hSrc));
+    entities_[attackSrc_].hex = hSrc;
+    entities_[attackSrc_].frame = attackDir;
+    entities_[attackSrc_].visible = true;
+    entities_[attackTgt_].hex = hTgt;
+    entities_[attackTgt_].frame = attackDir;
+    entities_[attackTgt_].visible = true;
 }
 
 void Battlefield::hideAttackArrow()

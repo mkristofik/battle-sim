@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "hex_utils.h"
+#include <cassert>
 #include <sstream>
 
 bool operator==(const Point &lhs, const Point &rhs)
@@ -93,6 +94,37 @@ Point adjacent(const Point &hSrc, Dir d)
             }
         default:
             return hInvalid;
+    }
+}
+
+Dir direction(const Point &h1, const Point &h2)
+{
+    assert(hexDist(h1, h2) == 1);
+
+    auto diff = h2 - h1;
+    switch (diff.x) {
+        case 0:
+            if (diff.y == -1) {
+                return Dir::N;
+            }
+            else {
+                return Dir::S;
+            }
+        case 1:
+            if (diff.y == 1 || (diff.y == 0 && diff.x % 2 == 0)) {
+                return Dir::SE;
+            }
+            else {
+                return Dir::NE;
+            }
+        case -1:
+        default:
+            if (diff.y == -1 || (diff.y == 0 && diff.x % 2 == 1)) {
+                return Dir::NW;
+            }
+            else {
+                return Dir::SW;
+            }
     }
 }
 

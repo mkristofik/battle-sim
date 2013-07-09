@@ -51,6 +51,7 @@ public:
 
     // Convert between hex and array index representations.
     int aryFromHex(const Point &hex) const;
+    Point hexFromAry(int aIndex) const;
 
     // Return the hex containing the given screen coordinates.
     Point hexFromPixel(int spx, int spy) const;
@@ -68,14 +69,17 @@ public:
     // Functions for hex highlights.
     void showMouseover(int spx, int spy);
     void showMouseover(const Point &hex);
+    void showMouseover(int aIndex);
     void hideMouseover();
     void selectEntity(int id);
     void deselectEntity();
     void setMoveTarget(const Point &hex);
+    void setMoveTarget(int aIndex);
     void clearMoveTarget();
     void setRangedTarget(const Point &hex);
     void clearRangedTarget();
     void showAttackArrow(int spx, int spy);
+    void showAttackArrow2(int aSrc, int aTgt);
     void hideAttackArrow();
     void clearHighlights();
 

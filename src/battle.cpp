@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "Battlefield.h"
+#include "Pathfinder.h"
 #include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
@@ -23,6 +24,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filestream.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -100,10 +102,11 @@ namespace
     }
 }
 
-const UnitStack * getUnitAt(const Point &hex)
+// Return the live unit at the given hex, if any.
+const UnitStack * getUnitAt(int aIndex)
 {
     for (const auto &s : stackList) {
-        if (bf->getEntity(s.entityId).hex == hex) {
+        if (s.aHex == aIndex && s.num > 0) {
             return &s;
         }
     }
@@ -111,55 +114,89 @@ const UnitStack * getUnitAt(const Point &hex)
     return nullptr;
 }
 
-bool isUnitAt(const Point &hex)
+// Get path from the active unit to the target hex.
+std::vector<int> getPathTo(int aTgt)
 {
-    return getUnitAt(hex) != nullptr;
+    auto emptyHexesAndEnemies = [&] (int aIndex) {
+        std::vector<int> nbrs;
+        for (auto n : bf->aryNeighbors(aIndex)) {
+            const auto unit = getUnitAt(n);
+            if (!unit || unit->team == 1) {  // TODO: opposite team from active unit
+                nbrs.push_back(n);
+            }
+        }
+        return nbrs;
+    };
+
+    Pathfinder pf;
+    pf.setNeighbors(emptyHexesAndEnemies);
+    pf.setGoal(aTgt);
+    auto path = pf.getPathFrom(stackList[0].aHex);  // TODO: use active unit here
+    return path;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    if (insideRect(event.x, event.y, bfWindow)) {
-        bf->showMouseover(event.x, event.y);
+    bf->clearHighlights();
 
-        // Demo hex highlight for move destinations using the first stack as
-        // the active unit.
-        auto hex = bf->hexFromPixel(event.x, event.y);
-        auto curHex = bf->getEntity(stackList[0].entityId).hex;
-        if (bf->isHexValid(hex) && hexDist(hex, curHex) == 1 && !isUnitAt(hex))
-        {
-            bf->setMoveTarget(hex);
-        }
-        else {
-            bf->clearMoveTarget();
-        }
+    if (!insideRect(event.x, event.y, bfWindow)) {
+        return;
+    }
 
-        // Demo hex highlight for ranged attack using the enemy bowman as the
-        // target.
-        if (bf->isHexValid(hex)) {
-            auto u = getUnitAt(hex);
-            if (u && u->entityId == stackList[3].entityId) {
-                bf->setRangedTarget(hex);
-            }
-            else {
-                bf->clearRangedTarget();
-            }
+
+    auto aTgt = bf->aryFromPixel(event.x, event.y);
+    auto path = getPathTo(aTgt);
+    // path includes the starting hex
+    if (path.size() > 1) {
+        const auto tgtUnit = getUnitAt(aTgt);
+        if (!tgtUnit && path.size() <= 4) {  // TODO: use real move distance
+            bf->setMoveTarget(aTgt);
+            bf->showMouseover(aTgt);
+        }
+        else if (tgtUnit && path.size() <= 5) {
+            auto moveDest = path[path.size() - 2];
+            bf->showAttackArrow2(moveDest, aTgt);
+            bf->showMouseover(moveDest);
+        }
+    }
+
+    /*
+    // Demo hex highlight for move destinations using the first stack as
+    // the active unit.
+    auto hex = bf->hexFromPixel(event.x, event.y);
+    auto curHex = bf->getEntity(stackList[0].entityId).hex;
+    if (bf->isHexValid(hex) && hexDist(hex, curHex) == 1 && !isUnitAt(hex))
+    {
+        bf->setMoveTarget(hex);
+    }
+    else {
+        bf->clearMoveTarget();
+    }
+
+    // Demo hex highlight for ranged attack using the enemy bowman as the
+    // target.
+    if (bf->isHexValid(hex)) {
+        auto u = getUnitAt(hex);
+        if (u && u->entityId == stackList[3].entityId) {
+            bf->setRangedTarget(hex);
         }
         else {
             bf->clearRangedTarget();
         }
-
-        // Demo attack arrow using the enemy marshal as the target.
-        auto u = getUnitAt(hex);
-        if (u && u->entityId == stackList[2].entityId) {
-            bf->showAttackArrow(event.x, event.y);
-        }
-        else {
-            bf->hideAttackArrow();
-        }
     }
     else {
-        bf->clearHighlights();
+        bf->clearRangedTarget();
     }
+
+    // Demo attack arrow using the enemy marshal as the target.
+    auto u = getUnitAt(hex);
+    if (u && u->entityId == stackList[2].entityId) {
+        bf->showAttackArrow(event.x, event.y);
+    }
+    else {
+        bf->hideAttackArrow();
+    }
+    */
 }
 
 bool parseJson(const char *filename, rapidjson::Document &doc)
