@@ -117,11 +117,11 @@ const UnitStack * getUnitAt(int aIndex)
 // Get path from the active unit to the target hex.
 std::vector<int> getPathTo(int aTgt)
 {
-    auto emptyHexesAndEnemies = [&] (int aIndex) {
+    auto emptyHexes = [&] (int aIndex) {
         std::vector<int> nbrs;
         for (auto n : bf->aryNeighbors(aIndex)) {
             const auto unit = getUnitAt(n);
-            if (!unit || unit->team == 1) {  // TODO: opposite team from active unit
+            if (!unit || unit->num == 0) {
                 nbrs.push_back(n);
             }
         }
@@ -129,7 +129,7 @@ std::vector<int> getPathTo(int aTgt)
     };
 
     Pathfinder pf;
-    pf.setNeighbors(emptyHexesAndEnemies);
+    pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
     auto path = pf.getPathFrom(stackList[0].aHex);  // TODO: use active unit here
     return path;
@@ -143,20 +143,27 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         return;
     }
 
-
     auto aTgt = bf->aryFromPixel(event.x, event.y);
-    auto path = getPathTo(aTgt);
-    // path includes the starting hex
-    if (path.size() > 1) {
-        const auto tgtUnit = getUnitAt(aTgt);
-        if (!tgtUnit && path.size() <= 4) {  // TODO: use real move distance
+    auto hTgt = bf->hexFromAry(aTgt);
+    const auto tgtUnit = getUnitAt(aTgt);
+
+    if (tgtUnit && tgtUnit->team == 1) {  // try to attack, TODO use opposite team
+        auto pOffset = Point{event.x, event.y} - pixelFromHex(hTgt);
+        auto attackDir = getSector(pOffset.x, pOffset.y);
+        auto hMoveTo = adjacent(hTgt, attackDir);
+        auto aMoveTo = bf->aryFromHex(hMoveTo);
+        auto path = getPathTo(aMoveTo);
+        if (!path.empty() && path.size() <= 4) {  // TODO: use real move distance
+            bf->showMouseover(hMoveTo);
+            bf->showAttackArrow2(aMoveTo, aTgt);
+        }
+    }
+    else {  // move
+        auto path = getPathTo(aTgt);
+        // path includes the starting hex
+        if (path.size() > 1 && path.size() <= 4) {  // TODO: use real move distance
             bf->setMoveTarget(aTgt);
             bf->showMouseover(aTgt);
-        }
-        else if (tgtUnit && path.size() <= 5) {
-            auto moveDest = path[path.size() - 2];
-            bf->showAttackArrow2(moveDest, aTgt);
-            bf->showMouseover(moveDest);
         }
     }
 
