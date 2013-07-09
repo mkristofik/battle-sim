@@ -34,6 +34,12 @@ Point operator-(const Point &lhs, const Point &rhs)
     return {lhs.x - rhs.x, lhs.y - rhs.y};
 }
 
+std::ostream & operator<<(std::ostream &ostr, const Point &rhs)
+{
+    ostr << '(' << rhs.x << ',' << rhs.y << ')';
+    return ostr;
+}
+
 // source: Battle for Wesnoth, distance_between() in map_location.cpp.
 Sint16 hexDist(const Point &h1, const Point &h2)
 {
@@ -111,7 +117,7 @@ Dir direction(const Point &h1, const Point &h2)
                 return Dir::S;
             }
         case 1:
-            if (diff.y == 1 || (diff.y == 0 && diff.x % 2 == 0)) {
+            if (diff.y == 1 || (diff.y == 0 && h1.x % 2 == 0)) {
                 return Dir::SE;
             }
             else {
@@ -119,7 +125,7 @@ Dir direction(const Point &h1, const Point &h2)
             }
         case -1:
         default:
-            if (diff.y == -1 || (diff.y == 0 && diff.x % 2 == 1)) {
+            if (diff.y == -1 || (diff.y == 0 && h1.x % 2 == 1)) {
                 return Dir::NW;
             }
             else {

@@ -16,6 +16,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_video.h"
 #include "iterable_enum_class.h"
+#include <iosfwd>
 #include <limits>
 #include <string>
 #include <utility>
@@ -46,6 +47,8 @@ Point operator/(const Point &lhs, T rhs)
 {
     return {lhs.x / rhs, lhs.y / rhs};
 }
+
+std::ostream & operator<<(std::ostream &ostr, const Point &rhs);
 
 enum class Dir {N, NE, SE, S, SW, NW, _last, _first = N};
 ITERABLE_ENUM_CLASS(Dir);
