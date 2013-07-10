@@ -51,11 +51,7 @@
 //          + dead units count as empty hexes
 
 // TODO: things we need to figure all this out
-// - which unit is standing in the given hex?
 // - traits (X macros?)
-// - path to mouseover hex
-//      * a hex is unwalkable if it has an alive unit in it, unless it's the
-//        target
 
 struct UnitStack
 {
@@ -68,12 +64,35 @@ struct UnitStack
     UnitStack() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
 };
 
+enum class ActionType {NONE, MOVE, ATTACK, RANGED};
+struct Action
+{
+    std::vector<int> path;
+    int attackTarget;
+    ActionType type;
+
+    Action() : path{}, attackTarget{-1}, type{ActionType::NONE} {}
+    Action(std::vector<int> movePath)
+        : path{std::move(movePath)},
+        attackTarget{-1},
+        type{ActionType::MOVE}
+    {
+    }
+    Action(std::vector<int> movePath, int aTgt, ActionType at)
+        : path{std::move(movePath)},
+        attackTarget{aTgt},
+        type{at}
+    {
+    }
+};
+
 namespace
 {
     std::shared_ptr<Battlefield> bf;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<UnitStack> stackList;
+    int activeUnit = 0;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -131,8 +150,43 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    auto path = pf.getPathFrom(stackList[0].aHex);  // TODO: use active unit here
+    auto path = pf.getPathFrom(stackList[activeUnit].aHex);
     return path;
+}
+
+// Human player's function - determine what action the active unit can take if
+// the user clicks at the given screen coordinates.
+Action getPossibleAction(int px, int py)
+{
+    auto aTgt = bf->aryFromPixel(px, py);
+    if (aTgt < 0) {
+        return {};
+    }
+    auto hTgt = bf->hexFromAry(aTgt);
+    const auto tgtUnit = getUnitAt(aTgt);
+
+    int myTeam = stackList[activeUnit].team;
+    int theirTeam = (myTeam == 0) ? 1 : 0;
+
+    if (tgtUnit && tgtUnit->team == theirTeam) {  // try to attack
+        auto pOffset = Point{px, py} - pixelFromHex(hTgt);
+        auto attackDir = getSector(pOffset.x, pOffset.y);
+        auto hMoveTo = adjacent(hTgt, attackDir);
+        auto aMoveTo = bf->aryFromHex(hMoveTo);
+        auto path = getPathTo(aMoveTo);
+        if (!path.empty() && path.size() <= 4) {  // TODO: use real move distance
+            return {path, aTgt, ActionType::ATTACK};
+        }
+    }
+    else {  // move
+        auto path = getPathTo(aTgt);
+        // path includes the starting hex
+        if (path.size() > 1 && path.size() <= 4) {  // TODO: use real move distance
+            return {path};
+        }
+    }
+
+    return {};
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -143,67 +197,20 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         return;
     }
 
-    auto aTgt = bf->aryFromPixel(event.x, event.y);
-    auto hTgt = bf->hexFromAry(aTgt);
-    const auto tgtUnit = getUnitAt(aTgt);
-
-    if (tgtUnit && tgtUnit->team == 1) {  // try to attack, TODO use opposite team
-        auto pOffset = Point{event.x, event.y} - pixelFromHex(hTgt);
-        auto attackDir = getSector(pOffset.x, pOffset.y);
-        auto hMoveTo = adjacent(hTgt, attackDir);
-        auto aMoveTo = bf->aryFromHex(hMoveTo);
-        auto path = getPathTo(aMoveTo);
-        if (!path.empty() && path.size() <= 4) {  // TODO: use real move distance
-            bf->showMouseover(hMoveTo);
-            bf->showAttackArrow2(aMoveTo, aTgt);
-        }
+    auto action = getPossibleAction(event.x, event.y);
+    if (action.type == ActionType::ATTACK) {
+        auto aMoveTo = action.path.back();
+        bf->showMouseover(aMoveTo);
+        bf->showAttackArrow2(aMoveTo, action.attackTarget);
     }
-    else {  // move
-        auto path = getPathTo(aTgt);
-        // path includes the starting hex
-        if (path.size() > 1 && path.size() <= 4) {  // TODO: use real move distance
-            bf->setMoveTarget(aTgt);
-            bf->showMouseover(aTgt);
-        }
-    }
-
-    /*
-    // Demo hex highlight for move destinations using the first stack as
-    // the active unit.
-    auto hex = bf->hexFromPixel(event.x, event.y);
-    auto curHex = bf->getEntity(stackList[0].entityId).hex;
-    if (bf->isHexValid(hex) && hexDist(hex, curHex) == 1 && !isUnitAt(hex))
-    {
-        bf->setMoveTarget(hex);
+    else if (action.type == ActionType::MOVE) {
+        auto aMoveTo = action.path.back();
+        bf->showMouseover(aMoveTo);
+        bf->setMoveTarget(aMoveTo);
     }
     else {
-        bf->clearMoveTarget();
+        bf->showMouseover(bf->aryFromPixel(event.x, event.y));
     }
-
-    // Demo hex highlight for ranged attack using the enemy bowman as the
-    // target.
-    if (bf->isHexValid(hex)) {
-        auto u = getUnitAt(hex);
-        if (u && u->entityId == stackList[3].entityId) {
-            bf->setRangedTarget(hex);
-        }
-        else {
-            bf->clearRangedTarget();
-        }
-    }
-    else {
-        bf->clearRangedTarget();
-    }
-
-    // Demo attack arrow using the enemy marshal as the target.
-    auto u = getUnitAt(hex);
-    if (u && u->entityId == stackList[2].entityId) {
-        bf->showAttackArrow(event.x, event.y);
-    }
-    else {
-        bf->hideAttackArrow();
-    }
-    */
 }
 
 bool parseJson(const char *filename, rapidjson::Document &doc)
