@@ -72,10 +72,10 @@ struct Action
     ActionType type;
 
     Action() : path{}, attackTarget{-1}, type{ActionType::NONE} {}
-    Action(std::vector<int> movePath)
+    Action(std::vector<int> movePath, ActionType at)
         : path{std::move(movePath)},
         attackTarget{-1},
-        type{ActionType::MOVE}
+        type{at}
     {
     }
     Action(std::vector<int> movePath, int aTgt, ActionType at)
@@ -168,21 +168,24 @@ Action getPossibleAction(int px, int py)
     int myTeam = stackList[activeUnit].team;
     int theirTeam = (myTeam == 0) ? 1 : 0;
 
-    if (tgtUnit && tgtUnit->team == theirTeam) {  // try to attack
+    // Pathfinder includes the current hex.
+    auto moveRange =
+        static_cast<unsigned>(stackList[activeUnit].unitDef->moves) + 1;
+
+    if (tgtUnit && tgtUnit->team == theirTeam) {
         auto pOffset = Point{px, py} - pixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = bf->aryFromHex(hMoveTo);
         auto path = getPathTo(aMoveTo);
-        if (!path.empty() && path.size() <= 4) {  // TODO: use real move distance
+        if (!path.empty() && path.size() <= moveRange) {
             return {path, aTgt, ActionType::ATTACK};
         }
     }
-    else {  // move
+    else {
         auto path = getPathTo(aTgt);
-        // path includes the starting hex
-        if (path.size() > 1 && path.size() <= 4) {  // TODO: use real move distance
-            return {path};
+        if (path.size() > 1 && path.size() <= moveRange) {
+            return {path, ActionType::MOVE};
         }
     }
 

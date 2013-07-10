@@ -17,6 +17,7 @@
 Unit::Unit(const rapidjson::Value &json)
     : name{},
     plural{},
+    moves{},
     baseImg{},
     reverseImg{},
     animAttack{},
@@ -30,6 +31,9 @@ Unit::Unit(const rapidjson::Value &json)
     }
     if (json.HasMember("plural")) {
         plural = json["plural"].GetString();
+    }
+    if (json.HasMember("moves")) {
+        moves = json["moves"].GetInt();
     }
     if (json.HasMember("img")) {
         auto img = sdlLoadImage(json["img"].GetString());

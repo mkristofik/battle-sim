@@ -25,6 +25,7 @@ struct Unit
 {
     std::string name;
     std::string plural;
+    int moves;
     ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet animAttack;

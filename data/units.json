@@ -2,12 +2,14 @@
     "human1": {
         "name": "Bowman",
         "plural": "Bowmen",
+        "moves": 1,
         "img": "bowman.png",
         "anim-attack": "bowman-attack-ranged.png"
     },
     "human2": {
         "name": "Marshal",
         "plural": "Marshals",
+        "moves": 2,
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "img-defend": "marshal-defend.png"
