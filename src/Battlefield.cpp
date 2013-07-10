@@ -217,6 +217,11 @@ void Battlefield::setRangedTarget(const Point &hex)
     entities_[redHex_].visible = true;
 }
 
+void Battlefield::setRangedTarget(int aIndex)
+{
+    setRangedTarget(hexFromAry(aIndex));
+}
+
 void Battlefield::clearRangedTarget()
 {
     entities_[redHex_].visible = false;

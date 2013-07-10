@@ -26,6 +26,7 @@ struct Unit
     std::string name;
     std::string plural;
     int moves;
+    bool hasRangedAttack;
     ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet animAttack;

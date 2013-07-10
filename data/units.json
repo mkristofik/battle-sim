@@ -3,6 +3,7 @@
         "name": "Bowman",
         "plural": "Bowmen",
         "moves": 1,
+        "ranged": 1,
         "img": "bowman.png",
         "anim-attack": "bowman-attack-ranged.png"
     },

@@ -77,6 +77,7 @@ public:
     void setMoveTarget(int aIndex);
     void clearMoveTarget();
     void setRangedTarget(const Point &hex);
+    void setRangedTarget(int aIndex);
     void clearRangedTarget();
     void showAttackArrow(int spx, int spy);
     void showAttackArrow2(int aSrc, int aTgt);

@@ -17,7 +17,8 @@
 Unit::Unit(const rapidjson::Value &json)
     : name{},
     plural{},
-    moves{},
+    moves{1},
+    hasRangedAttack{false},
     baseImg{},
     reverseImg{},
     animAttack{},
@@ -34,6 +35,9 @@ Unit::Unit(const rapidjson::Value &json)
     }
     if (json.HasMember("moves")) {
         moves = json["moves"].GetInt();
+    }
+    if (json.HasMember("ranged")) {
+        hasRangedAttack = (json["ranged"].GetInt() != 0);
     }
     if (json.HasMember("img")) {
         auto img = sdlLoadImage(json["img"].GetString());

@@ -36,20 +36,6 @@
 //      * need some scaling because the portraits are big
 // - leave space to write unit stats for the highlighted hex
 
-// TODO: determining which highlight to use:
-// - if active unit has the ranged attack trait
-//      * and mouseover hex is an enemy more than 1 hex away
-//          + draw red hex on target
-//      * if mouseover hex is an adjacent enemy
-//          + draw appropriate attack arrow on active unit
-// - else
-//      * if mouseover hex is an enemy within move distance + 1
-//          + draw appropriate attack arrow on hex to move to
-//          + this might be the hex unit is standing in
-//      * if mouseover hex is empty within move distance
-//          + draw green hex
-//          + dead units count as empty hexes
-
 // TODO: things we need to figure all this out
 // - traits (X macros?)
 
@@ -92,7 +78,7 @@ namespace
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<UnitStack> stackList;
-    int activeUnit = 0;
+    int activeUnit = 1;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -154,6 +140,26 @@ std::vector<int> getPathTo(int aTgt)
     return path;
 }
 
+// Return true if the active unit has a ranged attack and there are no enemy
+// units adjacent to it.
+bool isRangedAttackAllowed()
+{
+    const auto &myUnit = stackList[activeUnit];
+    if (!myUnit.unitDef->hasRangedAttack) {
+        return false;
+    }
+
+    auto enemy = (myUnit.team == 0) ? 1 : 0;
+    for (auto n : bf->aryNeighbors(myUnit.aHex)) {
+        const auto otherUnit = getUnitAt(n);
+        if (otherUnit && otherUnit->team == enemy) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Human player's function - determine what action the active unit can take if
 // the user clicks at the given screen coordinates.
 Action getPossibleAction(int px, int py)
@@ -173,6 +179,10 @@ Action getPossibleAction(int px, int py)
         static_cast<unsigned>(stackList[activeUnit].unitDef->moves) + 1;
 
     if (tgtUnit && tgtUnit->team == theirTeam) {
+        if (isRangedAttackAllowed()) {
+            return {{}, aTgt, ActionType::RANGED};
+        }
+
         auto pOffset = Point{px, py} - pixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
@@ -205,6 +215,10 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         auto aMoveTo = action.path.back();
         bf->showMouseover(aMoveTo);
         bf->showAttackArrow2(aMoveTo, action.attackTarget);
+    }
+    else if (action.type == ActionType::RANGED) {
+        bf->showMouseover(action.attackTarget);
+        bf->setRangedTarget(action.attackTarget);
     }
     else if (action.type == ActionType::MOVE) {
         auto aMoveTo = action.path.back();
@@ -316,8 +330,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     parseScenario(scenario, unitsMap);
 
     bf->draw();
-    int firstAttacker = stackList[0].entityId;
-    bf->selectEntity(firstAttacker);
+    bf->selectEntity(stackList[activeUnit].entityId);
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
