@@ -17,6 +17,8 @@
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
+class Action;
+
 // Handle the drawing of the hexagonal battlefield and all of the drawable
 // entities on the battlefield.
 
@@ -65,6 +67,8 @@ public:
     int addHiddenEntity(SdlSurface img, ZOrder z);
 
     const Drawable & getEntity(int id) const;
+    void handleMouseMotion(const SDL_MouseMotionEvent &event,
+                           const Action &action);
 
     // Functions for hex highlights.
     void showMouseover(int spx, int spy);

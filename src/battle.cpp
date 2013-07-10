@@ -10,6 +10,7 @@
  
     See the COPYING.txt file for more details.
 */
+#include "Action.h"
 #include "Battlefield.h"
 #include "Pathfinder.h"
 #include "Unit.h"
@@ -48,28 +49,6 @@ struct UnitStack
     const Unit *unitDef;
 
     UnitStack() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
-};
-
-enum class ActionType {NONE, MOVE, ATTACK, RANGED};
-struct Action
-{
-    std::vector<int> path;
-    int attackTarget;
-    ActionType type;
-
-    Action() : path{}, attackTarget{-1}, type{ActionType::NONE} {}
-    Action(std::vector<int> movePath, ActionType at)
-        : path{std::move(movePath)},
-        attackTarget{-1},
-        type{at}
-    {
-    }
-    Action(std::vector<int> movePath, int aTgt, ActionType at)
-        : path{std::move(movePath)},
-        attackTarget{aTgt},
-        type{at}
-    {
-    }
 };
 
 namespace
@@ -136,8 +115,7 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    auto path = pf.getPathFrom(stackList[activeUnit].aHex);
-    return path;
+    return pf.getPathFrom(stackList[activeUnit].aHex);
 }
 
 // Return true if the active unit has a ranged attack and there are no enemy
@@ -180,7 +158,7 @@ Action getPossibleAction(int px, int py)
 
     if (tgtUnit && tgtUnit->team == theirTeam) {
         if (isRangedAttackAllowed()) {
-            return {{}, aTgt, ActionType::RANGED};
+            return {{}, ActionType::RANGED, aTgt};
         }
 
         auto pOffset = Point{px, py} - pixelFromHex(hTgt);
@@ -189,7 +167,7 @@ Action getPossibleAction(int px, int py)
         auto aMoveTo = bf->aryFromHex(hMoveTo);
         auto path = getPathTo(aMoveTo);
         if (!path.empty() && path.size() <= moveRange) {
-            return {path, aTgt, ActionType::ATTACK};
+            return {path, ActionType::ATTACK, aTgt};
         }
     }
     else {
@@ -204,29 +182,8 @@ Action getPossibleAction(int px, int py)
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    bf->clearHighlights();
-
-    if (!insideRect(event.x, event.y, bfWindow)) {
-        return;
-    }
-
-    auto action = getPossibleAction(event.x, event.y);
-    if (action.type == ActionType::ATTACK) {
-        auto aMoveTo = action.path.back();
-        bf->showMouseover(aMoveTo);
-        bf->showAttackArrow2(aMoveTo, action.attackTarget);
-    }
-    else if (action.type == ActionType::RANGED) {
-        bf->showMouseover(action.attackTarget);
-        bf->setRangedTarget(action.attackTarget);
-    }
-    else if (action.type == ActionType::MOVE) {
-        auto aMoveTo = action.path.back();
-        bf->showMouseover(aMoveTo);
-        bf->setMoveTarget(aMoveTo);
-    }
-    else {
-        bf->showMouseover(bf->aryFromPixel(event.x, event.y));
+    if (insideRect(event.x, event.y, bfWindow)) {
+        bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
     }
 }
 

@@ -11,6 +11,8 @@
     See the COPYING.txt file for more details.
 */
 #include "Battlefield.h"
+
+#include "Action.h"
 #include <algorithm>
 #include <cassert>
 
@@ -145,6 +147,29 @@ const Drawable & Battlefield::getEntity(int id) const
 {
     assert(id >= 0 && id < static_cast<int>(entities_.size()));
     return entities_[id];
+}
+
+void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
+                                    const Action &action)
+{
+    clearHighlights();
+    if (action.type == ActionType::ATTACK) {
+        auto aMoveTo = action.path.back();
+        showMouseover(aMoveTo);
+        showAttackArrow2(aMoveTo, action.attackTarget);
+    }
+    else if (action.type == ActionType::RANGED) {
+        showMouseover(action.attackTarget);
+        setRangedTarget(action.attackTarget);
+    }
+    else if (action.type == ActionType::MOVE) {
+        auto aMoveTo = action.path.back();
+        showMouseover(aMoveTo);
+        setMoveTarget(aMoveTo);
+    }
+    else {
+        showMouseover(event.x, event.y);
+    }
 }
 
 void Battlefield::showMouseover(int spx, int spy)
