@@ -98,6 +98,11 @@ const UnitStack * getUnitAt(int aIndex)
     return nullptr;
 }
 
+const UnitStack & getActiveUnit()
+{
+    return stackList[activeUnit];
+}
+
 // Get path from the active unit to the target hex.
 std::vector<int> getPathTo(int aTgt)
 {
@@ -115,14 +120,14 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    return pf.getPathFrom(stackList[activeUnit].aHex);
+    return pf.getPathFrom(getActiveUnit().aHex);
 }
 
 // Return true if the active unit has a ranged attack and there are no enemy
 // units adjacent to it.
 bool isRangedAttackAllowed()
 {
-    const auto &myUnit = stackList[activeUnit];
+    const auto &myUnit = getActiveUnit();
     if (!myUnit.unitDef->hasRangedAttack) {
         return false;
     }
@@ -147,16 +152,15 @@ Action getPossibleAction(int px, int py)
         return {};
     }
     auto hTgt = bf->hexFromAry(aTgt);
-    const auto tgtUnit = getUnitAt(aTgt);
+    const auto &myUnit = getActiveUnit();
 
-    int myTeam = stackList[activeUnit].team;
-    int theirTeam = (myTeam == 0) ? 1 : 0;
+    const auto tgtUnit = getUnitAt(aTgt);
+    int enemy = (myUnit.team == 0) ? 1 : 0;
 
     // Pathfinder includes the current hex.
-    auto moveRange =
-        static_cast<unsigned>(stackList[activeUnit].unitDef->moves) + 1;
+    auto moveRange = static_cast<unsigned>(myUnit.unitDef->moves) + 1;
 
-    if (tgtUnit && tgtUnit->team == theirTeam) {
+    if (tgtUnit && tgtUnit->team == enemy) {
         if (isRangedAttackAllowed()) {
             return {{}, ActionType::RANGED, aTgt};
         }
@@ -178,6 +182,95 @@ Action getPossibleAction(int px, int py)
     }
 
     return {};
+}
+
+// Make the active unit carry out the given action.
+void executeAction(const Action &action)
+{
+    if (action.type == ActionType::NONE) {
+        return;
+    }
+
+    // All other actions might involve moving.
+    if (action.path.size() > 1) {
+        // TODO: animate the moves to each hex, first element of path is
+        // starting hex
+        //
+        // start animation:
+        // - facing left or right?
+        // - set the attacker image to 'moving'
+        // - set the attacker zorder to ANIMATING
+        // over the course of 300 ms:
+        // - adjust attacker pOffset toward destination hex
+        // end animation:
+        // - set attacker image to 'base'
+        // - set attacker zorder to CREATURE
+    }
+
+    // These animations happen after the attacker is done moving.
+    if (action.type == ActionType::RANGED) {
+        // TODO: animate the attacker, projectile, and defender
+        // need to run animations in parallel
+        //
+        // shooter:
+        // - start animation:
+        //      * facing left or right?
+        // - during animation:
+        //      * set attacker frame per sequence
+        //      * play bow sound if time reached and sound not yet played
+        //      * animation is done if we've passed the last frame
+        // - end animation:
+        //      * set attacker image to 'base'
+        //
+        // projectile:
+        // - start animation:
+        //      * determine which angle we need to use
+        //      * create entity at shooter's hex, zorder PROJECTILE, invisible
+        // - during animation:
+        //      * if shot time not reached, do nothing
+        //      * make visible
+        //      * slide pOffset toward target hex at 150 ms per hex
+        //      * if target hex reached, we're done
+        // - end animation:
+        //      * hide entity
+        //
+        // defender:
+        // - start:
+        //      * facing left or right?
+        //      * get time of flight plus shot time
+        // - during:
+        //      * set defend image if hit time reached
+        //      * play hit sound if not played yet
+        //      * lasts for 250 ms
+        // - end:
+        //      * set defender image to 'base'
+    }
+    else if (action.type == ActionType::ATTACK) {
+        // animate attacker and defender in parallel
+        //
+        // attacker:
+        // - start:
+        //      * facing left or right?
+        // - during:
+        //      * set attacker frame per sequence
+        //      * play attack sound if time reached and sound not yet played
+        //      * slide toward target for 300 ms, slide back for 300 ms
+        //        (previous demo has code for this)
+        //      * done when sliding done or last frame reached, whichever is
+        //        later
+        // - end:
+        //      * set attacker image to 'base'
+        //
+        // defender:
+        // - start:
+        //      * facing left or right?
+        //      * compute hit time
+        // - during:
+        //      * if hit time reached, set defend image for 250 ms
+        //      * play hit sound if not yet played
+        // - end:
+        //      * set defender image to 'base'
+    }
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -287,7 +380,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     parseScenario(scenario, unitsMap);
 
     bf->draw();
-    bf->selectEntity(stackList[activeUnit].entityId);
+    bf->selectEntity(getActiveUnit().entityId);
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
