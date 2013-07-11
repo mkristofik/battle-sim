@@ -10,7 +10,7 @@
     "human2": {
         "name": "Marshal",
         "plural": "Marshals",
-        "moves": 2,
+        "moves": 4,
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "img-defend": "marshal-defend.png"

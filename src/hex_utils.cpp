@@ -12,6 +12,7 @@
 */
 #include "hex_utils.h"
 #include <cassert>
+#include <cmath>
 #include <sstream>
 
 bool operator==(const Point &lhs, const Point &rhs)
@@ -105,32 +106,30 @@ Point adjacent(const Point &hSrc, Dir d)
 
 Dir direction(const Point &h1, const Point &h2)
 {
-    assert(hexDist(h1, h2) == 1);
+    // Our coordinate system has y-axis increasing as you go down the screen,
+    // so we need to flip it to align with the cartesian plane.
+    auto p1 = pixelFromHex(h1);
+    auto p2 = pixelFromHex(h2);
+    auto angle = atan2(p1.y - p2.y, p2.x - p1.x);
 
-    auto diff = h2 - h1;
-    switch (diff.x) {
-        case 0:
-            if (diff.y == -1) {
-                return Dir::N;
-            }
-            else {
-                return Dir::S;
-            }
-        case 1:
-            if (diff.y == 1 || (diff.y == 0 && h1.x % 2 == 0)) {
-                return Dir::SE;
-            }
-            else {
-                return Dir::NE;
-            }
-        case -1:
-        default:
-            if (diff.y == -1 || (diff.y == 0 && h1.x % 2 == 1)) {
-                return Dir::NW;
-            }
-            else {
-                return Dir::SW;
-            }
+    // Hex angles are not perfect 60 degrees.  They're about 63 deg (1.1 rad).
+    if (angle > 1.1 && angle <= 2.04) {
+        return Dir::N;
+    }
+    else if (angle > 0 && angle <= 1.1) {
+        return Dir::NE;
+    }
+    else if (angle > -1.1 && angle <= 0) {
+        return Dir::SE;
+    }
+    else if (angle > -2.04 && angle <= 1.1) {
+        return Dir::S;
+    }
+    else if (angle <= -2.04) {
+        return Dir::SW;
+    }
+    else {
+        return Dir::NW;
     }
 }
 
@@ -140,7 +139,7 @@ Dir getSector(int hpx, int hpy)
         if (hpy > 2 * hpx - pHexSize / 2) {  // greater than y = 2x-36
             return Dir::NW;
         }
-        else if (hpy > 3 * pHexSize / 2 - 2 * hpx) {  // greater than y = 108-2x
+        else if (hpy >= 3 * pHexSize / 2 - 2 * hpx) {  // greater than y = 108-2x
             return Dir::NE;
         }
         else {
@@ -151,7 +150,7 @@ Dir getSector(int hpx, int hpy)
         if (hpy < 3 * pHexSize / 2 - 2 * hpx) {  // less than y = 108-2x
             return Dir::SW;
         }
-        else if (hpy < 2 * hpx - pHexSize / 2) {  // less than y = 2x-36
+        else if (hpy <= 2 * hpx - pHexSize / 2) {  // less than y = 2x-36
             return Dir::SE;
         }
         else {

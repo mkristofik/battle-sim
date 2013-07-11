@@ -57,7 +57,7 @@ namespace
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::vector<UnitStack> stackList;
-    int activeUnit = 1;
+    int activeUnit = 0;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
