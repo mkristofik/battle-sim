@@ -15,6 +15,7 @@
 #include "Action.h"
 #include <algorithm>
 #include <cassert>
+#include <numeric>
 
 Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
     : hex{std::move(h)},
@@ -29,7 +30,6 @@ Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
 Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     entities_{},
-    entityIds_{},
     grid_{5, 5},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"), ZOrder::SHADOW)},
     redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
@@ -131,7 +131,6 @@ int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
 {
     int id = entities_.size();
     entities_.emplace_back(std::move(hex), std::move(img), std::move(z));
-    entityIds_.push_back(id);
 
     return id;
 }
@@ -143,7 +142,7 @@ int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
     return id;
 }
 
-const Drawable & Battlefield::getEntity(int id) const
+Drawable & Battlefield::getEntity(int id)
 {
     assert(id >= 0 && id < static_cast<int>(entities_.size()));
     return entities_[id];
@@ -294,6 +293,8 @@ void Battlefield::showAttackArrow2(int aSrc, int aTgt)
 {
     auto hSrc = hexFromAry(aSrc);
     auto hTgt = hexFromAry(aTgt);
+    // Direction graphics are arranged like the wind, we want the direction the
+    // attack is coming from.
     auto attackDir = static_cast<int>(direction(hTgt, hSrc));
     entities_[attackSrc_].hex = hSrc;
     entities_[attackSrc_].frame = attackDir;
@@ -319,13 +320,16 @@ void Battlefield::clearHighlights()
 
 void Battlefield::draw()
 {
+    std::vector<int> entityIds(entities_.size());
+    iota(std::begin(entityIds), std::end(entityIds), 0);
+
     // Arrange entities logically by z-order.
-    sort(std::begin(entityIds_), std::end(entityIds_), [&] (int a, int b)
+    sort(std::begin(entityIds), std::end(entityIds), [&] (int a, int b)
          { return entities_[a].z < entities_[b].z; });
 
     sdlClear(displayArea_);
     SdlSetClipRect(displayArea_, [&] {
-        for (auto id : entityIds_) {
+        for (auto id : entityIds) {
             const auto &e = entities_[id];
             if (e.visible) {
                 if (e.frame < 0) {

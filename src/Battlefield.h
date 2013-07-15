@@ -66,7 +66,7 @@ public:
     int addEntity(Point hex, SdlSurface img, ZOrder z);
     int addHiddenEntity(SdlSurface img, ZOrder z);
 
-    const Drawable & getEntity(int id) const;
+    Drawable & getEntity(int id);
     void handleMouseMotion(const SDL_MouseMotionEvent &event,
                            const Action &action);
 
@@ -97,7 +97,6 @@ private:
 
     SDL_Rect displayArea_;
     std::vector<Drawable> entities_;
-    std::vector<int> entityIds_;
     HexGrid grid_;
 
     // Entities for display features.

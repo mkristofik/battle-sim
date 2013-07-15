@@ -184,6 +184,25 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
+// Return true if target hex is left of the given unit.
+bool useReverseImg(const UnitStack &unit, int aTgt)
+{
+    auto hSrc = bf->hexFromAry(unit.aHex);
+    auto hTgt = bf->hexFromAry(aTgt);
+    auto dir = direction(hSrc, hTgt);
+
+    if (dir == Dir::NW || dir == Dir::SW) {
+        return true;
+    }
+
+    // Team 0 always starts facing right and team 1 faces left.
+    if ((dir == Dir::N || dir == Dir::S) && unit.team == 1) {
+        return true;
+    }
+
+    return false;
+}
+
 // Make the active unit carry out the given action.
 void executeAction(const Action &action)
 {
