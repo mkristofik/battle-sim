@@ -12,8 +12,10 @@
 */
 #include "Action.h"
 #include "Battlefield.h"
+#include "GameState.h"
 #include "Pathfinder.h"
 #include "Unit.h"
+#include "algo.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
@@ -369,7 +371,7 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference
             img = u.unitDef->reverseImg[1];
         }
 
-        u.entityId = bf->addEntity(battlefieldHex, img, ZOrder::CREATURE);
+        u.entityId = gs->addEntity(battlefieldHex, img, ZOrder::CREATURE);
         stackList.emplace_back(std::move(u));
     }
 }
@@ -379,6 +381,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
+    gs = make_unique<GameState>();
     bf = std::make_shared<Battlefield>(bfWindow);
 
     rapidjson::Document unitsDoc;
@@ -399,7 +402,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     parseScenario(scenario, unitsMap);
 
     bf->draw();
-    bf->selectEntity(getActiveUnit().entityId);
+    bf->selectHex(getActiveUnit().aHex);
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -425,5 +428,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
         SDL_Delay(1);
     }
 
+    // Ensure SDL resources are cleaned up before the subsystems are torn down.
+    gs.reset();
     return EXIT_SUCCESS;
 }

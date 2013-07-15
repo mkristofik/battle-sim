@@ -22,26 +22,6 @@ class Action;
 // Handle the drawing of the hexagonal battlefield and all of the drawable
 // entities on the battlefield.
 
-enum class ZOrder {TERRAIN,
-                   GRID,
-                   CREATURE,
-                   SHADOW,
-                   HIGHLIGHT,
-                   PROJECTILE,
-                   ANIMATING};
-
-struct Drawable
-{
-    Point hex;
-    Point pOffset;
-    SdlSurface img;
-    int frame;
-    ZOrder z;
-    bool visible;
-
-    Drawable(Point h, SdlSurface surf, ZOrder order);
-};
-
 class Battlefield
 {
 public:
@@ -62,11 +42,6 @@ public:
     // Get a list of hexes adjacent to the given hex.
     std::vector<int> aryNeighbors(int aIndex) const;
 
-    // Add a drawable entity to the battlefield.  Return its unique id number.
-    int addEntity(Point hex, SdlSurface img, ZOrder z);
-    int addHiddenEntity(SdlSurface img, ZOrder z);
-
-    Drawable & getEntity(int id);
     void handleMouseMotion(const SDL_MouseMotionEvent &event,
                            const Action &action);
 
@@ -75,16 +50,15 @@ public:
     void showMouseover(const Point &hex);
     void showMouseover(int aIndex);
     void hideMouseover();
-    void selectEntity(int id);
-    void deselectEntity();
+    void selectHex(int aIndex);
+    void deselectHex();
     void setMoveTarget(const Point &hex);
     void setMoveTarget(int aIndex);
     void clearMoveTarget();
     void setRangedTarget(const Point &hex);
     void setRangedTarget(int aIndex);
     void clearRangedTarget();
-    void showAttackArrow(int spx, int spy);
-    void showAttackArrow2(int aSrc, int aTgt);
+    void showAttackArrow(int aSrc, int aTgt);
     void hideAttackArrow();
     void clearHighlights();
 
@@ -96,7 +70,6 @@ private:
     Point sPixelFromHex(const Point &hex) const;
 
     SDL_Rect displayArea_;
-    std::vector<Drawable> entities_;
     HexGrid grid_;
 
     // Entities for display features.

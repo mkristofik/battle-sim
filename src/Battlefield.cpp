@@ -13,34 +13,27 @@
 #include "Battlefield.h"
 
 #include "Action.h"
+#include "Drawable.h"
+#include "GameState.h"
 #include <algorithm>
 #include <cassert>
 #include <numeric>
 
-Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
-    : hex{std::move(h)},
-    pOffset{0, 0},
-    img{std::move(surf)},
-    frame{-1},
-    z{std::move(order)},
-    visible{true}
-{
-}
-
 Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
-    entities_{},
     grid_{5, 5},
-    hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"), ZOrder::SHADOW)},
-    redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"), ZOrder::HIGHLIGHT)},
-    yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
-                               ZOrder::HIGHLIGHT)},
-    greenHex_{addHiddenEntity(sdlLoadImage("hex-green.png"),
-                              ZOrder::HIGHLIGHT)},
-    attackSrc_{addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
-                               ZOrder::HIGHLIGHT)},
-    attackTgt_{addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
-                               ZOrder::HIGHLIGHT)}
+    hexShadow_{gs->addHiddenEntity(sdlLoadImage("hex-shadow.png"),
+                                   ZOrder::SHADOW)},
+    redHex_{gs->addHiddenEntity(sdlLoadImage("hex-red.png"),
+                                ZOrder::HIGHLIGHT)},
+    yellowHex_{gs->addHiddenEntity(sdlLoadImage("hex-yellow.png"),
+                                   ZOrder::HIGHLIGHT)},
+    greenHex_{gs->addHiddenEntity(sdlLoadImage("hex-green.png"),
+                                  ZOrder::HIGHLIGHT)},
+    attackSrc_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
+                                   ZOrder::HIGHLIGHT)},
+    attackTgt_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
+                                   ZOrder::HIGHLIGHT)}
 {
     auto tile = sdlLoadImage("grass.png");
     auto grid = sdlLoadImage("hex-grid.png");
@@ -50,9 +43,9 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     for (int hx = -1; hx <= 5; ++hx) {
         for (int hy = -1; hy <= 5; ++hy) {
             Point hex = {hx, hy};
-            addEntity(hex, tile, ZOrder::TERRAIN);
+            gs->addEntity(hex, tile, ZOrder::TERRAIN);
             if (isHexValid(hex)) {
-                addEntity(hex, grid, ZOrder::GRID);
+                gs->addEntity(hex, grid, ZOrder::GRID);
             }
         }
     }
@@ -127,27 +120,6 @@ std::vector<int> Battlefield::aryNeighbors(int aIndex) const
     return nbrs;
 }
 
-int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
-{
-    int id = entities_.size();
-    entities_.emplace_back(std::move(hex), std::move(img), std::move(z));
-
-    return id;
-}
-
-int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
-{
-    auto id = addEntity(hInvalid, std::move(img), std::move(z));
-    entities_[id].visible = false;
-    return id;
-}
-
-Drawable & Battlefield::getEntity(int id)
-{
-    assert(id >= 0 && id < static_cast<int>(entities_.size()));
-    return entities_[id];
-}
-
 void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
                                     const Action &action)
 {
@@ -155,7 +127,7 @@ void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
     if (action.type == ActionType::ATTACK) {
         auto aMoveTo = action.path.back();
         showMouseover(aMoveTo);
-        showAttackArrow2(aMoveTo, action.attackTarget);
+        showAttackArrow(aMoveTo, action.attackTarget);
     }
     else if (action.type == ActionType::RANGED) {
         showMouseover(action.attackTarget);
@@ -183,8 +155,9 @@ void Battlefield::showMouseover(const Point &hex)
         return;
     }
 
-    entities_[hexShadow_].hex = hex;
-    entities_[hexShadow_].visible = true;
+    auto &shadow = gs->getEntity(hexShadow_);
+    shadow.hex = hex;
+    shadow.visible = true;
 }
 
 void Battlefield::showMouseover(int aIndex)
@@ -194,19 +167,19 @@ void Battlefield::showMouseover(int aIndex)
 
 void Battlefield::hideMouseover()
 {
-    entities_[hexShadow_].visible = false;
+    gs->getEntity(hexShadow_).visible = false;
 }
 
-void Battlefield::selectEntity(int id)
+void Battlefield::selectHex(int aIndex)
 {
-    const auto &hex = getEntity(id).hex;
-    entities_[yellowHex_].hex = hex;
-    entities_[yellowHex_].visible = true;
+    auto &selected = gs->getEntity(yellowHex_);
+    selected.hex = hexFromAry(aIndex);
+    selected.visible = true;
 }
 
-void Battlefield::deselectEntity()
+void Battlefield::deselectHex()
 {
-    entities_[yellowHex_].visible = false;
+    gs->getEntity(yellowHex_).visible = false;
 }
 
 void Battlefield::setMoveTarget(const Point &hex)
@@ -216,8 +189,9 @@ void Battlefield::setMoveTarget(const Point &hex)
         return;
     }
 
-    entities_[greenHex_].hex = hex;
-    entities_[greenHex_].visible = true;
+    auto &target = gs->getEntity(greenHex_);
+    target.hex = hex;
+    target.visible = true;
 }
 
 void Battlefield::setMoveTarget(int aIndex)
@@ -227,7 +201,7 @@ void Battlefield::setMoveTarget(int aIndex)
 
 void Battlefield::clearMoveTarget()
 {
-    entities_[greenHex_].visible = false;
+    gs->getEntity(greenHex_).visible = false;
 }
 
 void Battlefield::setRangedTarget(const Point &hex)
@@ -237,8 +211,9 @@ void Battlefield::setRangedTarget(const Point &hex)
         return;
     }
 
-    entities_[redHex_].hex = hex;
-    entities_[redHex_].visible = true;
+    auto &target = gs->getEntity(redHex_);
+    target.hex = hex;
+    target.visible = true;
 }
 
 void Battlefield::setRangedTarget(int aIndex)
@@ -248,66 +223,32 @@ void Battlefield::setRangedTarget(int aIndex)
 
 void Battlefield::clearRangedTarget()
 {
-    entities_[redHex_].visible = false;
+    gs->getEntity(redHex_).visible = false;
 }
 
-void Battlefield::showAttackArrow(int spx, int spy)
-{
-    // TODO: this should really be a user function, especially since we want to
-    // override the mouseover shadow.  The real function here should just be to
-    // draw the arrow from attack source to target.
-
-    auto tgtHex = hexFromPixel(spx, spy);
-    if (!isHexValid(tgtHex)) {
-        hideAttackArrow();
-        return;
-    }
-
-    // Compute where the location is within the target hex.  Direction in this
-    // case is where the attack is coming from (like wind direction).
-    auto spTgtHex = sPixelFromHex(tgtHex);
-    auto xOffset = spx - spTgtHex.x;
-    auto yOffset = spy - spTgtHex.y;
-    auto attackDir = getSector(xOffset, yOffset);
-
-    auto srcHex = adjacent(tgtHex, attackDir);
-    if (!isHexValid(srcHex)) {
-        hideAttackArrow();
-        return;
-    }
-
-    auto dir = static_cast<int>(attackDir);
-    entities_[attackSrc_].hex = srcHex;
-    entities_[attackSrc_].frame = dir;
-    entities_[attackSrc_].visible = true;
-    entities_[attackTgt_].hex = tgtHex;
-    entities_[attackTgt_].frame = dir;
-    entities_[attackTgt_].visible = true;
-
-    // Override the mouseover shadow.  It looks better to highlight the hex
-    // you're going to attack from.
-    showMouseover(srcHex);
-}
-
-void Battlefield::showAttackArrow2(int aSrc, int aTgt)
+void Battlefield::showAttackArrow(int aSrc, int aTgt)
 {
     auto hSrc = hexFromAry(aSrc);
     auto hTgt = hexFromAry(aTgt);
-    // Direction graphics are arranged like the wind, we want the direction the
+    auto &source = gs->getEntity(attackSrc_);
+    auto &target = gs->getEntity(attackTgt_);
+
+    // Direction graphics are arranged like the wind; we want the direction the
     // attack is coming from.
     auto attackDir = static_cast<int>(direction(hTgt, hSrc));
-    entities_[attackSrc_].hex = hSrc;
-    entities_[attackSrc_].frame = attackDir;
-    entities_[attackSrc_].visible = true;
-    entities_[attackTgt_].hex = hTgt;
-    entities_[attackTgt_].frame = attackDir;
-    entities_[attackTgt_].visible = true;
+
+    source.hex = hSrc;
+    source.frame = attackDir;
+    source.visible = true;
+    target.hex = hTgt;
+    target.frame = attackDir;
+    target.visible = true;
 }
 
 void Battlefield::hideAttackArrow()
 {
-    entities_[attackSrc_].visible = false;
-    entities_[attackTgt_].visible = false;
+    gs->getEntity(attackSrc_).visible = false;
+    gs->getEntity(attackTgt_).visible = false;
 }
 
 void Battlefield::clearHighlights()
@@ -320,17 +261,17 @@ void Battlefield::clearHighlights()
 
 void Battlefield::draw()
 {
-    std::vector<int> entityIds(entities_.size());
+    std::vector<int> entityIds(gs->numEntities());
     iota(std::begin(entityIds), std::end(entityIds), 0);
 
     // Arrange entities logically by z-order.
     sort(std::begin(entityIds), std::end(entityIds), [&] (int a, int b)
-         { return entities_[a].z < entities_[b].z; });
+         { return gs->getEntity(a).z < gs->getEntity(b).z; });
 
     sdlClear(displayArea_);
     SdlSetClipRect(displayArea_, [&] {
         for (auto id : entityIds) {
-            const auto &e = entities_[id];
+            const auto &e = gs->getEntity(id);
             if (e.visible) {
                 if (e.frame < 0) {
                     sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
