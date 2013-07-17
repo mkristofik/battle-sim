@@ -19,14 +19,14 @@ std::unique_ptr<GameState> gs;
 GameState::GameState()
     : entities_{},
     unitRef_{},
-    troops_{},
-    activeTroop_{-1}
+    bfUnits_{},
+    activeUnit_{-1}
 {
 }
 
 void GameState::nextTurn()
 {
-    activeTroop_ = 0;
+    activeUnit_ = 0;
 }
 
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)
@@ -55,12 +55,12 @@ Drawable & GameState::getEntity(int id)
     return entities_[id];
 }
 
-void GameState::addUnit(std::string name, Unit u)
+void GameState::addUnitType(std::string name, UnitType u)
 {
     unitRef_.emplace(std::move(name), std::move(u));
 }
 
-const Unit * GameState::getUnit(const std::string &name) const
+const UnitType * GameState::getUnitType(const std::string &name) const
 {
     auto iter = unitRef_.find(name);
     if (iter != std::end(unitRef_)) {
@@ -70,25 +70,25 @@ const Unit * GameState::getUnit(const std::string &name) const
     return nullptr;
 }
 
-void GameState::addTroop(Troop t)
+void GameState::addUnit(Unit u)
 {
-    troops_.emplace_back(std::move(t));
+    bfUnits_.emplace_back(std::move(u));
 }
 
-Troop * GameState::getActiveTroop()
+Unit * GameState::getActiveUnit()
 {
-    if (activeTroop_ < 0) {
+    if (activeUnit_ < 0) {
         return nullptr;
     }
 
-    return &troops_[activeTroop_];
+    return &bfUnits_[activeUnit_];
 }
 
-Troop * GameState::getTroopAt(int aIndex)
+Unit * GameState::getUnitAt(int aIndex)
 {
-    for (auto &t : troops_) {
-        if (t.aHex == aIndex && t.num > 0) {
-            return &t;
+    for (auto &u : bfUnits_) {
+        if (u.aHex == aIndex && u.num > 0) {
+            return &u;
         }
     }
 

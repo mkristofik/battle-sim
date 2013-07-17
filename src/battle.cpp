@@ -41,17 +41,6 @@
 // TODO: things we need to figure all this out
 // - traits (X macros?)
 
-struct UnitStack
-{
-    int entityId;
-    int num;
-    int team;
-    int aHex;
-    const Unit *unitDef;
-
-    UnitStack() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
-};
-
 namespace
 {
     std::shared_ptr<Battlefield> bf;
@@ -105,13 +94,13 @@ namespace
     }
 }
 
-// Get path from the active troop's hex to the target hex.
+// Get path from the active unit's hex to the target hex.
 std::vector<int> getPathTo(int aTgt)
 {
     auto emptyHexes = [&] (int aIndex) {
         std::vector<int> nbrs;
         for (auto n : bf->aryNeighbors(aIndex)) {
-            if (!gs->getTroopAt(n)) {
+            if (!gs->getUnitAt(n)) {
                 nbrs.push_back(n);
             }
         }
@@ -121,22 +110,22 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    return pf.getPathFrom(gs->getActiveTroop()->aHex);
+    return pf.getPathFrom(gs->getActiveUnit()->aHex);
 }
 
-// Return true if the active troop has a ranged attack and there are no enemies
+// Return true if the active unit has a ranged attack and there are no enemies
 // adjacent to it.
 bool isRangedAttackAllowed()
 {
     return false;
-    const auto attacker = gs->getActiveTroop();
-    if (!attacker || !attacker->unitDef->hasRangedAttack) {
+    const auto attacker = gs->getActiveUnit();
+    if (!attacker || !attacker->type->hasRangedAttack) {
         return false;
     }
 
     auto enemy = (attacker->team == 0) ? 1 : 0;
     for (auto n : bf->aryNeighbors(attacker->aHex)) {
-        const auto defender = gs->getTroopAt(n);
+        const auto defender = gs->getUnitAt(n);
         if (defender && defender->team == enemy) {
             return false;
         }
@@ -145,7 +134,7 @@ bool isRangedAttackAllowed()
     return true;
 }
 
-// Human player's function - determine what action the active troop can take if
+// Human player's function - determine what action the active unit can take if
 // the user clicks at the given screen coordinates.
 Action getPossibleAction(int px, int py)
 {
@@ -154,16 +143,16 @@ Action getPossibleAction(int px, int py)
         return {};
     }
     auto hTgt = bf->hexFromAry(aTgt);
-    const auto attacker = gs->getActiveTroop();
+    const auto attacker = gs->getActiveUnit();
     if (!attacker) {
         return {};
     }
 
-    const auto defender = gs->getTroopAt(aTgt);
+    const auto defender = gs->getUnitAt(aTgt);
     int enemy = (attacker->team == 0) ? 1 : 0;
 
     // Pathfinder includes the current hex.
-    auto moveRange = static_cast<unsigned>(attacker->unitDef->moves) + 1;
+    auto moveRange = static_cast<unsigned>(attacker->type->moves) + 1;
 
     if (defender && defender->team == enemy) {
         if (isRangedAttackAllowed()) {
@@ -189,10 +178,10 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
-// Return true if target hex is left of the given troop.
-bool useReverseImg(const Troop &troop, int aTgt)
+// Return true if target hex is left of the given unit.
+bool useReverseImg(const Unit &unit, int aTgt)
 {
-    auto hSrc = bf->hexFromAry(troop.aHex);
+    auto hSrc = bf->hexFromAry(unit.aHex);
     auto hTgt = bf->hexFromAry(aTgt);
     auto dir = direction(hSrc, hTgt);
 
@@ -201,14 +190,14 @@ bool useReverseImg(const Troop &troop, int aTgt)
     }
 
     // Team 0 always starts facing right and team 1 faces left.
-    if ((dir == Dir::N || dir == Dir::S) && troop.team == 1) {
+    if ((dir == Dir::N || dir == Dir::S) && unit.team == 1) {
         return true;
     }
 
     return false;
 }
 
-// Make the active troop carry out the given action.
+// Make the active unit carry out the given action.
 void executeAction(const Action &action)
 {
     if (action.type == ActionType::NONE) {
@@ -314,7 +303,7 @@ bool parseUnits(const rapidjson::Document &doc)
             continue;
         }
 
-        gs->addUnit(i->name.GetString(), Unit(i->value));
+        gs->addUnitType(i->name.GetString(), UnitType(i->value));
         unitAdded = true;
     }
 
@@ -344,35 +333,35 @@ void parseScenario(const rapidjson::Document &doc)
         const auto &json = i->value;
 
         // Ensure we recognize the unit id.
-        std::string unitType;
+        std::string name;
         if (json.HasMember("id")) {
-            unitType = json["id"].GetString();
+            name = json["id"].GetString();
         }
-        const auto unit = gs->getUnit(unitType);
-        if (!unit) {
+        const auto unitType = gs->getUnitType(name);
+        if (!unitType) {
             std::cerr << "scenario: skipping unit with unknown id '" <<
                 unitType << "'\n";
             continue;
         }
 
-        Troop newTroop;
-        newTroop.team = (posIdx < 7) ? 0 : 1;
-        newTroop.aHex = bf->aryFromHex(bfHex);
-        newTroop.unitDef = unit;
+        Unit newUnit;
+        newUnit.team = (posIdx < 7) ? 0 : 1;
+        newUnit.aHex = bf->aryFromHex(bfHex);
+        newUnit.type = unitType;
         if (json.HasMember("num")) {
-            newTroop.num = json["num"].GetInt();
+            newUnit.num = json["num"].GetInt();
         }
 
         SdlSurface img;
-        if (newTroop.team == 0) {
-            img = newTroop.unitDef->baseImg[0];
+        if (newUnit.team == 0) {
+            img = newUnit.type->baseImg[0];
         }
         else {
-            img = newTroop.unitDef->reverseImg[1];
+            img = newUnit.type->reverseImg[1];
         }
 
-        newTroop.entityId = gs->addEntity(bfHex, img, ZOrder::CREATURE);
-        gs->addTroop(newTroop);
+        newUnit.entityId = gs->addEntity(bfHex, img, ZOrder::CREATURE);
+        gs->addUnit(newUnit);
     }
 }
 
@@ -403,7 +392,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     parseScenario(scenario);
 
     gs->nextTurn();
-    bf->selectHex(gs->getActiveTroop()->aHex);
+    bf->selectHex(gs->getActiveUnit()->aHex);
     bf->draw();
 
     SDL_Surface *screen = SDL_GetVideoSurface();

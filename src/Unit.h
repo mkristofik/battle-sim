@@ -21,7 +21,7 @@
 
 // Definition of each unit type.  Contains all combat stats, descriptive info,
 // images, and animations.
-struct Unit
+struct UnitType
 {
     std::string name;
     std::string plural;
@@ -35,22 +35,21 @@ struct Unit
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
 
-    Unit(const rapidjson::Value &json);
+    UnitType(const rapidjson::Value &json);
 };
 
-
-struct Troop
+// Unit stack on the battlefield.
+struct Unit
 {
     int entityId;
     int num;
     int team;
     int aHex;
-    const Unit *unitDef;
+    const UnitType *type;
 
-    Troop() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
+    Unit() : entityId{-1}, num{0}, team{-1}, aHex{-1}, type{nullptr} {}
 };
 
-using UnitsMap = std::unordered_map<std::string, Unit>;
-using TroopMap = std::unordered_map<int, Troop>;
+using UnitTypeMap = std::unordered_map<std::string, UnitType>;
 
 #endif

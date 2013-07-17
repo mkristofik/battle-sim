@@ -36,22 +36,20 @@ public:
     int numEntities() const;
     Drawable & getEntity(int id);
 
-    // The set of available units.
-    void addUnit(std::string name, Unit u);
-    const Unit * getUnit(const std::string &name) const;
+    // The set of available unit types.
+    void addUnitType(std::string name, UnitType u);
+    const UnitType * getUnitType(const std::string &name) const;
 
-    // Troop stacks on the battlefield.
-    void addTroop(Troop t);
-    Troop * getActiveTroop();
-    Troop * getTroopAt(int aIndex);
+    // Unit stacks on the battlefield.
+    void addUnit(Unit u);
+    Unit * getActiveUnit();
+    Unit * getUnitAt(int aIndex);
 
 private:
-    void parseUnits(const rapidjson::Document &doc);
-
     std::vector<Drawable> entities_;
-    UnitsMap unitRef_;
-    std::vector<Troop> troops_;
-    int activeTroop_;
+    UnitTypeMap unitRef_;
+    std::vector<Unit> bfUnits_;
+    int activeUnit_;
 };
 
 extern std::unique_ptr<GameState> gs;

@@ -14,7 +14,7 @@
 #include "sdl_helper.h"
 #include <iostream>
 
-Unit::Unit(const rapidjson::Value &json)
+UnitType::UnitType(const rapidjson::Value &json)
     : name{},
     plural{},
     moves{1},
