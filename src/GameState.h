@@ -14,18 +14,21 @@
 #define GAME_STATE_H
 
 #include "Drawable.h"
+#include "Unit.h"
 #include "sdl_helper.h"
+
+#include "rapidjson/document.h"
 
 #include <memory>
 #include <vector>
-// I think we want this to be a library of functions that grant access to all
-// the entities on the battlefield, their stats, and other info.  Behaves like
-// global variables to but access is through functions, all keyed off entity
-// id.
 
 class GameState
 {
 public:
+    GameState();
+
+    void nextTurn();
+
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
     int addHiddenEntity(SdlSurface img, ZOrder z);
@@ -33,8 +36,22 @@ public:
     int numEntities() const;
     Drawable & getEntity(int id);
 
+    // The set of available units.
+    void addUnit(std::string name, Unit u);
+    const Unit * getUnit(const std::string &name) const;
+
+    // Troop stacks on the battlefield.
+    void addTroop(Troop t);
+    Troop * getActiveTroop();
+    Troop * getTroopAt(int aIndex);
+
 private:
+    void parseUnits(const rapidjson::Document &doc);
+
     std::vector<Drawable> entities_;
+    UnitsMap unitRef_;
+    std::vector<Troop> troops_;
+    int activeTroop_;
 };
 
 extern std::unique_ptr<GameState> gs;

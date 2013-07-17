@@ -38,7 +38,19 @@ struct Unit
     Unit(const rapidjson::Value &json);
 };
 
+
+struct Troop
+{
+    int entityId;
+    int num;
+    int team;
+    int aHex;
+    const Unit *unitDef;
+
+    Troop() : entityId{-1}, num{0}, team{-1}, aHex{-1}, unitDef{nullptr} {}
+};
+
 using UnitsMap = std::unordered_map<std::string, Unit>;
-UnitsMap parseUnits(const rapidjson::Document &doc);
+using TroopMap = std::unordered_map<int, Troop>;
 
 #endif

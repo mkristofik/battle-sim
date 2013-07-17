@@ -68,18 +68,3 @@ Unit::Unit(const rapidjson::Value &json)
     if (json.HasMember("anim-die")) {
     }
 }
-
-UnitsMap parseUnits(const rapidjson::Document &doc)
-{
-    UnitsMap um;
-    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
-        if (!i->value.IsObject()) {
-            std::cerr << "units: skipping id '" << i->name.GetString() <<
-                "'\n";
-            continue;
-        }
-        um.emplace(i->name.GetString(), Unit(i->value));
-    }
-
-    return um;
-}

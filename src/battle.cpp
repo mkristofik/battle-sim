@@ -22,7 +22,6 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
-#include "boost/tokenizer.hpp"
 
 #include "rapidjson/document.h"
 #include "rapidjson/filestream.h"
@@ -58,8 +57,6 @@ namespace
     std::shared_ptr<Battlefield> bf;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
-    std::vector<UnitStack> stackList;
-    int activeUnit = 0;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -86,33 +83,35 @@ namespace
         mapUnitPos.emplace("t2p6", 12);
         mapUnitPos.emplace("t2p7", 13);
     }
-}
 
-// Return the live unit at the given hex, if any.
-const UnitStack * getUnitAt(int aIndex)
-{
-    for (const auto &s : stackList) {
-        if (s.aHex == aIndex && s.num > 0) {
-            return &s;
+    bool parseJson(const char *filename, rapidjson::Document &doc)
+    {
+        boost::filesystem::path dataPath{"../data"};
+        dataPath /= filename;
+        std::shared_ptr<FILE> fp{fopen(dataPath.string().c_str(), "r"), fclose};
+
+        rapidjson::FileStream file(fp.get());
+        if (doc.ParseStream<0>(file).HasParseError()) {
+            std::cerr << "Error reading json file " << dataPath.c_str() << ": "
+                << doc.GetParseError() << '\n';
+            return false;
         }
+        if (!doc.IsObject()) {
+            std::cerr << "Expected top-level object in json file\n";
+            return false;
+        }
+
+        return true;
     }
-
-    return nullptr;
 }
 
-const UnitStack & getActiveUnit()
-{
-    return stackList[activeUnit];
-}
-
-// Get path from the active unit to the target hex.
+// Get path from the active troop's hex to the target hex.
 std::vector<int> getPathTo(int aTgt)
 {
     auto emptyHexes = [&] (int aIndex) {
         std::vector<int> nbrs;
         for (auto n : bf->aryNeighbors(aIndex)) {
-            const auto unit = getUnitAt(n);
-            if (!unit || unit->num == 0) {
+            if (!gs->getTroopAt(n)) {
                 nbrs.push_back(n);
             }
         }
@@ -122,22 +121,23 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    return pf.getPathFrom(getActiveUnit().aHex);
+    return pf.getPathFrom(gs->getActiveTroop()->aHex);
 }
 
-// Return true if the active unit has a ranged attack and there are no enemy
-// units adjacent to it.
+// Return true if the active troop has a ranged attack and there are no enemies
+// adjacent to it.
 bool isRangedAttackAllowed()
 {
-    const auto &myUnit = getActiveUnit();
-    if (!myUnit.unitDef->hasRangedAttack) {
+    return false;
+    const auto attacker = gs->getActiveTroop();
+    if (!attacker || !attacker->unitDef->hasRangedAttack) {
         return false;
     }
 
-    auto enemy = (myUnit.team == 0) ? 1 : 0;
-    for (auto n : bf->aryNeighbors(myUnit.aHex)) {
-        const auto otherUnit = getUnitAt(n);
-        if (otherUnit && otherUnit->team == enemy) {
+    auto enemy = (attacker->team == 0) ? 1 : 0;
+    for (auto n : bf->aryNeighbors(attacker->aHex)) {
+        const auto defender = gs->getTroopAt(n);
+        if (defender && defender->team == enemy) {
             return false;
         }
     }
@@ -145,7 +145,7 @@ bool isRangedAttackAllowed()
     return true;
 }
 
-// Human player's function - determine what action the active unit can take if
+// Human player's function - determine what action the active troop can take if
 // the user clicks at the given screen coordinates.
 Action getPossibleAction(int px, int py)
 {
@@ -154,15 +154,18 @@ Action getPossibleAction(int px, int py)
         return {};
     }
     auto hTgt = bf->hexFromAry(aTgt);
-    const auto &myUnit = getActiveUnit();
+    const auto attacker = gs->getActiveTroop();
+    if (!attacker) {
+        return {};
+    }
 
-    const auto tgtUnit = getUnitAt(aTgt);
-    int enemy = (myUnit.team == 0) ? 1 : 0;
+    const auto defender = gs->getTroopAt(aTgt);
+    int enemy = (attacker->team == 0) ? 1 : 0;
 
     // Pathfinder includes the current hex.
-    auto moveRange = static_cast<unsigned>(myUnit.unitDef->moves) + 1;
+    auto moveRange = static_cast<unsigned>(attacker->unitDef->moves) + 1;
 
-    if (tgtUnit && tgtUnit->team == enemy) {
+    if (defender && defender->team == enemy) {
         if (isRangedAttackAllowed()) {
             return {{}, ActionType::RANGED, aTgt};
         }
@@ -186,10 +189,10 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
-// Return true if target hex is left of the given unit.
-bool useReverseImg(const UnitStack &unit, int aTgt)
+// Return true if target hex is left of the given troop.
+bool useReverseImg(const Troop &troop, int aTgt)
 {
-    auto hSrc = bf->hexFromAry(unit.aHex);
+    auto hSrc = bf->hexFromAry(troop.aHex);
     auto hTgt = bf->hexFromAry(aTgt);
     auto dir = direction(hSrc, hTgt);
 
@@ -198,14 +201,14 @@ bool useReverseImg(const UnitStack &unit, int aTgt)
     }
 
     // Team 0 always starts facing right and team 1 faces left.
-    if ((dir == Dir::N || dir == Dir::S) && unit.team == 1) {
+    if ((dir == Dir::N || dir == Dir::S) && troop.team == 1) {
         return true;
     }
 
     return false;
 }
 
-// Make the active unit carry out the given action.
+// Make the active troop carry out the given action.
 void executeAction(const Action &action)
 {
     if (action.type == ActionType::NONE) {
@@ -301,27 +304,24 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
     }
 }
 
-bool parseJson(const char *filename, rapidjson::Document &doc)
+bool parseUnits(const rapidjson::Document &doc)
 {
-    boost::filesystem::path dataPath{"../data"};
-    dataPath /= filename;
-    std::shared_ptr<FILE> fp{fopen(dataPath.string().c_str(), "r"), fclose};
+    bool unitAdded = false;
+    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
+        if (!i->value.IsObject()) {
+            std::cerr << "units: skipping id '" << i->name.GetString() <<
+                "'\n";
+            continue;
+        }
 
-    rapidjson::FileStream file(fp.get());
-    if (doc.ParseStream<0>(file).HasParseError()) {
-        std::cerr << "Error reading json file " << dataPath.c_str() << ": "
-            << doc.GetParseError() << '\n';
-        return false;
-    }
-    if (!doc.IsObject()) {
-        std::cerr << "Expected top-level object in units file\n";
-        return false;
+        gs->addUnit(i->name.GetString(), Unit(i->value));
+        unitAdded = true;
     }
 
-    return true;
+    return unitAdded;
 }
 
-void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference)
+void parseScenario(const rapidjson::Document &doc)
 {
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
@@ -339,7 +339,7 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference
             continue;
         }
         int posIdx = posIter->second;
-        const auto &battlefieldHex = unitPos[posIdx];
+        const auto &bfHex = unitPos[posIdx];
 
         const auto &json = i->value;
 
@@ -348,31 +348,31 @@ void parseScenario(const rapidjson::Document &doc, const UnitsMap &unitReference
         if (json.HasMember("id")) {
             unitType = json["id"].GetString();
         }
-        auto unitIter = unitReference.find(unitType);
-        if (unitIter == std::end(unitReference)) {
+        const auto unit = gs->getUnit(unitType);
+        if (!unit) {
             std::cerr << "scenario: skipping unit with unknown id '" <<
                 unitType << "'\n";
             continue;
         }
 
-        UnitStack u;
-        u.team = (posIdx < 7) ? 0 : 1;
-        u.aHex = bf->aryFromHex(battlefieldHex);
-        u.unitDef = &unitIter->second;
+        Troop newTroop;
+        newTroop.team = (posIdx < 7) ? 0 : 1;
+        newTroop.aHex = bf->aryFromHex(bfHex);
+        newTroop.unitDef = unit;
         if (json.HasMember("num")) {
-            u.num = json["num"].GetInt();
+            newTroop.num = json["num"].GetInt();
         }
 
         SdlSurface img;
-        if (u.team == 0) {
-            img = u.unitDef->baseImg[0];
+        if (newTroop.team == 0) {
+            img = newTroop.unitDef->baseImg[0];
         }
         else {
-            img = u.unitDef->reverseImg[1];
+            img = newTroop.unitDef->reverseImg[1];
         }
 
-        u.entityId = gs->addEntity(battlefieldHex, img, ZOrder::CREATURE);
-        stackList.emplace_back(std::move(u));
+        newTroop.entityId = gs->addEntity(bfHex, img, ZOrder::CREATURE);
+        gs->addTroop(newTroop);
     }
 }
 
@@ -381,6 +381,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
+
     gs = make_unique<GameState>();
     bf = std::make_shared<Battlefield>(bfWindow);
 
@@ -388,8 +389,8 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!parseJson("units.json", unitsDoc)) {
         return EXIT_FAILURE;
     }
-    auto unitsMap = parseUnits(unitsDoc);
-    if (unitsMap.empty()) {
+    if (!parseUnits(unitsDoc)) {
+        std::cerr << "Error: no unit definitions loaded" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -399,10 +400,11 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     if (!parseJson("scenario.json", scenario)) {
         return EXIT_FAILURE;
     }
-    parseScenario(scenario, unitsMap);
+    parseScenario(scenario);
 
+    gs->nextTurn();
+    bf->selectHex(gs->getActiveTroop()->aHex);
     bf->draw();
-    bf->selectHex(getActiveUnit().aHex);
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
