@@ -49,6 +49,7 @@ namespace
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::shared_ptr<Anim>> anims;
+    bool actionTaken = false;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -317,7 +318,13 @@ void handleMouseClick(const SDL_MouseButtonEvent &event)
     if (event.button == SDL_BUTTON_LEFT &&
         insideRect(event.x, event.y, bfWindow))
     {
-        executeAction(getPossibleAction(event.x, event.y));
+        auto action = getPossibleAction(event.x, event.y);
+        if (action.type != ActionType::NONE) {
+            executeAction(action);
+            bf->clearHighlights();
+            bf->deselectHex();
+            actionTaken = true;
+        }
     }
 }
 
@@ -450,12 +457,21 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
             }
         }
 
+        // Run the current animation.
         if (!anims.empty()) {
             anims.front()->execute();
             if (anims.front()->isDone()) {
                 anims.pop_front();
             }
             needRedraw = true;
+        }
+
+        // If we're finished running animations for the previous action, start
+        // the next turn.
+        if (actionTaken && anims.empty()) {
+            actionTaken = false;
+            gs->nextTurn();
+            bf->selectHex(gs->getActiveUnit()->aHex);
         }
 
         if (needRedraw) {
