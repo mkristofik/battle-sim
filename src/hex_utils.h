@@ -43,6 +43,12 @@ Point operator+(const Point &lhs, const Point &rhs);
 Point operator-(const Point &lhs, const Point &rhs);
 
 template <typename T>
+Point operator*(const Point &lhs, T rhs)
+{
+    return {static_cast<int>(lhs.x * rhs), static_cast<int>(lhs.y * rhs)};
+}
+
+template <typename T>
 Point operator/(const Point &lhs, T rhs)
 {
     return {lhs.x / rhs, lhs.y / rhs};

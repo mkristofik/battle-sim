@@ -19,6 +19,8 @@
 #include <string>
 #include <unordered_map>
 
+enum class Facing { LEFT, RIGHT };
+
 // Definition of each unit type.  Contains all combat stats, descriptive info,
 // images, and animations.
 struct UnitType
@@ -29,6 +31,8 @@ struct UnitType
     bool hasRangedAttack;
     ImageSet baseImg;
     ImageSet reverseImg;
+    ImageSet imgMove;
+    ImageSet reverseImgMove;
     ImageSet animAttack;
     ImageSet reverseAnimAttack;
     int numAttackFrames;

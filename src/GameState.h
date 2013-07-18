@@ -34,6 +34,9 @@ public:
     int addHiddenEntity(SdlSurface img, ZOrder z);
 
     int numEntities() const;
+
+    // References might get invalidated at any time.  Recommend calling this
+    // instead of holding on to entity object refs for too long.
     Drawable & getEntity(int id);
 
     // The set of available unit types.

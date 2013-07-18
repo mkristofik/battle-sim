@@ -46,6 +46,13 @@ UnitType::UnitType(const rapidjson::Value &json)
             reverseImg = applyTeamColors(sdlFlipH(img));
         }
     }
+    if (json.HasMember("img-move")) {
+        auto img = sdlLoadImage(json["img-move"].GetString());
+        if (img) {
+            imgMove = applyTeamColors(img);
+            reverseImgMove = applyTeamColors(sdlFlipH(img));
+        }
+    }
     if (json.HasMember("img-defend")) {
         auto img = sdlLoadImage(json["img-defend"].GetString());
         if (img) {

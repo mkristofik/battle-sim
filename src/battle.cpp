@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "Action.h"
+#include "Anim.h"
 #include "Battlefield.h"
 #include "GameState.h"
 #include "Pathfinder.h"
@@ -28,6 +29,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <deque>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -46,6 +48,7 @@ namespace
     std::shared_ptr<Battlefield> bf;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
+    std::deque<std::shared_ptr<Anim>> anims;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -168,7 +171,7 @@ Action getPossibleAction(int px, int py)
             return {path, ActionType::ATTACK, aTgt};
         }
     }
-    else {
+    else if (!defender) {
         auto path = getPathTo(aTgt);
         if (path.size() > 1 && path.size() <= moveRange) {
             return {path, ActionType::MOVE};
@@ -178,23 +181,23 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
-// Return true if target hex is left of the given unit.
-bool useReverseImg(const Unit &unit, int aTgt)
+// Have the unit face the target hex.
+Facing getFacing(const Unit &unit, int aSrc, int aTgt)
 {
-    auto hSrc = bf->hexFromAry(unit.aHex);
+    auto hSrc = bf->hexFromAry(aSrc);
     auto hTgt = bf->hexFromAry(aTgt);
     auto dir = direction(hSrc, hTgt);
 
     if (dir == Dir::NW || dir == Dir::SW) {
-        return true;
+        return Facing::LEFT;
     }
 
     // Team 0 always starts facing right and team 1 faces left.
     if ((dir == Dir::N || dir == Dir::S) && unit.team == 1) {
-        return true;
+        return Facing::LEFT;
     }
 
-    return false;
+    return Facing::RIGHT;
 }
 
 // Make the active unit carry out the given action.
@@ -204,8 +207,22 @@ void executeAction(const Action &action)
         return;
     }
 
+    auto unit = gs->getActiveUnit();
+    if (!unit) {
+        return;
+    }
+
     // All other actions might involve moving.
     if (action.path.size() > 1) {
+        for (auto i = 1u; i < action.path.size(); ++i) {
+            auto aSrc = action.path[i - 1];
+            auto aDest = action.path[i];
+            auto hDest = bf->hexFromAry(aDest);
+            auto facing = getFacing(*unit, aSrc, aDest);
+            anims.emplace_back(std::make_shared<AnimMove>(*unit, hDest, facing));
+        }
+        unit->aHex = action.path.back();
+
         // TODO: animate the moves to each hex, first element of path is
         // starting hex
         //
@@ -290,6 +307,15 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (insideRect(event.x, event.y, bfWindow)) {
         bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
+    }
+}
+
+void handleMouseClick(const SDL_MouseButtonEvent &event)
+{
+    if (event.button == SDL_BUTTON_LEFT &&
+        insideRect(event.x, event.y, bfWindow))
+    {
+        executeAction(getPossibleAction(event.x, event.y));
     }
 }
 
@@ -406,10 +432,27 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
             if (event.type == SDL_QUIT) {
                 isDone = true;
             }
-            else if (event.type == SDL_MOUSEMOTION) {
+
+            // Ignore mouse events while animating.
+            if (!anims.empty()) {
+                continue;
+            }
+
+            if (event.type == SDL_MOUSEMOTION) {
                 handleMouseMotion(event.motion);
                 needRedraw = true;
             }
+            else if (event.type == SDL_MOUSEBUTTONUP) {
+                handleMouseClick(event.button);
+            }
+        }
+
+        if (!anims.empty()) {
+            anims.front()->execute();
+            if (anims.front()->isDone()) {
+                anims.pop_front();
+            }
+            needRedraw = true;
         }
 
         if (needRedraw) {
