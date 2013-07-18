@@ -75,3 +75,13 @@ UnitType::UnitType(const rapidjson::Value &json)
     if (json.HasMember("anim-die")) {
     }
 }
+
+Unit::Unit()
+    : entityId{-1},
+    num{0},
+    team{-1},
+    aHex{-1},
+    face{Facing::RIGHT},
+    type{nullptr}
+{
+}

@@ -49,9 +49,10 @@ struct Unit
     int num;
     int team;
     int aHex;
+    Facing face;
     const UnitType *type;
 
-    Unit() : entityId{-1}, num{0}, team{-1}, aHex{-1}, type{nullptr} {}
+    Unit();
 };
 
 using UnitTypeMap = std::unordered_map<std::string, UnitType>;

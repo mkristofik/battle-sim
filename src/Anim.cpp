@@ -45,6 +45,9 @@ AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
     destHex_{std::move(hDest)},
     faceLeft_{f == Facing::LEFT}
 {
+    // Note: we can't use the unit's internal facing in here because that holds
+    // the end state after all moves are done.  We need the facing for this
+    // step only.
 }
 
 void AnimMove::start()
@@ -73,7 +76,6 @@ void AnimMove::start()
 void AnimMove::run()
 {
     auto elapsed = SDL_GetTicks() - startTime_;
-    std::cout << "Moving to " << destHex_ << " elapsed time " << elapsed;
     if (elapsed >= runTime_) {
         done_ = true;
         return;
@@ -83,7 +85,6 @@ void AnimMove::run()
     auto frac = static_cast<double>(elapsed) / runTime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
     entity.pOffset = dhex * frac;
-    std::cout << " frac=" << frac << " offset is " << entity.pOffset << '\n';
 }
 
 void AnimMove::stop()

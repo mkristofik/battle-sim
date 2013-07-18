@@ -181,8 +181,8 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
-// Have the unit face the target hex.
-Facing getFacing(const Unit &unit, int aSrc, int aTgt)
+// Get direction to have a unit in the source hex face the target hex.
+Facing getFacing(int aSrc, int aTgt, Facing curFacing)
 {
     auto hSrc = bf->hexFromAry(aSrc);
     auto hTgt = bf->hexFromAry(aTgt);
@@ -191,10 +191,8 @@ Facing getFacing(const Unit &unit, int aSrc, int aTgt)
     if (dir == Dir::NW || dir == Dir::SW) {
         return Facing::LEFT;
     }
-
-    // Team 0 always starts facing right and team 1 faces left.
-    if ((dir == Dir::N || dir == Dir::S) && unit.team == 1) {
-        return Facing::LEFT;
+    if (dir == Dir::N || dir == Dir::S) {
+        return curFacing;
     }
 
     return Facing::RIGHT;
@@ -214,14 +212,18 @@ void executeAction(const Action &action)
 
     // All other actions might involve moving.
     if (action.path.size() > 1) {
+        auto facing = unit->face;
         for (auto i = 1u; i < action.path.size(); ++i) {
             auto aSrc = action.path[i - 1];
             auto aDest = action.path[i];
             auto hDest = bf->hexFromAry(aDest);
-            auto facing = getFacing(*unit, aSrc, aDest);
+            auto prevFacing = facing;
+            facing = getFacing(aSrc, aDest, prevFacing);
+
             anims.emplace_back(std::make_shared<AnimMove>(*unit, hDest, facing));
         }
         unit->aHex = action.path.back();
+        unit->face = facing;
 
         // TODO: animate the moves to each hex, first element of path is
         // starting hex
@@ -374,6 +376,7 @@ void parseScenario(const rapidjson::Document &doc)
         newUnit.team = (posIdx < 7) ? 0 : 1;
         newUnit.aHex = bf->aryFromHex(bfHex);
         newUnit.type = unitType;
+        newUnit.face = (newUnit.team == 0) ? Facing::RIGHT : Facing::LEFT;
         if (json.HasMember("num")) {
             newUnit.num = json["num"].GetInt();
         }
