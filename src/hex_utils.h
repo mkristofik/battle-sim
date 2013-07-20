@@ -49,6 +49,12 @@ Point operator*(const Point &lhs, T rhs)
 }
 
 template <typename T>
+Point operator*(T lhs, const Point &rhs)
+{
+    return rhs * lhs;
+}
+
+template <typename T>
 Point operator/(const Point &lhs, T rhs)
 {
     return {lhs.x / rhs, lhs.y / rhs};

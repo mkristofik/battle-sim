@@ -11,7 +11,6 @@
     See the COPYING.txt file for more details.
 */
 #include "Unit.h"
-#include "sdl_helper.h"
 #include <iostream>
 
 UnitType::UnitType(const rapidjson::Value &json)
@@ -22,8 +21,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     baseImg{},
     reverseImg{},
     animAttack{},
+    attackFrames{},
     reverseAnimAttack{},
-    numAttackFrames{0},
     imgDefend{},
     reverseImgDefend{}
 {
@@ -66,10 +65,17 @@ UnitType::UnitType(const rapidjson::Value &json)
             animAttack = applyTeamColors(baseAnim);
 
             // Assume each animation frame is sized to fit the standard hex.
-            int n = baseAnim->w / pHexSize;
-            numAttackFrames = n;
+            int numAttackFrames = baseAnim->w / pHexSize;
             reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
                                                               numAttackFrames));
+        }
+    }
+    if (json.HasMember("attack-frames")) {
+        const auto &frameList = json["attack-frames"];
+        auto iter = frameList.Begin();
+        while (iter != frameList.End()) {
+            attackFrames.push_back(iter->GetInt());
+            ++iter;
         }
     }
     if (json.HasMember("anim-die")) {

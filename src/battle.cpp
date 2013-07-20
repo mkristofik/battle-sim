@@ -48,7 +48,7 @@ namespace
     std::shared_ptr<Battlefield> bf;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     std::unordered_map<std::string, int> mapUnitPos;
-    std::deque<std::shared_ptr<Anim>> anims;
+    std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
 
     // Unit placement on the grid.
@@ -221,23 +221,10 @@ void executeAction(const Action &action)
             auto prevFacing = facing;
             facing = getFacing(aSrc, aDest, prevFacing);
 
-            anims.emplace_back(std::make_shared<AnimMove>(*unit, hDest, facing));
+            anims.emplace_back(make_unique<AnimMove>(*unit, hDest, facing));
         }
         unit->aHex = action.path.back();
         unit->face = facing;
-
-        // TODO: animate the moves to each hex, first element of path is
-        // starting hex
-        //
-        // start animation:
-        // - facing left or right?
-        // - set the attacker image to 'moving'
-        // - set the attacker zorder to ANIMATING
-        // over the course of 300 ms:
-        // - adjust attacker pOffset toward destination hex
-        // end animation:
-        // - set attacker image to 'base'
-        // - set attacker zorder to CREATURE
     }
 
     // These animations happen after the attacker is done moving.
@@ -279,6 +266,10 @@ void executeAction(const Action &action)
         //      * set defender image to 'base'
     }
     else if (action.type == ActionType::ATTACK) {
+        auto aSrc = action.path.back();
+        auto hTgt = bf->hexFromAry(action.attackTarget);
+        unit->face = getFacing(aSrc, action.attackTarget, unit->face);
+        anims.emplace_back(make_unique<AnimAttack>(*unit, hTgt));
         // animate attacker and defender in parallel
         //
         // attacker:

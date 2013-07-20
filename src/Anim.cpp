@@ -13,6 +13,25 @@
 #include "Anim.h"
 #include "GameState.h"
 
+namespace
+{
+    // Restore the unit to the center of its hex and return to the base image.
+    void idle(const Unit &unit, bool faceLeft)
+    {
+        auto &entity = gs->getEntity(unit.entityId);
+        entity.pOffset = {0, 0};
+        entity.frame = -1;
+        entity.z = ZOrder::CREATURE;
+
+        if (faceLeft) {
+            entity.img = unit.type->reverseImg[unit.team];
+        }
+        else {
+            entity.img = unit.type->baseImg[unit.team];
+        }
+    }
+}
+
 Anim::Anim()
     : done_{false},
     startTime_{0}
@@ -39,6 +58,7 @@ void Anim::execute()
         stop();
     }
 }
+
 
 AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
     : unit_(unit),
@@ -76,13 +96,13 @@ void AnimMove::start()
 void AnimMove::run()
 {
     auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runTime_) {
+    if (elapsed >= runtime_) {
         done_ = true;
         return;
     }
 
     auto &entity = gs->getEntity(unit_.entityId);
-    auto frac = static_cast<double>(elapsed) / runTime_;
+    auto frac = static_cast<double>(elapsed) / runtime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
     entity.pOffset = dhex * frac;
 }
@@ -91,13 +111,85 @@ void AnimMove::stop()
 {
     auto &entity = gs->getEntity(unit_.entityId);
     entity.hex = destHex_;
-    entity.pOffset = {0, 0};
-    entity.z = ZOrder::CREATURE;
+    idle(unit_, faceLeft_);
+}
 
-    if (faceLeft_) {
-        entity.img = unit_.type->reverseImg[unit_.team];
+
+AnimAttack::AnimAttack(const Unit &unit, Point hTgt)
+    : unit_(unit),
+    hTarget_{std::move(hTgt)},
+    faceLeft_{unit.face == Facing::LEFT}
+{
+}
+
+void AnimAttack::start()
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    entity.z = ZOrder::ANIMATING;
+}
+
+void AnimAttack::run()
+{
+    auto elapsed = SDL_GetTicks() - startTime_;
+    if (elapsed >= runtime_) {
+        done_ = true;
+        return;
+    }
+    setPosition(elapsed);
+    setFrame(elapsed);
+}
+
+void AnimAttack::stop()
+{
+    idle(unit_, faceLeft_);
+}
+
+void AnimAttack::setPosition(Uint32 elapsed)
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    auto pSrc = pixelFromHex(entity.hex);
+    auto pTgt = pixelFromHex(hTarget_);
+    auto halfway = (pTgt - pSrc) / 2;
+    double halfTime = runtime_ / 2.0;
+
+    if (elapsed < halfTime) {
+        entity.pOffset = elapsed / halfTime * halfway;
     }
     else {
-        entity.img = unit_.type->baseImg[unit_.team];
+        entity.pOffset = (2 - elapsed / halfTime) * halfway;
+    }
+}
+
+void AnimAttack::setFrame(Uint32 elapsed)
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    const auto &frameList = unit_.type->attackFrames;
+    int size = frameList.size();
+
+    entity.frame = size - 1;
+    for (int i = 0; i < size; ++i) {
+        if (elapsed < frameList[i]) {
+            entity.frame = i;
+            break;
+        }
+    }
+
+    if (faceLeft_) {
+        if (!unit_.type->reverseAnimAttack.empty()) {
+            entity.img = unit_.type->reverseAnimAttack[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->reverseImg[unit_.team];
+            entity.frame = -1;
+        }
+    }
+    else {
+        if (!unit_.type->animAttack.empty()) {
+            entity.img = unit_.type->animAttack[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->baseImg[unit_.team];
+            entity.frame = -1;
+        }
     }
 }

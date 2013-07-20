@@ -13,11 +13,13 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+#include "sdl_helper.h"
 #include "team_color.h"
 
 #include "rapidjson/document.h"
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 enum class Facing { LEFT, RIGHT };
 
@@ -34,8 +36,8 @@ struct UnitType
     ImageSet imgMove;
     ImageSet reverseImgMove;
     ImageSet animAttack;
+    std::vector<Uint32> attackFrames;
     ImageSet reverseAnimAttack;
-    int numAttackFrames;
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
 

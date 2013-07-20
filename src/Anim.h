@@ -49,7 +49,28 @@ private:
     const Unit &unit_;
     Point destHex_;
     bool faceLeft_;
-    static const Uint32 runTime_ = 300;
+    static const Uint32 runtime_ = 300;
+};
+
+class AnimAttack : public Anim
+{
+public:
+    AnimAttack(const Unit &unit, Point hTgt);
+
+private:
+    void start() override;
+    void run() override;
+    void stop() override;
+
+    // Move unit toward target for half the runtime and move it back for the
+    // other half.
+    void setPosition(Uint32 elapsed);
+    void setFrame(Uint32 elapsed);
+
+    const Unit &unit_;
+    Point hTarget_;
+    bool faceLeft_;
+    static const Uint32 runtime_ = 600;
 };
 
 #endif
