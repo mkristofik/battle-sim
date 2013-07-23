@@ -11,6 +11,8 @@
     See the COPYING.txt file for more details.
 */
 #include "Unit.h"
+#include <algorithm>
+#include <iterator>
 #include <iostream>
 
 UnitType::UnitType(const rapidjson::Value &json)
@@ -59,23 +61,18 @@ UnitType::UnitType(const rapidjson::Value &json)
             reverseImgDefend = applyTeamColors(sdlFlipH(img));
         }
     }
-    if (json.HasMember("anim-attack")) {
+    if (json.HasMember("anim-attack") && json.HasMember("attack-frames")) {
+        const auto &frameList = json["attack-frames"];
+        transform(frameList.Begin(),
+                  frameList.End(),
+                  std::back_inserter(attackFrames),
+                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+
         auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
         if (baseAnim) {
             animAttack = applyTeamColors(baseAnim);
-
-            // Assume each animation frame is sized to fit the standard hex.
-            int numAttackFrames = baseAnim->w / pHexSize;
             reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
-                                                              numAttackFrames));
-        }
-    }
-    if (json.HasMember("attack-frames")) {
-        const auto &frameList = json["attack-frames"];
-        auto iter = frameList.Begin();
-        while (iter != frameList.End()) {
-            attackFrames.push_back(iter->GetInt());
-            ++iter;
+                attackFrames.size()));
         }
     }
     if (json.HasMember("anim-die")) {

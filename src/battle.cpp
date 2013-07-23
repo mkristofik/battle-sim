@@ -266,10 +266,21 @@ void executeAction(const Action &action)
         //      * set defender image to 'base'
     }
     else if (action.type == ActionType::ATTACK) {
+        auto attackSeq = make_unique<AnimParallel>();
+
         auto aSrc = action.path.back();
-        auto hTgt = bf->hexFromAry(action.attackTarget);
-        unit->face = getFacing(aSrc, action.attackTarget, unit->face);
-        anims.emplace_back(make_unique<AnimAttack>(*unit, hTgt));
+        auto hSrc = bf->hexFromAry(aSrc);
+        auto aTgt = action.attackTarget;
+        auto hTgt = bf->hexFromAry(aTgt);
+
+        unit->face = getFacing(aSrc, aTgt, unit->face);
+        attackSeq->add(make_unique<AnimAttack>(*unit, hTgt));
+
+        auto defender = gs->getUnitAt(action.attackTarget);
+        defender->face = getFacing(aTgt, aSrc, defender->face);
+        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc));
+
+        anims.emplace_back(std::move(attackSeq));
         // animate attacker and defender in parallel
         //
         // attacker:

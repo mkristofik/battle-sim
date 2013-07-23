@@ -16,6 +16,8 @@
 #include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
+#include <memory>
+#include <vector>
 
 class Anim
 {
@@ -23,18 +25,18 @@ public:
     Anim();
     virtual ~Anim();
 
-    bool isDone() const;
+    virtual bool isDone() const;
     void execute();
+
+    virtual void start();
+    virtual void run() = 0;
+    virtual void stop() = 0;
 
 protected:
     bool done_;
     Uint32 startTime_;
-
-private:
-    virtual void start() = 0;
-    virtual void run() = 0;
-    virtual void stop() = 0;
 }; 
+
 
 class AnimMove : public Anim
 {
@@ -51,6 +53,7 @@ private:
     bool faceLeft_;
     static const Uint32 runtime_ = 300;
 };
+
 
 class AnimAttack : public Anim
 {
@@ -71,6 +74,38 @@ private:
     Point hTarget_;
     bool faceLeft_;
     static const Uint32 runtime_ = 600;
+};
+
+
+class AnimDefend : public Anim
+{
+public:
+    AnimDefend(const Unit &unit, Point hSrc);
+
+private:
+    void run() override;
+    void stop() override;
+
+    const Unit &unit_;
+    Point hAttacker_;
+    bool faceLeft_;
+    static const Uint32 runtime_ = 550;
+};
+
+
+class AnimParallel : public Anim
+{
+public:
+    AnimParallel();
+    void add(std::unique_ptr<Anim> &&anim);
+
+private:
+    bool isDone() const override;
+    void start() override;
+    void run() override;
+    void stop() override;
+
+    std::vector<std::unique_ptr<Anim>> animList_;
 };
 
 #endif

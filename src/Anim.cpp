@@ -13,6 +13,9 @@
 #include "Anim.h"
 #include "GameState.h"
 
+#include <algorithm>
+#include <functional>
+
 namespace
 {
     // Restore the unit to the center of its hex and return to the base image.
@@ -50,18 +53,25 @@ bool Anim::isDone() const
 void Anim::execute()
 {
     if (startTime_ == 0) {
-        startTime_ = SDL_GetTicks();
         start();
     }
-    run();
+    else {
+        run();
+    }
     if (isDone()) {
         stop();
     }
 }
 
+void Anim::start()
+{
+    startTime_ = SDL_GetTicks();
+}
+
 
 AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
-    : unit_(unit),
+    : Anim(),
+    unit_(unit),
     destHex_{std::move(hDest)},
     faceLeft_{f == Facing::LEFT}
 {
@@ -72,6 +82,8 @@ AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
 
 void AnimMove::start()
 {
+    Anim::start();
+
     auto &entity = gs->getEntity(unit_.entityId);
     if (faceLeft_) {
         if (!unit_.type->reverseImgMove.empty()) {
@@ -116,7 +128,8 @@ void AnimMove::stop()
 
 
 AnimAttack::AnimAttack(const Unit &unit, Point hTgt)
-    : unit_(unit),
+    : Anim(),
+    unit_(unit),
     hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
 {
@@ -124,6 +137,7 @@ AnimAttack::AnimAttack(const Unit &unit, Point hTgt)
 
 void AnimAttack::start()
 {
+    Anim::start();
     auto &entity = gs->getEntity(unit_.entityId);
     entity.z = ZOrder::ANIMATING;
 }
@@ -166,7 +180,7 @@ void AnimAttack::setFrame(Uint32 elapsed)
     const auto &frameList = unit_.type->attackFrames;
     int size = frameList.size();
 
-    entity.frame = size - 1;
+    entity.frame = -1;
     for (int i = 0; i < size; ++i) {
         if (elapsed < frameList[i]) {
             entity.frame = i;
@@ -175,21 +189,101 @@ void AnimAttack::setFrame(Uint32 elapsed)
     }
 
     if (faceLeft_) {
-        if (!unit_.type->reverseAnimAttack.empty()) {
+        if (!unit_.type->reverseAnimAttack.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimAttack[unit_.team];
         }
         else {
             entity.img = unit_.type->reverseImg[unit_.team];
-            entity.frame = -1;
         }
     }
     else {
-        if (!unit_.type->animAttack.empty()) {
+        if (!unit_.type->animAttack.empty() && entity.frame >= 0) {
             entity.img = unit_.type->animAttack[unit_.team];
         }
         else {
             entity.img = unit_.type->baseImg[unit_.team];
-            entity.frame = -1;
         }
+    }
+}
+
+
+AnimDefend::AnimDefend(const Unit &unit, Point hSrc)
+    : Anim(),
+    unit_(unit),
+    hAttacker_{hSrc},
+    faceLeft_{unit.face == Facing::LEFT}
+{
+}
+
+void AnimDefend::run()
+{
+    auto elapsed = SDL_GetTicks() - startTime_;
+    if (elapsed >= runtime_) {
+        done_ = true;
+        return;
+    }
+
+    // note: unit gets hit at the midpoint of AnimAttack.
+    auto &entity = gs->getEntity(unit_.entityId);
+    if (faceLeft_) {
+        if (elapsed >= 300 && !unit_.type->reverseImgDefend.empty()) {
+            entity.img = unit_.type->reverseImgDefend[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->reverseImg[unit_.team];
+        }
+    }
+    else {
+        if (elapsed >= 300 && !unit_.type->imgDefend.empty()) {
+            entity.img = unit_.type->imgDefend[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->baseImg[unit_.team];
+        }
+    }
+}
+
+void AnimDefend::stop()
+{
+    idle(unit_, faceLeft_);
+}
+
+
+AnimParallel::AnimParallel()
+    : Anim(),
+    animList_{}
+{
+}
+
+void AnimParallel::add(std::unique_ptr<Anim> &&anim)
+{
+    animList_.emplace_back(std::move(anim));
+}
+
+bool AnimParallel::isDone() const
+{
+    return all_of(std::begin(animList_), std::end(animList_),
+                  std::mem_fn(&Anim::isDone));
+}
+
+void AnimParallel::start()
+{
+    Anim::start();
+    for (auto &anim : animList_) {
+        anim->start();
+    }
+}
+
+void AnimParallel::run()
+{
+    for (auto &anim : animList_) {
+        anim->run();
+    }
+}
+
+void AnimParallel::stop()
+{
+    for (auto &anim : animList_) {
+        anim->stop();
     }
 }
