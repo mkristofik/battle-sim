@@ -120,6 +120,7 @@ void AnimMove::start()
 
 void AnimMove::run()
 {
+    // TODO: can we refactor this out at all?
     auto elapsed = SDL_GetTicks() - startTime_;
     if (elapsed >= runTime_) {
         done_ = true;
@@ -343,13 +344,15 @@ void AnimProjectile::stop()
 
 AnimParallel::AnimParallel()
     : Anim(),
-    animList_{}
+    animList_{},
+    stopped_{}
 {
 }
 
 void AnimParallel::add(std::unique_ptr<Anim> &&anim)
 {
     animList_.emplace_back(std::move(anim));
+    stopped_.push_back(false);
 }
 
 bool AnimParallel::isDone() const
@@ -368,14 +371,25 @@ void AnimParallel::start()
 
 void AnimParallel::run()
 {
-    for (auto &anim : animList_) {
-        anim->run();
+    for (auto i = 0u; i < animList_.size(); ++i) {
+        if (!animList_[i]->isDone()) {
+            animList_[i]->run();
+        }
+        else {
+            if (!stopped_[i]) {
+                animList_[i]->stop();
+                stopped_[i] = true;
+            }
+        }
     }
 }
 
 void AnimParallel::stop()
 {
-    for (auto &anim : animList_) {
-        anim->stop();
+    for (auto i = 0u; i < animList_.size(); ++i) {
+        if (!stopped_[i]) {
+            animList_[i]->stop();
+            stopped_[i] = true;
+        }
     }
 }

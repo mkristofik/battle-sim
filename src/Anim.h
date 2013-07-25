@@ -16,6 +16,7 @@
 #include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
+#include <deque>
 #include <memory>
 #include <vector>
 
@@ -142,6 +143,7 @@ private:
     void stop() override;
 
     std::vector<std::unique_ptr<Anim>> animList_;
+    std::deque<bool> stopped_;
 };
 
 #endif
