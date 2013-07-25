@@ -16,7 +16,6 @@
 #include "Unit.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
-#include <deque>
 #include <memory>
 #include <vector>
 
@@ -29,12 +28,13 @@ public:
     virtual bool isDone() const;
     void execute();
 
+protected:
     virtual void start();
     virtual void run() = 0;
-    virtual void stop() = 0;
+    virtual void stop();
 
-protected:
-    bool done_;
+    bool done_;  // finished running
+    bool stopped_;  // called stop()
     Uint32 startTime_;
 }; 
 
@@ -140,10 +140,8 @@ private:
     bool isDone() const override;
     void start() override;
     void run() override;
-    void stop() override;
 
     std::vector<std::unique_ptr<Anim>> animList_;
-    std::deque<bool> stopped_;
 };
 
 #endif

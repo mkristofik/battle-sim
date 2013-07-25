@@ -50,6 +50,7 @@ namespace
 
 Anim::Anim()
     : done_{false},
+    stopped_{false},
     startTime_{0}
 {
 }
@@ -71,14 +72,19 @@ void Anim::execute()
     else {
         run();
     }
-    if (isDone()) {
+    if (!stopped_ && isDone()) {
         stop();
+        stopped_ = true;
     }
 }
 
 void Anim::start()
 {
     startTime_ = SDL_GetTicks();
+}
+
+void Anim::stop()
+{
 }
 
 
@@ -344,15 +350,13 @@ void AnimProjectile::stop()
 
 AnimParallel::AnimParallel()
     : Anim(),
-    animList_{},
-    stopped_{}
+    animList_{}
 {
 }
 
 void AnimParallel::add(std::unique_ptr<Anim> &&anim)
 {
     animList_.emplace_back(std::move(anim));
-    stopped_.push_back(false);
 }
 
 bool AnimParallel::isDone() const
@@ -365,31 +369,13 @@ void AnimParallel::start()
 {
     Anim::start();
     for (auto &anim : animList_) {
-        anim->start();
+        anim->execute();
     }
 }
 
 void AnimParallel::run()
 {
-    for (auto i = 0u; i < animList_.size(); ++i) {
-        if (!animList_[i]->isDone()) {
-            animList_[i]->run();
-        }
-        else {
-            if (!stopped_[i]) {
-                animList_[i]->stop();
-                stopped_[i] = true;
-            }
-        }
-    }
-}
-
-void AnimParallel::stop()
-{
-    for (auto i = 0u; i < animList_.size(); ++i) {
-        if (!stopped_[i]) {
-            animList_[i]->stop();
-            stopped_[i] = true;
-        }
+    for (auto &anim : animList_) {
+        anim->execute();
     }
 }
