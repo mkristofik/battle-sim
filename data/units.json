@@ -5,7 +5,9 @@
         "moves": 1,
         "ranged": 1,
         "img": "bowman.png",
-        "anim-attack": "bowman-attack-ranged.png"
+        "anim-ranged": "bowman-attack-ranged.png",
+        "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "projectile": "missile.png"
     },
     "human2": {
         "name": "Marshal",

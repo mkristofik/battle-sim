@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include <vector>
 
+using FrameList = std::vector<Uint32>;
+
 enum class Facing { LEFT, RIGHT };
 
 // Definition of each unit type.  Contains all combat stats, descriptive info,
@@ -36,8 +38,12 @@ struct UnitType
     ImageSet imgMove;
     ImageSet reverseImgMove;
     ImageSet animAttack;
-    std::vector<Uint32> attackFrames;
     ImageSet reverseAnimAttack;
+    FrameList attackFrames;
+    ImageSet animRanged;
+    ImageSet reverseAnimRanged;
+    FrameList rangedFrames;
+    SdlSurface projectile;
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
 

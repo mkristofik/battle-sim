@@ -33,6 +33,19 @@ namespace
             entity.img = unit.type->baseImg[unit.team];
         }
     }
+
+    // Compute the frame index to use.
+    int getFrame(const FrameList &frames, Uint32 elapsed)
+    {
+        int size = frames.size();
+        for (int i = 0; i < size; ++i) {
+            if (elapsed < frames[i]) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }
 
 Anim::Anim()
@@ -108,13 +121,13 @@ void AnimMove::start()
 void AnimMove::run()
 {
     auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runtime_) {
+    if (elapsed >= runTime_) {
         done_ = true;
         return;
     }
 
     auto &entity = gs->getEntity(unit_.entityId);
-    auto frac = static_cast<double>(elapsed) / runtime_;
+    auto frac = static_cast<double>(elapsed) / runTime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
     entity.pOffset = dhex * frac;
 }
@@ -145,7 +158,7 @@ void AnimAttack::start()
 void AnimAttack::run()
 {
     auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runtime_) {
+    if (elapsed >= runTime) {
         done_ = true;
         return;
     }
@@ -164,7 +177,7 @@ void AnimAttack::setPosition(Uint32 elapsed)
     auto pSrc = pixelFromHex(entity.hex);
     auto pTgt = pixelFromHex(hTarget_);
     auto halfway = (pTgt - pSrc) / 2;
-    double halfTime = runtime_ / 2.0;
+    double halfTime = runTime / 2.0;
 
     if (elapsed < halfTime) {
         entity.pOffset = elapsed / halfTime * halfway;
@@ -177,16 +190,7 @@ void AnimAttack::setPosition(Uint32 elapsed)
 void AnimAttack::setFrame(Uint32 elapsed)
 {
     auto &entity = gs->getEntity(unit_.entityId);
-    const auto &frameList = unit_.type->attackFrames;
-    int size = frameList.size();
-
-    entity.frame = -1;
-    for (int i = 0; i < size; ++i) {
-        if (elapsed < frameList[i]) {
-            entity.frame = i;
-            break;
-        }
-    }
+    entity.frame = getFrame(unit_.type->attackFrames, elapsed);
 
     if (faceLeft_) {
         if (!unit_.type->reverseAnimAttack.empty() && entity.frame >= 0) {
@@ -206,27 +210,74 @@ void AnimAttack::setFrame(Uint32 elapsed)
     }
 }
 
-
-AnimDefend::AnimDefend(const Unit &unit, Point hSrc)
+AnimRanged::AnimRanged(const Unit &unit, Point hTgt)
     : Anim(),
     unit_(unit),
-    hAttacker_{hSrc},
+    hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
+{
+}
+
+void AnimRanged::run()
+{
+    auto elapsed = SDL_GetTicks() - startTime_;
+    if (elapsed >= runTime) {
+        done_ = true;
+        return;
+    }
+    setFrame(elapsed);
+}
+
+void AnimRanged::stop()
+{
+    idle(unit_, faceLeft_);
+}
+
+void AnimRanged::setFrame(Uint32 elapsed)
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    entity.frame = getFrame(unit_.type->rangedFrames, elapsed);
+
+    if (faceLeft_) {
+        if (!unit_.type->reverseAnimRanged.empty() && entity.frame >= 0) {
+            entity.img = unit_.type->reverseAnimRanged[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->reverseImg[unit_.team];
+        }
+    }
+    else {
+        if (!unit_.type->animRanged.empty() && entity.frame >= 0) {
+            entity.img = unit_.type->animRanged[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->baseImg[unit_.team];
+        }
+    }
+}
+
+
+AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt)
+    : Anim(),
+    unit_(unit),
+    hAttacker_{std::move(hSrc)},
+    faceLeft_{unit.face == Facing::LEFT},
+    hitTime_{hitsAt},
+    runTime_{hitTime_ + 250}
 {
 }
 
 void AnimDefend::run()
 {
     auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runtime_) {
+    if (elapsed >= runTime_) {
         done_ = true;
         return;
     }
 
-    // note: unit gets hit at the midpoint of AnimAttack.
     auto &entity = gs->getEntity(unit_.entityId);
     if (faceLeft_) {
-        if (elapsed >= 300 && !unit_.type->reverseImgDefend.empty()) {
+        if (elapsed >= hitTime_ && !unit_.type->reverseImgDefend.empty()) {
             entity.img = unit_.type->reverseImgDefend[unit_.team];
         }
         else {
@@ -234,7 +285,7 @@ void AnimDefend::run()
         }
     }
     else {
-        if (elapsed >= 300 && !unit_.type->imgDefend.empty()) {
+        if (elapsed >= hitTime_ && !unit_.type->imgDefend.empty()) {
             entity.img = unit_.type->imgDefend[unit_.team];
         }
         else {
@@ -246,6 +297,47 @@ void AnimDefend::run()
 void AnimDefend::stop()
 {
     idle(unit_, faceLeft_);
+}
+
+
+AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt)
+    : Anim(),
+    id_{gs->addHiddenEntity(std::move(img), ZOrder::PROJECTILE)},
+    hTarget_{std::move(hTgt)},
+    shotTime_{AnimRanged::runTime / 2},
+    flightTime_{hexDist(hSrc, hTarget_) * timePerHex}
+{
+    auto &entity = gs->getEntity(id_);
+    entity.hex = std::move(hSrc);
+    auto dir = direction(entity.hex, hTarget_);
+    entity.frame = static_cast<int>(dir);
+}
+
+void AnimProjectile::run()
+{
+    auto elapsed = SDL_GetTicks() - startTime_;
+    if (elapsed >= shotTime_ + flightTime_) {
+        done_ = true;
+        return;
+    }
+    else if (elapsed < shotTime_) {
+        return;
+    }
+
+    auto &entity = gs->getEntity(id_);
+    entity.visible = true;
+
+    auto pSrc = pixelFromHex(entity.hex);
+    auto pTgt = pixelFromHex(hTarget_);
+    auto frac = static_cast<double>(elapsed - shotTime_) / flightTime_;
+    entity.pOffset = (pTgt - pSrc) * frac;
+}
+
+void AnimProjectile::stop()
+{
+    auto &entity = gs->getEntity(id_);
+    entity.visible = false;
+    entity.img.reset();
 }
 
 

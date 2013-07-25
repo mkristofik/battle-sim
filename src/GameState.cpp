@@ -26,7 +26,7 @@ GameState::GameState()
 
 void GameState::nextTurn()
 {
-    activeUnit_ = 0;
+    activeUnit_ = 1;
 }
 
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)

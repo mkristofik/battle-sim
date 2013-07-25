@@ -51,7 +51,7 @@ private:
     const Unit &unit_;
     Point destHex_;
     bool faceLeft_;
-    static const Uint32 runtime_ = 300;
+    static const Uint32 runTime_ = 300;
 };
 
 
@@ -59,6 +59,7 @@ class AnimAttack : public Anim
 {
 public:
     AnimAttack(const Unit &unit, Point hTgt);
+    static const Uint32 runTime = 600;
 
 private:
     void start() override;
@@ -73,14 +74,13 @@ private:
     const Unit &unit_;
     Point hTarget_;
     bool faceLeft_;
-    static const Uint32 runtime_ = 600;
 };
 
 
 class AnimDefend : public Anim
 {
 public:
-    AnimDefend(const Unit &unit, Point hSrc);
+    AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt);
 
 private:
     void run() override;
@@ -89,7 +89,43 @@ private:
     const Unit &unit_;
     Point hAttacker_;
     bool faceLeft_;
-    static const Uint32 runtime_ = 550;
+    Uint32 hitTime_;
+    Uint32 runTime_;
+};
+
+
+class AnimRanged : public Anim
+{
+public:
+    AnimRanged(const Unit &unit, Point hTgt);
+    static const Uint32 runTime = 600;
+
+private:
+    void run() override;
+    void stop() override;
+
+    void setFrame(Uint32 elapsed);
+
+    const Unit &unit_;
+    Point hTarget_;
+    bool faceLeft_;
+};
+
+
+class AnimProjectile : public Anim
+{
+public:
+    AnimProjectile(SdlSurface img, Point hSrc, Point hTgt);  // create entity
+    static const Uint32 timePerHex = 150;
+
+private:
+    void run() override;  // move
+    void stop() override;  // hide/delete entity
+
+    int id_;
+    Point hTarget_;
+    Uint32 shotTime_;
+    Uint32 flightTime_;
 };
 
 

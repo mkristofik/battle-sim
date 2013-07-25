@@ -121,7 +121,6 @@ std::vector<int> getPathTo(int aTgt)
 // adjacent to it.
 bool isRangedAttackAllowed()
 {
-    return false;
     const auto attacker = gs->getActiveUnit();
     if (!attacker || !attacker->type->hasRangedAttack) {
         return false;
@@ -229,6 +228,28 @@ void executeAction(const Action &action)
 
     // These animations happen after the attacker is done moving.
     if (action.type == ActionType::RANGED) {
+        auto rangedSeq = make_unique<AnimParallel>();
+
+        auto aSrc = unit->aHex;
+        auto hSrc = bf->hexFromAry(aSrc);
+        auto aTgt = action.attackTarget;
+        auto hTgt = bf->hexFromAry(aTgt);
+
+        auto shotTime = AnimRanged::runTime / 2;
+        auto flightTime = hexDist(hSrc, hTgt) * AnimProjectile::timePerHex;
+        auto hitTime = shotTime + flightTime;
+
+        unit->face = getFacing(aSrc, aTgt, unit->face);
+        rangedSeq->add(make_unique<AnimRanged>(*unit, hTgt));
+
+        rangedSeq->add(make_unique<AnimProjectile>(unit->type->projectile,
+                                                   hSrc, hTgt));
+
+        auto defender = gs->getUnitAt(aTgt);
+        defender->face = getFacing(aTgt, aSrc, defender->face);
+        rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+
+        anims.emplace_back(std::move(rangedSeq));
         // TODO: animate the attacker, projectile, and defender
         // need to run animations in parallel
         //
@@ -278,33 +299,10 @@ void executeAction(const Action &action)
 
         auto defender = gs->getUnitAt(action.attackTarget);
         defender->face = getFacing(aTgt, aSrc, defender->face);
-        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc));
+        auto hitTime = AnimAttack::runTime / 2;
+        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
 
         anims.emplace_back(std::move(attackSeq));
-        // animate attacker and defender in parallel
-        //
-        // attacker:
-        // - start:
-        //      * facing left or right?
-        // - during:
-        //      * set attacker frame per sequence
-        //      * play attack sound if time reached and sound not yet played
-        //      * slide toward target for 300 ms, slide back for 300 ms
-        //        (previous demo has code for this)
-        //      * done when sliding done or last frame reached, whichever is
-        //        later
-        // - end:
-        //      * set attacker image to 'base'
-        //
-        // defender:
-        // - start:
-        //      * facing left or right?
-        //      * compute hit time
-        // - during:
-        //      * if hit time reached, set defend image for 250 ms
-        //      * play hit sound if not yet played
-        // - end:
-        //      * set defender image to 'base'
     }
 }
 

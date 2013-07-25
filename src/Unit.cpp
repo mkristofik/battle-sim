@@ -23,8 +23,12 @@ UnitType::UnitType(const rapidjson::Value &json)
     baseImg{},
     reverseImg{},
     animAttack{},
-    attackFrames{},
     reverseAnimAttack{},
+    attackFrames{},
+    animRanged{},
+    reverseAnimRanged{},
+    rangedFrames{},
+    projectile{},
     imgDefend{},
     reverseImgDefend{}
 {
@@ -36,9 +40,6 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("moves")) {
         moves = json["moves"].GetInt();
-    }
-    if (json.HasMember("ranged")) {
-        hasRangedAttack = (json["ranged"].GetInt() != 0);
     }
     if (json.HasMember("img")) {
         auto img = sdlLoadImage(json["img"].GetString());
@@ -74,6 +75,25 @@ UnitType::UnitType(const rapidjson::Value &json)
             reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
                 attackFrames.size()));
         }
+    }
+    if (json.HasMember("anim-ranged") && json.HasMember("ranged-frames")) {
+        hasRangedAttack = true;
+
+        const auto &frameList = json["ranged-frames"];
+        transform(frameList.Begin(),
+                  frameList.End(),
+                  std::back_inserter(rangedFrames),
+                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+
+        auto baseAnim = sdlLoadImage(json["anim-ranged"].GetString());
+        if (baseAnim) {
+            animRanged = applyTeamColors(baseAnim);
+            reverseAnimRanged = applyTeamColors(sdlFlipSheetH(baseAnim,
+                rangedFrames.size()));
+        }
+    }
+    if (json.HasMember("projectile")) {
+        projectile = sdlLoadImage(json["projectile"].GetString());
     }
     if (json.HasMember("anim-die")) {
     }
