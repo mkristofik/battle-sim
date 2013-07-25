@@ -182,17 +182,23 @@ Action getPossibleAction(int px, int py)
 }
 
 // Get direction to have a unit in the source hex face the target hex.
-Facing getFacing(int aSrc, int aTgt, Facing curFacing)
+Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
 {
-    auto hSrc = bf->hexFromAry(aSrc);
-    auto hTgt = bf->hexFromAry(aTgt);
     auto dir = direction(hSrc, hTgt);
 
     if (dir == Dir::NW || dir == Dir::SW) {
         return Facing::LEFT;
     }
     if (dir == Dir::N || dir == Dir::S) {
-        return curFacing;
+        if (hSrc.x < hTgt.x) {
+            return Facing::RIGHT;
+        }
+        else if (hSrc.x > hTgt.x) {
+            return Facing::LEFT;
+        }
+        else {
+            return curFacing;
+        }
     }
 
     return Facing::RIGHT;
@@ -214,11 +220,10 @@ void executeAction(const Action &action)
     if (action.path.size() > 1) {
         auto facing = unit->face;
         for (auto i = 1u; i < action.path.size(); ++i) {
-            auto aSrc = action.path[i - 1];
-            auto aDest = action.path[i];
-            auto hDest = bf->hexFromAry(aDest);
+            auto hSrc = bf->hexFromAry(action.path[i - 1]);
+            auto hDest = bf->hexFromAry(action.path[i]);
             auto prevFacing = facing;
-            facing = getFacing(aSrc, aDest, prevFacing);
+            facing = getFacing(hSrc, hDest, prevFacing);
 
             anims.emplace_back(make_unique<AnimMove>(*unit, hDest, facing));
         }
@@ -230,8 +235,7 @@ void executeAction(const Action &action)
     if (action.type == ActionType::RANGED) {
         auto rangedSeq = make_unique<AnimParallel>();
 
-        auto aSrc = unit->aHex;
-        auto hSrc = bf->hexFromAry(aSrc);
+        auto hSrc = bf->hexFromAry(unit->aHex);
         auto aTgt = action.attackTarget;
         auto hTgt = bf->hexFromAry(aTgt);
 
@@ -239,14 +243,16 @@ void executeAction(const Action &action)
         auto flightTime = hexDist(hSrc, hTgt) * AnimProjectile::timePerHex;
         auto hitTime = shotTime + flightTime;
 
-        unit->face = getFacing(aSrc, aTgt, unit->face);
+        unit->face = getFacing(hSrc, hTgt, unit->face);
+        std::cout << "Shooter facing " << (int)unit->face;
         rangedSeq->add(make_unique<AnimRanged>(*unit, hTgt));
 
         rangedSeq->add(make_unique<AnimProjectile>(unit->type->projectile,
                                                    hSrc, hTgt));
 
         auto defender = gs->getUnitAt(aTgt);
-        defender->face = getFacing(aTgt, aSrc, defender->face);
+        defender->face = getFacing(hTgt, hSrc, defender->face);
+        std::cout << " defender facing " << (int)defender->face << '\n';
         rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
 
         anims.emplace_back(std::move(rangedSeq));
@@ -289,16 +295,14 @@ void executeAction(const Action &action)
     else if (action.type == ActionType::ATTACK) {
         auto attackSeq = make_unique<AnimParallel>();
 
-        auto aSrc = action.path.back();
-        auto hSrc = bf->hexFromAry(aSrc);
-        auto aTgt = action.attackTarget;
-        auto hTgt = bf->hexFromAry(aTgt);
+        auto hSrc = bf->hexFromAry(unit->aHex);
+        auto hTgt = bf->hexFromAry(action.attackTarget);
 
-        unit->face = getFacing(aSrc, aTgt, unit->face);
+        unit->face = getFacing(hSrc, hTgt, unit->face);
         attackSeq->add(make_unique<AnimAttack>(*unit, hTgt));
 
         auto defender = gs->getUnitAt(action.attackTarget);
-        defender->face = getFacing(aTgt, aSrc, defender->face);
+        defender->face = getFacing(hTgt, hSrc, defender->face);
         auto hitTime = AnimAttack::runTime / 2;
         attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
 
