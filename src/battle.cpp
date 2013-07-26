@@ -239,58 +239,20 @@ void executeAction(const Action &action)
         auto aTgt = action.attackTarget;
         auto hTgt = bf->hexFromAry(aTgt);
 
-        auto shotTime = AnimRanged::runTime / 2;
-        auto flightTime = hexDist(hSrc, hTgt) * AnimProjectile::timePerHex;
-        auto hitTime = shotTime + flightTime;
-
         unit->face = getFacing(hSrc, hTgt, unit->face);
-        std::cout << "Shooter facing " << (int)unit->face;
-        rangedSeq->add(make_unique<AnimRanged>(*unit, hTgt));
+        auto animShooter = make_unique<AnimRanged>(*unit, hTgt);
 
-        rangedSeq->add(make_unique<AnimProjectile>(unit->type->projectile,
-                                                   hSrc, hTgt));
+        auto animShot = make_unique<AnimProjectile>(unit->type->projectile,
+             hSrc, hTgt, animShooter->getShotTime());
 
         auto defender = gs->getUnitAt(aTgt);
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        std::cout << " defender facing " << (int)defender->face << '\n';
-        rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
+        rangedSeq->add(std::move(animShooter));
+        rangedSeq->add(std::move(animShot));
+        rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
         anims.emplace_back(std::move(rangedSeq));
-        // TODO: animate the attacker, projectile, and defender
-        // need to run animations in parallel
-        //
-        // shooter:
-        // - start animation:
-        //      * facing left or right?
-        // - during animation:
-        //      * set attacker frame per sequence
-        //      * play bow sound if time reached and sound not yet played
-        //      * animation is done if we've passed the last frame
-        // - end animation:
-        //      * set attacker image to 'base'
-        //
-        // projectile:
-        // - start animation:
-        //      * determine which angle we need to use
-        //      * create entity at shooter's hex, zorder PROJECTILE, invisible
-        // - during animation:
-        //      * if shot time not reached, do nothing
-        //      * make visible
-        //      * slide pOffset toward target hex at 150 ms per hex
-        //      * if target hex reached, we're done
-        // - end animation:
-        //      * hide entity
-        //
-        // defender:
-        // - start:
-        //      * facing left or right?
-        //      * get time of flight plus shot time
-        // - during:
-        //      * set defend image if hit time reached
-        //      * play hit sound if not played yet
-        //      * lasts for 250 ms
-        // - end:
-        //      * set defender image to 'base'
     }
     else if (action.type == ActionType::ATTACK) {
         auto attackSeq = make_unique<AnimParallel>();
@@ -299,13 +261,14 @@ void executeAction(const Action &action)
         auto hTgt = bf->hexFromAry(action.attackTarget);
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
-        attackSeq->add(make_unique<AnimAttack>(*unit, hTgt));
+        auto anim1 = make_unique<AnimAttack>(*unit, hTgt);
 
         auto defender = gs->getUnitAt(action.attackTarget);
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        auto hitTime = AnimAttack::runTime / 2;
-        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
 
+        attackSeq->add(std::move(anim1));
+        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc,
+                                               anim1->getHitTime()));
         anims.emplace_back(std::move(attackSeq));
     }
 }

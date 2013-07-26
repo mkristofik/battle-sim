@@ -49,8 +49,8 @@ namespace
 }
 
 Anim::Anim()
-    : done_{false},
-    stopped_{false},
+    : runTime_{0},
+    done_{false},
     startTime_{0}
 {
 }
@@ -64,23 +64,31 @@ bool Anim::isDone() const
     return done_;
 }
 
+Uint32 Anim::getRunTime() const
+{
+    return runTime_;
+}
+
 void Anim::execute()
 {
     if (startTime_ == 0) {
+        startTime_ = SDL_GetTicks();
         start();
     }
     else {
-        run();
-    }
-    if (!stopped_ && isDone()) {
-        stop();
-        stopped_ = true;
+        auto elapsed = SDL_GetTicks() - startTime_;
+        if (elapsed < runTime_) {
+            run(elapsed);
+        }
+        else if (!isDone()) {
+            stop();
+            done_ = true;
+        }
     }
 }
 
 void Anim::start()
 {
-    startTime_ = SDL_GetTicks();
 }
 
 void Anim::stop()
@@ -94,6 +102,7 @@ AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
     destHex_{std::move(hDest)},
     faceLeft_{f == Facing::LEFT}
 {
+    runTime_ = 300;
     // Note: we can't use the unit's internal facing in here because that holds
     // the end state after all moves are done.  We need the facing for this
     // step only.
@@ -101,8 +110,6 @@ AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
 
 void AnimMove::start()
 {
-    Anim::start();
-
     auto &entity = gs->getEntity(unit_.entityId);
     if (faceLeft_) {
         if (!unit_.type->reverseImgMove.empty()) {
@@ -124,15 +131,8 @@ void AnimMove::start()
     entity.z = ZOrder::ANIMATING;
 }
 
-void AnimMove::run()
+void AnimMove::run(Uint32 elapsed)
 {
-    // TODO: can we refactor this out at all?
-    auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runTime_) {
-        done_ = true;
-        return;
-    }
-
     auto &entity = gs->getEntity(unit_.entityId);
     auto frac = static_cast<double>(elapsed) / runTime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
@@ -153,22 +153,22 @@ AnimAttack::AnimAttack(const Unit &unit, Point hTgt)
     hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
 {
+    runTime_ = 600;
+}
+
+Uint32 AnimAttack::getHitTime() const
+{
+    return runTime_ / 2;
 }
 
 void AnimAttack::start()
 {
-    Anim::start();
     auto &entity = gs->getEntity(unit_.entityId);
     entity.z = ZOrder::ANIMATING;
 }
 
-void AnimAttack::run()
+void AnimAttack::run(Uint32 elapsed)
 {
-    auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runTime) {
-        done_ = true;
-        return;
-    }
     setPosition(elapsed);
     setFrame(elapsed);
 }
@@ -184,7 +184,7 @@ void AnimAttack::setPosition(Uint32 elapsed)
     auto pSrc = pixelFromHex(entity.hex);
     auto pTgt = pixelFromHex(hTarget_);
     auto halfway = (pTgt - pSrc) / 2;
-    double halfTime = runTime / 2.0;
+    double halfTime = runTime_ / 2.0;
 
     if (elapsed < halfTime) {
         entity.pOffset = elapsed / halfTime * halfway;
@@ -217,21 +217,60 @@ void AnimAttack::setFrame(Uint32 elapsed)
     }
 }
 
+
+AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt)
+    : Anim(),
+    unit_(unit),
+    hAttacker_{std::move(hSrc)},
+    faceLeft_{unit.face == Facing::LEFT},
+    hitTime_{hitsAt}
+{
+    runTime_ = hitTime_ + 250;
+}
+
+void AnimDefend::run(Uint32 elapsed)
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    if (faceLeft_) {
+        if (elapsed >= hitTime_ && !unit_.type->reverseImgDefend.empty()) {
+            entity.img = unit_.type->reverseImgDefend[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->reverseImg[unit_.team];
+        }
+    }
+    else {
+        if (elapsed >= hitTime_ && !unit_.type->imgDefend.empty()) {
+            entity.img = unit_.type->imgDefend[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->baseImg[unit_.team];
+        }
+    }
+}
+
+void AnimDefend::stop()
+{
+    idle(unit_, faceLeft_);
+}
+
+
 AnimRanged::AnimRanged(const Unit &unit, Point hTgt)
     : Anim(),
     unit_(unit),
     hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
 {
+    runTime_ = 600;
 }
 
-void AnimRanged::run()
+Uint32 AnimRanged::getShotTime() const
 {
-    auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runTime) {
-        done_ = true;
-        return;
-    }
+    return runTime_ / 2;
+}
+
+void AnimRanged::run(Uint32 elapsed)
+{
     setFrame(elapsed);
 }
 
@@ -264,70 +303,31 @@ void AnimRanged::setFrame(Uint32 elapsed)
 }
 
 
-AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt)
-    : Anim(),
-    unit_(unit),
-    hAttacker_{std::move(hSrc)},
-    faceLeft_{unit.face == Facing::LEFT},
-    hitTime_{hitsAt},
-    runTime_{hitTime_ + 250}
-{
-}
-
-void AnimDefend::run()
-{
-    auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= runTime_) {
-        done_ = true;
-        return;
-    }
-
-    auto &entity = gs->getEntity(unit_.entityId);
-    if (faceLeft_) {
-        if (elapsed >= hitTime_ && !unit_.type->reverseImgDefend.empty()) {
-            entity.img = unit_.type->reverseImgDefend[unit_.team];
-        }
-        else {
-            entity.img = unit_.type->reverseImg[unit_.team];
-        }
-    }
-    else {
-        if (elapsed >= hitTime_ && !unit_.type->imgDefend.empty()) {
-            entity.img = unit_.type->imgDefend[unit_.team];
-        }
-        else {
-            entity.img = unit_.type->baseImg[unit_.team];
-        }
-    }
-}
-
-void AnimDefend::stop()
-{
-    idle(unit_, faceLeft_);
-}
-
-
-AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt)
+AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
+                               Uint32 shotTime)
     : Anim(),
     id_{gs->addHiddenEntity(std::move(img), ZOrder::PROJECTILE)},
     hTarget_{std::move(hTgt)},
-    shotTime_{AnimRanged::runTime / 2},
-    flightTime_{hexDist(hSrc, hTarget_) * timePerHex}
+    shotTime_{shotTime},
+    flightTime_{hexDist(hSrc, hTarget_) * timePerHex_}
 {
+    runTime_ = shotTime_ + flightTime_;
+
     auto &entity = gs->getEntity(id_);
     entity.hex = std::move(hSrc);
+    // TODO: support 6, 8, or no directions here
     auto dir = direction(entity.hex, hTarget_);
     entity.frame = static_cast<int>(dir);
 }
 
-void AnimProjectile::run()
+Uint32 AnimProjectile::getFlightTime() const
 {
-    auto elapsed = SDL_GetTicks() - startTime_;
-    if (elapsed >= shotTime_ + flightTime_) {
-        done_ = true;
-        return;
-    }
-    else if (elapsed < shotTime_) {
+    return flightTime_;
+}
+
+void AnimProjectile::run(Uint32 elapsed)
+{
+    if (elapsed < shotTime_) {
         return;
     }
 
@@ -367,13 +367,25 @@ bool AnimParallel::isDone() const
 
 void AnimParallel::start()
 {
-    Anim::start();
+    Uint32 maxTime = 0;
+    for (const auto &anim : animList_) {
+        maxTime = std::max(maxTime, anim->getRunTime());
+    }
+    runTime_ = maxTime;
+
     for (auto &anim : animList_) {
         anim->execute();
     }
 }
 
-void AnimParallel::run()
+void AnimParallel::run(Uint32 elapsed)
+{
+    for (auto &anim : animList_) {
+        anim->execute();
+    }
+}
+
+void AnimParallel::stop()
 {
     for (auto &anim : animList_) {
         anim->execute();

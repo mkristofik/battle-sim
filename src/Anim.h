@@ -26,15 +26,18 @@ public:
     virtual ~Anim();
 
     virtual bool isDone() const;
+    Uint32 getRunTime() const;
     void execute();
 
 protected:
+    Uint32 runTime_;
+
+private:
     virtual void start();
-    virtual void run() = 0;
+    virtual void run(Uint32 elapsed) = 0;
     virtual void stop();
 
-    bool done_;  // finished running
-    bool stopped_;  // called stop()
+    bool done_;
     Uint32 startTime_;
 }; 
 
@@ -46,13 +49,12 @@ public:
 
 private:
     void start() override;
-    void run() override;
+    void run(Uint32 elapsed) override;
     void stop() override;
 
     const Unit &unit_;
     Point destHex_;
     bool faceLeft_;
-    static const Uint32 runTime_ = 300;
 };
 
 
@@ -60,11 +62,11 @@ class AnimAttack : public Anim
 {
 public:
     AnimAttack(const Unit &unit, Point hTgt);
-    static const Uint32 runTime = 600;
+    Uint32 getHitTime() const;
 
 private:
     void start() override;
-    void run() override;
+    void run(Uint32 elapsed) override;
     void stop() override;
 
     // Move unit toward target for half the runtime and move it back for the
@@ -84,14 +86,13 @@ public:
     AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt);
 
 private:
-    void run() override;
+    void run(Uint32 elapsed) override;
     void stop() override;
 
     const Unit &unit_;
     Point hAttacker_;
     bool faceLeft_;
     Uint32 hitTime_;
-    Uint32 runTime_;
 };
 
 
@@ -99,10 +100,10 @@ class AnimRanged : public Anim
 {
 public:
     AnimRanged(const Unit &unit, Point hTgt);
-    static const Uint32 runTime = 600;
+    Uint32 getShotTime() const;  // time when projectile is fired
 
 private:
-    void run() override;
+    void run(Uint32 elapsed) override;
     void stop() override;
 
     void setFrame(Uint32 elapsed);
@@ -116,17 +117,18 @@ private:
 class AnimProjectile : public Anim
 {
 public:
-    AnimProjectile(SdlSurface img, Point hSrc, Point hTgt);  // create entity
-    static const Uint32 timePerHex = 150;
+    AnimProjectile(SdlSurface img, Point hSrc, Point hTgt, Uint32 shotTime);
+    Uint32 getFlightTime() const;
 
 private:
-    void run() override;  // move
-    void stop() override;  // hide/delete entity
+    void run(Uint32 elapsed) override;
+    void stop() override;
 
     int id_;
     Point hTarget_;
     Uint32 shotTime_;
     Uint32 flightTime_;
+    static const Uint32 timePerHex_ = 150;
 };
 
 
@@ -139,7 +141,8 @@ public:
 private:
     bool isDone() const override;
     void start() override;
-    void run() override;
+    void run(Uint32 elapsed) override;
+    void stop() override;
 
     std::vector<std::unique_ptr<Anim>> animList_;
 };
