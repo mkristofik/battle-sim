@@ -315,9 +315,16 @@ AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
 
     auto &entity = gs->getEntity(id_);
     entity.hex = std::move(hSrc);
-    // TODO: support 6, 8, or no directions here
-    auto dir = direction(entity.hex, hTarget_);
-    entity.frame = static_cast<int>(dir);
+
+    // Support projectile images that can rotate to face the target.
+    if (entity.img->w == pHexSize * 6) {
+        auto dir = direction(entity.hex, hTarget_);
+        entity.frame = static_cast<int>(dir);
+    }
+    else if (entity.img->w == pHexSize * 8) {
+        auto dir = direction8(entity.hex, hTarget_);
+        entity.frame = static_cast<int>(dir);
+    }
 }
 
 Uint32 AnimProjectile::getFlightTime() const

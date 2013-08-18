@@ -262,13 +262,13 @@ void executeAction(const Action &action)
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
         auto anim1 = make_unique<AnimAttack>(*unit, hTgt);
+        auto hitTime = anim1->getHitTime();
 
         auto defender = gs->getUnitAt(action.attackTarget);
         defender->face = getFacing(hTgt, hSrc, defender->face);
 
         attackSeq->add(std::move(anim1));
-        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc,
-                                               anim1->getHitTime()));
+        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
         anims.emplace_back(std::move(attackSeq));
     }
 }

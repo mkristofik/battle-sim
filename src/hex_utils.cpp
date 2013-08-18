@@ -133,6 +133,41 @@ Dir direction(const Point &h1, const Point &h2)
     }
 }
 
+Dir8 direction8(const Point &h1, const Point &h2)
+{
+    // Our coordinate system has y-axis increasing as you go down the screen,
+    // so we need to flip it to align with the cartesian plane.
+    auto p1 = pixelFromHex(h1);
+    auto p2 = pixelFromHex(h2);
+    auto angle = atan2(p1.y - p2.y, p2.x - p1.x);
+
+    // Interior angles of an octagon sector are 45 degrees (0.785 radians).
+    if (angle > 1.963 && angle <= 2.749) {
+        return Dir8::NW;
+    }
+    else if (angle > 1.178 && angle <= 1.963) {
+        return Dir8::N;
+    }
+    else if (angle > 0.393 && angle <= 1.178) {
+        return Dir8::NE;
+    }
+    else if (angle > -0.393 && angle <= 0.393) {
+        return Dir8::E;
+    }
+    else if (angle > -1.178 && angle <= -0.393) {
+        return Dir8::SE;
+    }
+    else if (angle > -1.963 && angle <= -1.178) {
+        return Dir8::S;
+    }
+    else if (angle > -2.749 && angle <= -1.963) {
+        return Dir8::SW;
+    }
+    else {
+        return Dir8::W;
+    }
+}
+
 Dir getSector(int hpx, int hpy)
 {
     if (hpy < pHexSize / 2) {  // top half
