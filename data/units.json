@@ -1,21 +1,40 @@
 {
     "human1": {
-        "name": "Bowman",
-        "plural": "Bowmen",
+        "name": "Archer",
+        "plural": "Archers",
         "moves": 1,
-        "ranged": 1,
         "img": "bowman.png",
         "anim-ranged": "bowman-attack-ranged.png",
         "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "img-defend": "bowman-defend-ranged.png",
         "projectile": "missile.png"
     },
     "human2": {
-        "name": "Marshal",
-        "plural": "Marshals",
-        "moves": 4,
+        "name": "Swordsman",
+        "plural": "Swordsmen",
+        "moves": 1,
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
         "img-defend": "marshal-defend.png"
+    },
+    "orc1": {
+        "name": "Orc",
+        "plural": "Orcs",
+        "movs": 1,
+        "img": "orc-grunt.png",
+        "anim-attack": "orc-grunt-attack-melee.png",
+        "attack-frames": [50, 100, 200, 275, 375, 425, 500],
+        "img-defend": "orc-grunt-defend.png"
+    },
+    "orc2": {
+        "name": "Orcish Archer",
+        "plural": "Orcish Archers",
+        "moves": 1,
+        "img": "orc-archer.png",
+        "anim-ranged": "orc-archer-attack-ranged.png",
+        "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "img-defend": "orc-archer-defend.png",
+        "projectile": "missile.png"
     }
 }

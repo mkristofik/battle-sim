@@ -26,7 +26,7 @@ GameState::GameState()
 
 void GameState::nextTurn()
 {
-    activeUnit_ = 1;
+    activeUnit_ = (activeUnit_ + 1) % bfUnits_.size();
 }
 
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)
