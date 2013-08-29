@@ -447,10 +447,11 @@ SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y)
     return {x, y, static_cast<Uint16>(surf->w), static_cast<Uint16>(surf->h)};
 }
 
-void sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
-                 const SDL_Color &color)
+int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
+                const SDL_Color &color)
 {
     auto lines = wordWrap(font, txt, pos.w);
+    int numRendered = 0;
 
     sdlClear(pos);
     SdlSetClipRect(pos, [&]
@@ -462,18 +463,21 @@ void sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
                                                                color));
             if (textImg == nullptr) {
                 std::cerr << "Warning: error rendering blended text: " <<
-                    TTF_GetError();
+                    TTF_GetError() << '\n';
                 return;
             }
 
             sdlBlit(textImg, pos.x, yPos);
             yPos += TTF_FontLineSkip(font.get());
+            ++numRendered;
         }
     });
+
+    return numRendered;
 }
 
-void sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
-                 const SDL_Color &color)
+int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
+                const SDL_Color &color)
 {
     return sdlDrawText(font, txt.c_str(), pos, color);
 }

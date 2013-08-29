@@ -20,13 +20,24 @@ GameState::GameState()
     : entities_{},
     unitRef_{},
     bfUnits_{},
-    activeUnit_{-1}
+    activeUnit_{-1},
+    roundNum_{0}
 {
 }
 
 void GameState::nextTurn()
 {
     activeUnit_ = (activeUnit_ + 1) % bfUnits_.size();
+
+    // TODO: this will need to be more complex when units start being killed.
+    if (activeUnit_ == 0) {
+        ++roundNum_;
+    }
+}
+
+int GameState::getRound() const
+{
+    return roundNum_;
 }
 
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)

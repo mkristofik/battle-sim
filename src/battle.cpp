@@ -14,6 +14,7 @@
 #include "Anim.h"
 #include "Battlefield.h"
 #include "GameState.h"
+#include "LogView.h"
 #include "Pathfinder.h"
 #include "Unit.h"
 #include "algo.h"
@@ -23,6 +24,7 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
+#include "boost/lexical_cast.hpp"
 
 #include "rapidjson/document.h"
 #include "rapidjson/filestream.h"
@@ -31,6 +33,7 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -46,10 +49,13 @@
 namespace
 {
     std::shared_ptr<Battlefield> bf;
+    std::unique_ptr<LogView> logv;
     SDL_Rect bfWindow = {0, 0, 288, 360};
+    SDL_Rect logWindow = {0, 360, 288, 100};
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
+    int roundNum = 1;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -273,6 +279,45 @@ void executeAction(const Action &action)
     }
 }
 
+void logAction(const Action &action)
+{
+    if (action.type != ActionType::ATTACK && action.type != ActionType::RANGED) {
+        return;
+    }
+
+    auto attacker = gs->getActiveUnit();
+    auto defender = gs->getUnitAt(action.attackTarget);
+    if (!attacker || !defender) {
+        return;
+    }
+
+    int numKilled = 0;
+
+    std::ostringstream ostr("- ", std::ios::ate);
+    if (attacker->num == 1) {
+        ostr << "1 " << attacker->type->name << " attacks ";
+    }
+    else {
+        ostr << attacker->num << ' ' << attacker->type->plural << "attack ";
+    }
+    if (defender->num == 1) {
+        ostr << "1 " << defender->type->name;
+    }
+    else {
+        ostr << defender->num << ' ' << defender->type->plural;
+    }
+    ostr << " for d damage.";
+    if (numKilled == 1) {
+        ostr << "  1 " << defender->type->name << " perishes.";
+    }
+    else if (numKilled > 1) {
+        ostr << "  " << numKilled << ' ' << defender->type->plural <<
+            " perish.";
+    }
+
+    logv->add(ostr.str());
+}
+
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (insideRect(event.x, event.y, bfWindow)) {
@@ -288,6 +333,7 @@ void handleMouseClick(const SDL_MouseButtonEvent &event)
         auto action = getPossibleAction(event.x, event.y);
         if (action.type != ActionType::NONE) {
             executeAction(action);
+            logAction(action);
             bf->clearHighlights();
             bf->deselectHex();
             actionTaken = true;
@@ -368,14 +414,33 @@ void parseScenario(const rapidjson::Document &doc)
     }
 }
 
+bool checkNewRound()
+{
+    int nextRound = gs->getRound();
+    if (nextRound == roundNum) {
+        return false;
+    }
+
+    roundNum = nextRound;
+    std::string msg("Round ");
+    msg += boost::lexical_cast<std::string>(roundNum);
+    msg += " begins.";
+    logv->add(" ");
+    logv->add(msg);
+    return true;
+}
+
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 {
-    if (!sdlInit(288, 360, "icon.png", "Battle Sim")) {
+    if (!sdlInit(288, 460, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 
     gs = make_unique<GameState>();
     bf = std::make_shared<Battlefield>(bfWindow);
+
+    auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
+    logv = make_unique<LogView>(logWindow, font);
 
     rapidjson::Document unitsDoc;
     if (!parseJson("units.json", unitsDoc)) {
@@ -397,6 +462,8 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     gs->nextTurn();
     bf->selectHex(gs->getActiveUnit()->aHex);
     bf->draw();
+    logv->add("Round 1 begins.");
+    logv->draw();
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -438,11 +505,13 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
         if (actionTaken && anims.empty()) {
             actionTaken = false;
             gs->nextTurn();
+            checkNewRound();
             bf->selectHex(gs->getActiveUnit()->aHex);
         }
 
         if (needRedraw) {
             bf->draw();
+            logv->draw();
             SDL_UpdateRect(screen, 0, 0, 0, 0);
         }
         SDL_Delay(1);

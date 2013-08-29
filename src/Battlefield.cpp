@@ -259,7 +259,7 @@ void Battlefield::clearHighlights()
     hideAttackArrow();
 }
 
-void Battlefield::draw()
+void Battlefield::draw() const
 {
     std::vector<int> entityIds(gs->numEntities());
     iota(std::begin(entityIds), std::end(entityIds), 0);

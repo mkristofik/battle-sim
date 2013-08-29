@@ -62,7 +62,7 @@ public:
     void hideAttackArrow();
     void clearHighlights();
 
-    void draw();
+    void draw() const;
 
 private:
     // Return the screen coordinates of a hex.

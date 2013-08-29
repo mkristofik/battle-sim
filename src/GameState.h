@@ -28,6 +28,7 @@ public:
     GameState();
 
     void nextTurn();
+    int getRound() const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
@@ -53,6 +54,7 @@ private:
     UnitTypeMap unitRef_;
     std::vector<Unit> bfUnits_;
     int activeUnit_;
+    int roundNum_;
 };
 
 extern std::unique_ptr<GameState> gs;
