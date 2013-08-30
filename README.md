@@ -4,7 +4,7 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 
 ## Screenshot
 
-![screenshot](https://raw.github.com/mkristofik/battle/master/screenshot.jpg)
+![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
 There's a [demo video](http://youtu.be/109w5Zc0YNk) too.
 
