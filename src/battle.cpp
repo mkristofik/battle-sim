@@ -51,7 +51,7 @@ namespace
     std::shared_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
     SDL_Rect bfWindow = {0, 0, 288, 360};
-    SDL_Rect logWindow = {0, 360, 288, 100};
+    SDL_Rect logWindow = {0, 360, 288, 60};
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
@@ -432,7 +432,7 @@ bool checkNewRound()
 
 extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 {
-    if (!sdlInit(288, 460, "icon.png", "Battle Sim")) {
+    if (!sdlInit(288, 420, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 

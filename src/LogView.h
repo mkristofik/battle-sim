@@ -37,7 +37,11 @@ private:
     };
 
     SDL_Rect displayArea_;
+    SdlSurface btnUp_;
+    SdlSurface btnDown_;
+    SDL_Rect textArea_;
     const SdlFont &font_;
+    int lineHeight_;
     std::vector<Message> msgs_;
     int curMsg_;
 };
