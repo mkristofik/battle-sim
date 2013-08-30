@@ -2,6 +2,12 @@
 
 This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.
 
+## Screenshot
+
+![screenshot](https://raw.github.com/mkristofik/battle/master/screenshot.jpg)
+
+There's a [demo video](http://youtu.be/109w5Zc0YNk) too.
+
 ## Core Principles
 
 - Be simple enough that an AI player can play well.
