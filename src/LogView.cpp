@@ -29,10 +29,12 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     btnUp_{sdlLoadImage("button-up.png")},
     btnUpPressed_{sdlLoadImage("button-up-pressed.png")},
     btnUpDisabled_{sdlLoadImage("button-up-disabled.png")},
+    btnUpArea_{},
     upState_{ButtonState::DISABLED},
     btnDown_{sdlLoadImage("button-down.png")},
     btnDownPressed_{sdlLoadImage("button-down-pressed.png")},
     btnDownDisabled_{sdlLoadImage("button-down-disabled.png")},
+    btnDownArea_{},
     downState_{ButtonState::DISABLED},
     textArea_(displayArea_),
     font_(f),
@@ -40,7 +42,8 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     maxLines_{0},
     msgs_{},
     beginMsg_{0},
-    endMsg_{0}
+    endMsg_{0},
+    isDirty_{true}
 {
     // Allow space for the scroll buttons.
     textArea_.w -= btnUp_->w;
@@ -48,8 +51,17 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     // The descender on lowercase g tends to get cut off between messages.
     // Increase the spacing to allow for it.
     ++lineHeight_;
-
     maxLines_ = textArea_.h / lineHeight_;
+
+    // Draw the arrow buttons on the right edge.
+    btnUpArea_.x = displayArea_.x + displayArea_.w - btnUp_->w;
+    btnUpArea_.y = displayArea_.y;
+    btnUpArea_.w = btnUp_->w;
+    btnUpArea_.h = btnUp_->h;
+    btnDownArea_.x = btnUpArea_.x;
+    btnDownArea_.y = displayArea_.y + displayArea_.h - btnDown_->h;
+    btnDownArea_.w = btnDown_->w;
+    btnDownArea_.h = btnDown_->h;
 }
 
 void LogView::add(std::string msg)
@@ -63,12 +75,12 @@ void LogView::add(std::string msg)
 
     msgs_.emplace_back(std::move(m));
     scrollToEnd();
+    isDirty_ = true;
 }
 
-void LogView::draw() const
+void LogView::draw()
 {
-    // TODO: add a dirty flag.
-    if (msgs_.empty()) {
+    if (!isDirty_) {
         return;
     }
 
@@ -81,6 +93,36 @@ void LogView::draw() const
         sdlDrawText(font_, msgs_[i].msg, drawTarget, white);
         drawTarget.y += msgs_[i].lines * lineHeight_;
         drawTarget.h -= msgs_[i].lines * lineHeight_;
+    }
+
+    isDirty_ = false;
+}
+
+void LogView::handleMouseDown(const SDL_MouseButtonEvent &event)
+{
+    if (insideRect(event.x, event.y, btnUpArea_) &&
+        upState_ == ButtonState::READY)
+    {
+        upState_ = ButtonState::PRESSED;
+        isDirty_ = true;
+    }
+    else if (insideRect(event.x, event.y, btnDownArea_) &&
+             downState_ == ButtonState::READY)
+    {
+        downState_ = ButtonState::PRESSED;
+        isDirty_ = true;
+    }
+}
+
+void LogView::handleMouseUp(const SDL_MouseButtonEvent &event)
+{
+    if (upState_ == ButtonState::PRESSED) {
+        upState_ = ButtonState::READY;
+        isDirty_ = true;
+    }
+    else if (downState_ == ButtonState::PRESSED) {
+        downState_ = ButtonState::READY;
+        isDirty_ = true;
     }
 }
 
@@ -96,6 +138,8 @@ void LogView::scrollToEnd()
         --beginMsg_;
         numLines += msgs_[beginMsg_].lines;
     }
+
+    isDirty_ = true;
     updateButtonState();
 }
 
@@ -108,30 +152,26 @@ void LogView::updateButtonState()
 
 void LogView::drawButtons() const
 {
-    // Draw the up and down arrow buttons on the right edge.
-    auto px = displayArea_.x + displayArea_.w - btnUp_->w;
-    auto downY = displayArea_.y + displayArea_.h - btnDown_->h;
-
     switch (upState_) {
         case ButtonState::READY:
-            sdlBlit(btnUp_, px, displayArea_.y);
+            sdlBlit(btnUp_, btnUpArea_.x, btnUpArea_.y);
             break;
         case ButtonState::PRESSED:
-            sdlBlit(btnUpPressed_, px, displayArea_.y);
+            sdlBlit(btnUpPressed_, btnUpArea_.x, btnUpArea_.y);
             break;
         case ButtonState::DISABLED:
-            sdlBlit(btnUpDisabled_, px, displayArea_.y);
+            sdlBlit(btnUpDisabled_, btnUpArea_.x, btnUpArea_.y);
             break;
     }
     switch (downState_) {
         case ButtonState::READY:
-            sdlBlit(btnDown_, px, downY);
+            sdlBlit(btnDown_, btnDownArea_.x, btnDownArea_.y);
             break;
         case ButtonState::PRESSED:
-            sdlBlit(btnDownPressed_, px, downY);
+            sdlBlit(btnDownPressed_, btnDownArea_.x, btnDownArea_.y);
             break;
         case ButtonState::DISABLED:
-            sdlBlit(btnDownDisabled_, px, downY);
+            sdlBlit(btnDownDisabled_, btnDownArea_.x, btnDownArea_.y);
             break;
     }
 }

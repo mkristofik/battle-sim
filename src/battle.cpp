@@ -48,7 +48,7 @@
 
 namespace
 {
-    std::shared_ptr<Battlefield> bf;
+    std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     SDL_Rect logWindow = {0, 360, 288, 60};
@@ -56,6 +56,7 @@ namespace
     std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
     int roundNum = 1;
+    bool logHasFocus = false;  // battlefield has focus by default
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -320,23 +321,37 @@ void logAction(const Action &action)
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    if (insideRect(event.x, event.y, bfWindow)) {
+    if (insideRect(event.x, event.y, bfWindow) && !logHasFocus) {
         bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
     }
 }
 
-void handleMouseClick(const SDL_MouseButtonEvent &event)
+void handleMouseDown(const SDL_MouseButtonEvent &event)
 {
     if (event.button == SDL_BUTTON_LEFT &&
-        insideRect(event.x, event.y, bfWindow))
+        insideRect(event.x, event.y, logWindow))
     {
-        auto action = getPossibleAction(event.x, event.y);
-        if (action.type != ActionType::NONE) {
-            executeAction(action);
-            logAction(action);
-            bf->clearHighlights();
-            bf->deselectHex();
-            actionTaken = true;
+        logv->handleMouseDown(event);
+        logHasFocus = true;
+    }
+}
+
+void handleMouseUp(const SDL_MouseButtonEvent &event)
+{
+    if (event.button == SDL_BUTTON_LEFT) {
+        if (logHasFocus) {
+            logv->handleMouseUp(event);
+            logHasFocus = false;
+        }
+        else if (insideRect(event.x, event.y, bfWindow)) {
+            auto action = getPossibleAction(event.x, event.y);
+            if (action.type != ActionType::NONE) {
+                executeAction(action);
+                logAction(action);
+                bf->clearHighlights();
+                bf->deselectHex();
+                actionTaken = true;
+            }
         }
     }
 }
@@ -437,7 +452,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     }
 
     gs = make_unique<GameState>();
-    bf = std::make_shared<Battlefield>(bfWindow);
+    bf = make_unique<Battlefield>(bfWindow);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
     logv = make_unique<LogView>(logWindow, font);
@@ -486,8 +501,11 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
                 handleMouseMotion(event.motion);
                 needRedraw = true;
             }
+            else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                handleMouseDown(event.button);
+            }
             else if (event.type == SDL_MOUSEBUTTONUP) {
-                handleMouseClick(event.button);
+                handleMouseUp(event.button);
             }
         }
 

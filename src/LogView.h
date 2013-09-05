@@ -25,7 +25,9 @@ public:
     LogView(SDL_Rect dispArea, const SdlFont &f);
     void add(std::string msg);
 
-    void draw() const;
+    void draw();
+    void handleMouseDown(const SDL_MouseButtonEvent &event);
+    void handleMouseUp(const SDL_MouseButtonEvent &event);
 
 private:
     // Make sure the most recent message is visible.
@@ -48,10 +50,12 @@ private:
     SdlSurface btnUp_;
     SdlSurface btnUpPressed_;
     SdlSurface btnUpDisabled_;
+    SDL_Rect btnUpArea_;
     ButtonState upState_;
     SdlSurface btnDown_;
     SdlSurface btnDownPressed_;
     SdlSurface btnDownDisabled_;
+    SDL_Rect btnDownArea_;
     ButtonState downState_;
     SDL_Rect textArea_;
     const SdlFont &font_;
@@ -60,6 +64,7 @@ private:
     std::vector<Message> msgs_;
     int beginMsg_;  // first visible message
     int endMsg_;    // one past the last visible message (like an iterator)
+    bool isDirty_;
 };
 
 #endif
