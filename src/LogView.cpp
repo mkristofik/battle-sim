@@ -117,11 +117,15 @@ void LogView::handleMouseDown(const SDL_MouseButtonEvent &event)
 void LogView::handleMouseUp(const SDL_MouseButtonEvent &event)
 {
     if (upState_ == ButtonState::PRESSED) {
-        upState_ = ButtonState::READY;
+        --beginMsg_;
+        updateMsgLimits();
+        updateButtonState();
         isDirty_ = true;
     }
     else if (downState_ == ButtonState::PRESSED) {
-        downState_ = ButtonState::READY;
+        ++beginMsg_;
+        updateMsgLimits();
+        updateButtonState();
         isDirty_ = true;
     }
 }
@@ -141,6 +145,24 @@ void LogView::scrollToEnd()
 
     isDirty_ = true;
     updateButtonState();
+}
+
+void LogView::updateMsgLimits()
+{
+    if (msgs_.empty()) {
+        return;
+    }
+
+    int totLines = msgs_[beginMsg_].lines;
+    endMsg_ = beginMsg_ + 1;
+    while (endMsg_ < static_cast<int>(msgs_.size())) {
+        int nextLines = msgs_[endMsg_].lines;
+        if (totLines + nextLines > maxLines_) {
+           break;
+        }
+        totLines += nextLines;
+        ++endMsg_;
+    }
 }
 
 void LogView::updateButtonState()

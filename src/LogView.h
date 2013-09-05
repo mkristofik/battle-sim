@@ -33,6 +33,7 @@ private:
     // Make sure the most recent message is visible.
     void scrollToEnd();
 
+    void updateMsgLimits();
     void updateButtonState();
     void drawButtons() const;
 
