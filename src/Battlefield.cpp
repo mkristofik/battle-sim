@@ -280,6 +280,7 @@ void Battlefield::draw() const
                     sdlBlitFrame(e.img, e.frame,
                                  sPixelFromHex(e.hex) + e.pOffset);
                 }
+                // TODO: be able to indicate unit quantity somehow
             }
         }
     });

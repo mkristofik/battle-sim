@@ -28,6 +28,12 @@ public:
     void draw() const;
 
 private:
+    // Make sure the most recent message is visible.
+    void scrollToEnd();
+
+    void updateButtonState();
+    void drawButtons() const;
+
     struct Message
     {
         std::string msg;
@@ -36,14 +42,24 @@ private:
         Message(std::string &&m) : msg(std::move(m)), lines{0} {}
     };
 
+    enum class ButtonState { READY, PRESSED, DISABLED };
+
     SDL_Rect displayArea_;
     SdlSurface btnUp_;
+    SdlSurface btnUpPressed_;
+    SdlSurface btnUpDisabled_;
+    ButtonState upState_;
     SdlSurface btnDown_;
+    SdlSurface btnDownPressed_;
+    SdlSurface btnDownDisabled_;
+    ButtonState downState_;
     SDL_Rect textArea_;
     const SdlFont &font_;
     int lineHeight_;
+    int maxLines_;
     std::vector<Message> msgs_;
-    int curMsg_;
+    int beginMsg_;  // first visible message
+    int endMsg_;    // one past the last visible message (like an iterator)
 };
 
 #endif
