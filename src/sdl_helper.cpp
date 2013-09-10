@@ -448,12 +448,11 @@ SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y)
 }
 
 int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
-                const SDL_Color &color)
+                const SDL_Color &color, Justify just)
 {
     auto lines = wordWrap(font, txt, pos.w);
     int numRendered = 0;
 
-    sdlClear(pos);
     SdlSetClipRect(pos, [&]
     {
         auto yPos = pos.y;
@@ -467,7 +466,11 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
                 return;
             }
 
-            sdlBlit(textImg, pos.x, yPos);
+            auto xPos = pos.x;
+            if (just == Justify::CENTER) {
+                xPos += (pos.w / 2 - textImg->w / 2);
+            }
+            sdlBlit(textImg, xPos, yPos);
             yPos += TTF_FontLineSkip(font.get());
             ++numRendered;
         }
@@ -477,9 +480,9 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
 }
 
 int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
-                const SDL_Color &color)
+                const SDL_Color &color, Justify just)
 {
-    return sdlDrawText(font, txt.c_str(), pos, color);
+    return sdlDrawText(font, txt.c_str(), pos, color, just);
 }
 
 void sdlPlayMusic(const SdlMusic &music)

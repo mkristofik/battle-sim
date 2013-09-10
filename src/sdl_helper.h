@@ -130,13 +130,17 @@ Dir8 nearEdge(Sint16 x, Sint16 y, const SDL_Rect &rect);
 SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y);
 
 // Draw text to the screen.  Return the number of word-wrapped lines of text.
+enum class Justify {LEFT, CENTER};
 int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
-                const SDL_Color &color);
+                const SDL_Color &color, Justify just = Justify::LEFT);
 int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
-                const SDL_Color &color);
+                const SDL_Color &color, Justify just = Justify::LEFT);
 
 // Play sound files at a reasonable volume.
 void sdlPlayMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);
+
+// Common colors.
+const SDL_Color WHITE = SDL_Color{255, 255, 255, 0};
 
 #endif
