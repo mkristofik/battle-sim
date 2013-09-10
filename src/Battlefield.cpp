@@ -15,9 +15,12 @@
 #include "Action.h"
 #include "Drawable.h"
 #include "GameState.h"
+
+#include "boost/lexical_cast.hpp"
 #include <algorithm>
 #include <cassert>
 #include <numeric>
+#include <string>
 
 Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
@@ -33,7 +36,8 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     attackSrc_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
                                    ZOrder::HIGHLIGHT)},
     attackTgt_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
-                                   ZOrder::HIGHLIGHT)}
+                                   ZOrder::HIGHLIGHT)},
+    font_{sdlLoadFont("../DejaVuSans.ttf", 8)}
 {
     auto tile = sdlLoadImage("grass.png");
     auto grid = sdlLoadImage("hex-grid.png");
@@ -280,8 +284,23 @@ void Battlefield::draw() const
                     sdlBlitFrame(e.img, e.frame,
                                  sPixelFromHex(e.hex) + e.pOffset);
                 }
-                // TODO: be able to indicate unit quantity somehow
             }
+        }
+
+        // This is O(n^2) but is probably good enough.
+        for (int i = 0; i < grid_.size(); ++i) {
+            auto unit = gs->getUnitAt(i);
+            if (!unit || unit->num <= 0) continue;
+
+            // Draw label centered at the bottom of the hex.
+            std::string label = boost::lexical_cast<std::string>(unit->num);
+            auto lblPt = sPixelFromHex(hexFromAry(i));
+            SDL_Rect lblBox;
+            lblBox.x = lblPt.x;
+            lblBox.y = lblPt.y + pHexSize - TTF_FontLineSkip(font_.get()) - 1;
+            lblBox.w = pHexSize;
+            lblBox.h = TTF_FontLineSkip(font_.get());
+            sdlDrawText(font_, label, lblBox, WHITE, Justify::CENTER);
         }
     });
 }

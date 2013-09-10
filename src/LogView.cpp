@@ -14,15 +14,8 @@
 #include <cassert>
 
 // TODO: future ideas
-// Add images for when scroll buttons are clicked or disabled.
-// Set up click regions slightly bigger than the buttons themselves.
-// When a button is clicked, scroll 1 message in that direction.
-// Need mouse click event handler.  Dispatch from battle.cpp.
-// Look into whether we can support the mouse wheel.
-namespace
-{
-    auto white = SDL_Color{255, 255, 255, 0};
-}
+// Mouse wheel buttons are SDL_BUTTON_WHEELUP and SDL_BUTTON_WHEELDOWN.  It
+// doesn't take much to generate a lot of events with the wheel.
 
 LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     : displayArea_(std::move(dispArea)),
@@ -71,7 +64,7 @@ void LogView::add(std::string msg)
     // Render the message off-screen to find out how big it is.
     SDL_Rect temp = textArea_;
     temp.x = -temp.w;
-    m.lines = sdlDrawText(font_, m.msg, temp, white);
+    m.lines = sdlDrawText(font_, m.msg, temp, WHITE);
 
     msgs_.emplace_back(std::move(m));
     scrollToEnd();
@@ -90,7 +83,7 @@ void LogView::draw()
     // Display the messages.
     SDL_Rect drawTarget = textArea_;
     for (auto i = beginMsg_; i < endMsg_; ++i) {
-        sdlDrawText(font_, msgs_[i].msg, drawTarget, white);
+        sdlDrawText(font_, msgs_[i].msg, drawTarget, WHITE);
         drawTarget.y += msgs_[i].lines * lineHeight_;
         drawTarget.h -= msgs_[i].lines * lineHeight_;
     }

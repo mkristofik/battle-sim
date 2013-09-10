@@ -79,6 +79,8 @@ private:
     int greenHex_;
     int attackSrc_;
     int attackTgt_;
+
+    SdlFont font_;
 };
 
 #endif

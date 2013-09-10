@@ -537,5 +537,6 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
 
     // Ensure SDL resources are cleaned up before the subsystems are torn down.
     gs.reset();
+    bf.reset();
     return EXIT_SUCCESS;
 }
