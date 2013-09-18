@@ -120,8 +120,8 @@ namespace
         SDL_Surface *surf;
         Uint32 rmask, gmask, bmask, amask;
 
-        // SDL interprets each pixel as a 32-bit number, so our masks must depend
-        // on the endianness (byte order) of the machine.
+        // SDL interprets each pixel as a 32-bit number, so our masks must
+        // depend on the byte order of the machine.
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
         rmask = 0xff000000;
         gmask = 0x00ff0000;
@@ -457,19 +457,13 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
     {
         auto yPos = pos.y;
         for (const auto &str : lines) {
-            auto textImg = make_surface(TTF_RenderText_Blended(font.get(),
-                                                               str.c_str(),
-                                                               color));
-            if (textImg == nullptr) {
-                std::cerr << "Warning: error rendering blended text: " <<
-                    TTF_GetError() << '\n';
-                return;
-            }
+            auto textImg = sdlPreRender(font, str.c_str(), color);
 
             auto xPos = pos.x;
             if (just == Justify::CENTER) {
                 xPos += (pos.w / 2 - textImg->w / 2);
             }
+
             sdlBlit(textImg, xPos, yPos);
             yPos += TTF_FontLineSkip(font.get());
             ++numRendered;
@@ -483,6 +477,23 @@ int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
                 const SDL_Color &color, Justify just)
 {
     return sdlDrawText(font, txt.c_str(), pos, color, just);
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
+                        const SDL_Color &color)
+{
+    auto textImg = make_surface(TTF_RenderText_Blended(font.get(), txt, color));
+    if (textImg == nullptr) {
+        std::cerr << "Warning: error pre-rendering text: " << TTF_GetError() <<
+            '\n';
+    }
+    return textImg;
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
+                        const SDL_Color &color)
+{
+    return sdlPreRender(font, txt.c_str(), color);
 }
 
 void sdlPlayMusic(const SdlMusic &music)

@@ -136,6 +136,13 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
 int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
                 const SDL_Color &color, Justify just = Justify::LEFT);
 
+// Create an image containing some text to be drawn later.  No word-wrapping is
+// done.
+SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
+                        const SDL_Color &color);
+SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
+                        const SDL_Color &color);
+
 // Play sound files at a reasonable volume.
 void sdlPlayMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);
