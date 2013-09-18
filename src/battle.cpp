@@ -17,6 +17,7 @@
 #include "LogView.h"
 #include "Pathfinder.h"
 #include "Unit.h"
+#include "UnitType.h"
 #include "algo.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"

@@ -15,6 +15,7 @@
 
 #include "Drawable.h"
 #include "Unit.h"
+#include "UnitType.h"
 #include "sdl_helper.h"
 
 #include "rapidjson/document.h"

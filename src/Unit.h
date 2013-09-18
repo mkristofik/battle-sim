@@ -13,42 +13,9 @@
 #ifndef UNIT_H
 #define UNIT_H
 
-#include "sdl_helper.h"
-#include "team_color.h"
-
-#include "rapidjson/document.h"
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-using FrameList = std::vector<Uint32>;
+class UnitType;
 
 enum class Facing { LEFT, RIGHT };
-
-// Definition of each unit type.  Contains all combat stats, descriptive info,
-// images, and animations.
-struct UnitType
-{
-    std::string name;
-    std::string plural;
-    int moves;
-    bool hasRangedAttack;
-    ImageSet baseImg;
-    ImageSet reverseImg;
-    ImageSet imgMove;
-    ImageSet reverseImgMove;
-    ImageSet animAttack;
-    ImageSet reverseAnimAttack;
-    FrameList attackFrames;
-    ImageSet animRanged;
-    ImageSet reverseAnimRanged;
-    FrameList rangedFrames;
-    SdlSurface projectile;
-    ImageSet imgDefend;
-    ImageSet reverseImgDefend;
-
-    UnitType(const rapidjson::Value &json);
-};
 
 // Unit stack on the battlefield.
 struct Unit
@@ -59,10 +26,9 @@ struct Unit
     int aHex;
     Facing face;
     const UnitType *type;
+    int labelId;  // entity id of text label showing number of creatures
 
     Unit();
 };
-
-using UnitTypeMap = std::unordered_map<std::string, UnitType>;
 
 #endif
