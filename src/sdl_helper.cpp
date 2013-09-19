@@ -15,6 +15,7 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
+#include "boost/lexical_cast.hpp"
 #include "boost/tokenizer.hpp"
 
 #include <algorithm>
@@ -494,6 +495,12 @@ SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
                         const SDL_Color &color)
 {
     return sdlPreRender(font, txt.c_str(), color);
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, int number,
+                        const SDL_Color &color)
+{
+    return sdlPreRender(font, boost::lexical_cast<std::string>(number), color);
 }
 
 void sdlPlayMusic(const SdlMusic &music)

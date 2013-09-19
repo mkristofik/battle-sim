@@ -142,6 +142,8 @@ SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
                         const SDL_Color &color);
 SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
                         const SDL_Color &color);
+SdlSurface sdlPreRender(const SdlFont &font, int number,
+                        const SDL_Color &color);
 
 // Play sound files at a reasonable volume.
 void sdlPlayMusic(const SdlMusic &music);

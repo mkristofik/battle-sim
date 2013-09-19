@@ -379,15 +379,9 @@ bool parseUnits(const rapidjson::Document &doc)
 // TODO: must update this whenever unit size changes.
 int createUnitLabel(int num, Point hex)
 {
-    std::string label = boost::lexical_cast<std::string>(num);
-    auto labelImg = sdlPreRender(labelFont, label, WHITE);
-    auto id = gs->addEntity(std::move(hex), labelImg, ZOrder::CREATURE);
-    auto &entity = gs->getEntity(id);
-
-    // Draw the label centered at the bottom of the hex.
-    entity.pOffset.x = pHexSize / 2 - labelImg->w / 2;
-    entity.pOffset.y = pHexSize - labelImg->h - 1;
-
+    auto label = sdlPreRender(labelFont, num, WHITE);
+    auto id = gs->addEntity(std::move(hex), label, ZOrder::CREATURE);
+    gs->getEntity(id).alignBottomCenter();
     return id;
 }
 
