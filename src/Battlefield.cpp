@@ -286,28 +286,6 @@ void Battlefield::draw() const
                 }
             }
         }
-
-        // Indicate the size of each unit.  This is O(n^2) but is probably good
-        // enough.
-        // TODO: maybe this label is its own entity
-        // - need a way to pre-render the text to save its SdlSurface
-        // - can also use that to make it centered
-        // - must associate a unit entity with its label entity
-        // - need to update the label entity whenever unit size changes
-        for (int i = 0; i < grid_.size(); ++i) {
-            auto unit = gs->getUnitAt(i);
-            if (!unit || unit->num <= 0) continue;
-
-            // Draw label centered at the bottom of the hex.
-            std::string label = boost::lexical_cast<std::string>(unit->num);
-            auto lblPt = sPixelFromHex(hexFromAry(i));
-            SDL_Rect lblBox;
-            lblBox.x = lblPt.x;
-            lblBox.y = lblPt.y + pHexSize - TTF_FontLineSkip(font_.get()) - 1;
-            lblBox.w = pHexSize;
-            lblBox.h = TTF_FontLineSkip(font_.get());
-            sdlDrawText(font_, label, lblBox, WHITE, Justify::CENTER);
-        }
     });
 }
 

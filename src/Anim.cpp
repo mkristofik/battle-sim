@@ -127,8 +127,10 @@ void AnimMove::start()
             entity.img = unit_.type->baseImg[unit_.team];
         }
     }
-
     entity.z = ZOrder::ANIMATING;
+
+    auto &labelEntity = gs->getEntity(unit_.labelId);
+    labelEntity.visible = false;
 }
 
 void AnimMove::run(Uint32 elapsed)
@@ -144,6 +146,10 @@ void AnimMove::stop()
     auto &entity = gs->getEntity(unit_.entityId);
     entity.hex = destHex_;
     idle(unit_, faceLeft_);
+
+    auto &labelEntity = gs->getEntity(unit_.labelId);
+    labelEntity.hex = destHex_;
+    labelEntity.visible = true;
 }
 
 

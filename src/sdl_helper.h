@@ -24,7 +24,7 @@
 #include <utility>
 
 using SdlSurface = std::shared_ptr<SDL_Surface>;
-using SdlFont = std::unique_ptr<TTF_Font, void(*)(TTF_Font *)>;
+using SdlFont = std::shared_ptr<TTF_Font>;
 using SdlMusic = std::shared_ptr<Mix_Music>;
 using SdlSound = std::shared_ptr<Mix_Chunk>;
 

@@ -53,6 +53,7 @@ namespace
     std::unique_ptr<LogView> logv;
     SDL_Rect bfWindow = {0, 0, 288, 360};
     SDL_Rect logWindow = {0, 360, 288, 60};
+    SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
@@ -374,6 +375,22 @@ bool parseUnits(const rapidjson::Document &doc)
     return unitAdded;
 }
 
+// Create a drawable entity for the size of a unit.  Return its id.
+// TODO: must update this whenever unit size changes.
+int createUnitLabel(int num, Point hex)
+{
+    std::string label = boost::lexical_cast<std::string>(num);
+    auto labelImg = sdlPreRender(labelFont, label, WHITE);
+    auto id = gs->addEntity(std::move(hex), labelImg, ZOrder::CREATURE);
+    auto &entity = gs->getEntity(id);
+
+    // Draw the label centered at the bottom of the hex.
+    entity.pOffset.x = pHexSize / 2 - labelImg->w / 2;
+    entity.pOffset.y = pHexSize - labelImg->h - 1;
+
+    return id;
+}
+
 void parseScenario(const rapidjson::Document &doc)
 {
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
@@ -415,6 +432,7 @@ void parseScenario(const rapidjson::Document &doc)
         newUnit.face = (newUnit.team == 0) ? Facing::RIGHT : Facing::LEFT;
         if (json.HasMember("num")) {
             newUnit.num = json["num"].GetInt();
+            newUnit.labelId = createUnitLabel(newUnit.num, bfHex);
         }
 
         SdlSurface img;
@@ -456,6 +474,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     bf = make_unique<Battlefield>(bfWindow);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
+    labelFont = sdlLoadFont("../DejaVuSans.ttf", 8);
     logv = make_unique<LogView>(logWindow, font);
 
     rapidjson::Document unitsDoc;
