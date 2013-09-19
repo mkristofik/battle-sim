@@ -33,15 +33,10 @@ struct Drawable
     ZOrder z;
     bool visible;
 
-    Drawable(Point h, SdlSurface surf, ZOrder order)
-        : hex{std::move(h)},
-        pOffset{0, 0},
-        img{std::move(surf)},
-        frame{-1},
-        z{std::move(order)},
-        visible{true}
-    {
-    }
+    Drawable(Point h, SdlSurface surf, ZOrder order);
+
+    // Align the image with the bottom-center of its hex.
+    void alignBottomCenter();
 };
 
 #endif
