@@ -1,18 +1,18 @@
 {
     "t1p1": {
         "id": "human2",
-        "num": 1
+        "num": 6
     },
     "t1p5": {
         "id": "human1",
-        "num": 1
+        "num": 12
     },
     "t2p3": {
         "id": "orc1",
-        "num": 1
+        "num": 4
     },
     "t2p7": {
         "id": "orc2",
-        "num": 1
+        "num": 15
     }
 }

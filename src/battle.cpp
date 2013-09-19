@@ -301,7 +301,7 @@ void logAction(const Action &action)
         ostr << "1 " << attacker->type->name << " attacks ";
     }
     else {
-        ostr << attacker->num << ' ' << attacker->type->plural << "attack ";
+        ostr << attacker->num << ' ' << attacker->type->plural << " attack ";
     }
     if (defender->num == 1) {
         ostr << "1 " << defender->type->name;
@@ -474,7 +474,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     bf = make_unique<Battlefield>(bfWindow);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
-    labelFont = sdlLoadFont("../DejaVuSans.ttf", 8);
+    labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);
     logv = make_unique<LogView>(logWindow, font);
 
     rapidjson::Document unitsDoc;
@@ -558,5 +558,6 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     // Ensure SDL resources are cleaned up before the subsystems are torn down.
     gs.reset();
     bf.reset();
+    labelFont.reset();
     return EXIT_SUCCESS;
 }
