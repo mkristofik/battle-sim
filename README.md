@@ -2,7 +2,12 @@
 
 This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.
 
-## Screenshot
+## Features
+
+- Mouseover highlights indicating move and attack targets.
+- Attack and defend animations.
+- Labels indicating unit size.
+- Scrolling battle log to record every attack action.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
