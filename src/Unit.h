@@ -28,7 +28,7 @@ struct Unit
     const UnitType *type;
     int labelId;  // entity id of text label showing number of creatures
 
-    Unit();
+    Unit(const UnitType &t);
 };
 
 #endif

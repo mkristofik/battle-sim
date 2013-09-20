@@ -419,10 +419,9 @@ void parseScenario(const rapidjson::Document &doc)
             continue;
         }
 
-        Unit newUnit;
+        Unit newUnit(*unitType);
         newUnit.team = (posIdx < 7) ? 0 : 1;
         newUnit.aHex = bf->aryFromHex(bfHex);
-        newUnit.type = unitType;
         newUnit.face = (newUnit.team == 0) ? Facing::RIGHT : Facing::LEFT;
         if (json.HasMember("num")) {
             newUnit.num = json["num"].GetInt();

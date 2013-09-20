@@ -12,13 +12,13 @@
 */
 #include "Unit.h"
 
-Unit::Unit()
+Unit::Unit(const UnitType &t)
     : entityId{-1},
     num{0},
     team{-1},
     aHex{-1},
     face{Facing::RIGHT},
-    type{nullptr},
+    type{&t},
     labelId{-1}
 {
 }
