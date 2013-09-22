@@ -10,29 +10,24 @@
  
     See the COPYING.txt file for more details.
 */
-#ifndef UNIT_H
-#define UNIT_H
-
 #include "Action.h"
+#include "Unit.h"
 
-class UnitType;
-
-enum class Facing { LEFT, RIGHT };
-
-// Unit stack on the battlefield.
-struct Unit
+Action::Action()
+    : path{},
+    attackTarget{-1},
+    damage{0},
+    type{ActionType::NONE},
+    attacker{nullptr},
+    defender{nullptr}
 {
-    int entityId;
-    int num;
-    int team;
-    int aHex;
-    Facing face;
-    const UnitType *type;
-    int labelId;  // entity id of text label showing number of creatures
+}
 
-    Unit(const UnitType &t);
+void Action::computeDamage()
+{
+    if (!attacker) {
+        return;
+    }
 
-    int randomDamage(ActionType action) const;
-};
-
-#endif
+    damage = attacker->num * attacker->randomDamage(type);
+}

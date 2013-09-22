@@ -31,6 +31,10 @@ struct UnitType
     std::string plural;
     int moves;
     bool hasRangedAttack;
+    int minDmg;
+    int maxDmg;
+    int minDmgRanged;
+    int maxDmgRanged;
     ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet imgMove;

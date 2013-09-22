@@ -12,6 +12,10 @@
 */
 #include "Unit.h"
 
+#include "UnitType.h"
+#include "algo.h"
+#include <random>
+
 Unit::Unit(const UnitType &t)
     : entityId{-1},
     num{0},
@@ -21,4 +25,19 @@ Unit::Unit(const UnitType &t)
     type{&t},
     labelId{-1}
 {
+}
+
+int Unit::randomDamage(ActionType action) const
+{
+    if (action == ActionType::ATTACK) {
+        std::uniform_int_distribution<int> dmg(type->minDmg, type->maxDmg);
+        return dmg(randomGenerator());
+    }
+    else if (action == ActionType::RANGED) {
+        std::uniform_int_distribution<int> dmg(type->minDmgRanged,
+                                               type->maxDmgRanged);
+        return dmg(randomGenerator());
+    }
+
+    return 0;
 }

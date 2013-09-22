@@ -19,6 +19,10 @@ UnitType::UnitType(const rapidjson::Value &json)
     plural{},
     moves{1},
     hasRangedAttack{false},
+    minDmg{1},
+    maxDmg{1},
+    minDmgRanged{0},
+    maxDmgRanged{0},
     baseImg{},
     reverseImg{},
     animAttack{},
@@ -76,8 +80,6 @@ UnitType::UnitType(const rapidjson::Value &json)
         }
     }
     if (json.HasMember("anim-ranged") && json.HasMember("ranged-frames")) {
-        hasRangedAttack = true;
-
         const auto &frameList = json["ranged-frames"];
         transform(frameList.Begin(),
                   frameList.End(),
@@ -90,6 +92,18 @@ UnitType::UnitType(const rapidjson::Value &json)
             reverseAnimRanged = applyTeamColors(sdlFlipSheetH(baseAnim,
                 rangedFrames.size()));
         }
+    }
+    if (json.HasMember("damage")) {
+        const auto &damageList = json["damage"];
+        minDmg = damageList[0u].GetInt();
+        maxDmg = damageList[1u].GetInt();
+    }
+    if (json.HasMember("damage-ranged")) {
+        hasRangedAttack = true;
+
+        const auto &damageList = json["damage-ranged"];
+        minDmgRanged = damageList[0u].GetInt();
+        maxDmgRanged = damageList[1u].GetInt();
     }
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());

@@ -150,40 +150,46 @@ bool isRangedAttackAllowed()
 // the user clicks at the given screen coordinates.
 Action getPossibleAction(int px, int py)
 {
+    Action action;
     auto aTgt = bf->aryFromPixel(px, py);
     if (aTgt < 0) {
         return {};
     }
+    action.attackTarget = aTgt;
     auto hTgt = bf->hexFromAry(aTgt);
-    const auto attacker = gs->getActiveUnit();
-    if (!attacker) {
+
+    action.attacker = gs->getActiveUnit();
+    if (!action.attacker) {
         return {};
     }
 
-    const auto defender = gs->getUnitAt(aTgt);
-    int enemy = (attacker->team == 0) ? 1 : 0;
+    action.defender = gs->getUnitAt(aTgt);
+    int enemy = (action.attacker->team == 0) ? 1 : 0;
 
     // Pathfinder includes the current hex.
-    auto moveRange = static_cast<unsigned>(attacker->type->moves) + 1;
+    auto moveRange = static_cast<unsigned>(action.attacker->type->moves) + 1;
 
-    if (defender && defender->team == enemy) {
+    if (action.defender && action.defender->team == enemy) {
         if (isRangedAttackAllowed()) {
-            return {{}, ActionType::RANGED, aTgt};
+            action.type = ActionType::RANGED;
+            return action;
         }
 
+        action.type = ActionType::ATTACK;
         auto pOffset = Point{px, py} - pixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = bf->aryFromHex(hMoveTo);
-        auto path = getPathTo(aMoveTo);
-        if (!path.empty() && path.size() <= moveRange) {
-            return {path, ActionType::ATTACK, aTgt};
+        action.path = getPathTo(aMoveTo);
+        if (!action.path.empty() && action.path.size() <= moveRange) {
+            return action;
         }
     }
-    else if (!defender) {
-        auto path = getPathTo(aTgt);
-        if (path.size() > 1 && path.size() <= moveRange) {
-            return {path, ActionType::MOVE};
+    else if (!action.defender) {
+        action.type = ActionType::MOVE;
+        action.path = getPathTo(aTgt);
+        if (action.path.size() > 1 && action.path.size() <= moveRange) {
+            return action;
         }
     }
 
@@ -258,6 +264,9 @@ void executeAction(const Action &action)
         defender->face = getFacing(hTgt, hSrc, defender->face);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
+        // TODO: defend animation updates the unit size at the end
+        // later, choose the die animation instead if unit size reduced to 0
+
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
         rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
@@ -288,33 +297,32 @@ void logAction(const Action &action)
         return;
     }
 
-    auto attacker = gs->getActiveUnit();
-    auto defender = gs->getUnitAt(action.attackTarget);
-    if (!attacker || !defender) {
+    if (!action.attacker || !action.defender) {
         return;
     }
 
     int numKilled = 0;
 
     std::ostringstream ostr("- ", std::ios::ate);
-    if (attacker->num == 1) {
-        ostr << "1 " << attacker->type->name << " attacks ";
+    if (action.attacker->num == 1) {
+        ostr << "1 " << action.attacker->type->name << " attacks ";
     }
     else {
-        ostr << attacker->num << ' ' << attacker->type->plural << " attack ";
+        ostr << action.attacker->num << ' ' << action.attacker->type->plural <<
+            " attack ";
     }
-    if (defender->num == 1) {
-        ostr << "1 " << defender->type->name;
+    if (action.defender->num == 1) {
+        ostr << "1 " << action.defender->type->name;
     }
     else {
-        ostr << defender->num << ' ' << defender->type->plural;
+        ostr << action.defender->num << ' ' << action.defender->type->plural;
     }
-    ostr << " for d damage.";
+    ostr << " for " << action.damage << " damage.";
     if (numKilled == 1) {
-        ostr << "  1 " << defender->type->name << " perishes.";
+        ostr << "  1 " << action.defender->type->name << " perishes.";
     }
     else if (numKilled > 1) {
-        ostr << "  " << numKilled << ' ' << defender->type->plural <<
+        ostr << "  " << numKilled << ' ' << action.defender->type->plural <<
             " perish.";
     }
 
@@ -348,6 +356,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         else if (insideRect(event.x, event.y, bfWindow)) {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
+                action.computeDamage();
                 executeAction(action);
                 logAction(action);
                 bf->clearHighlights();
