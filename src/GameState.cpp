@@ -21,18 +21,29 @@ GameState::GameState()
     unitRef_{},
     bfUnits_{},
     activeUnit_{-1},
-    roundNum_{0}
+    roundNum_{1}
 {
 }
 
 void GameState::nextTurn()
 {
-    activeUnit_ = (activeUnit_ + 1) % bfUnits_.size();
-
-    // TODO: this will need to be more complex when units start being killed.
-    if (activeUnit_ == 0) {
-        ++roundNum_;
+    auto nextUnit = activeUnit_;
+    int totalUnits = bfUnits_.size();
+    int numTried = 0;
+    while (numTried < totalUnits) {
+        ++nextUnit;
+        if (nextUnit >= totalUnits) {
+            ++roundNum_;
+            nextUnit = 0;
+        }
+        if (bfUnits_[nextUnit].num > 0) {
+            activeUnit_ = nextUnit;
+            return;
+        }
+        ++numTried;
     }
+
+    activeUnit_ = -1;
 }
 
 int GameState::getRound() const

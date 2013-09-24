@@ -14,6 +14,7 @@
 #include "GameState.h"
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 
 namespace
@@ -258,6 +259,12 @@ void AnimDefend::run(Uint32 elapsed)
 void AnimDefend::stop()
 {
     idle(unit_, faceLeft_);
+
+    // Update the label with the new size.
+    auto &label = gs->getEntity(unit_.labelId);
+    assert(label.font);
+    label.img = sdlPreRender(label.font, unit_.num, WHITE);
+    label.alignBottomCenter();
 }
 
 

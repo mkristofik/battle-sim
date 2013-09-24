@@ -262,10 +262,10 @@ void executeAction(const Action &action)
 
         auto defender = gs->getUnitAt(aTgt);
         defender->face = getFacing(hTgt, hSrc, defender->face);
+        defender->takeDamage(action.damage);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
-        // TODO: defend animation updates the unit size at the end
-        // later, choose the die animation instead if unit size reduced to 0
+        // TODO: choose the die animation instead if unit size reduced to 0
 
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
@@ -284,6 +284,9 @@ void executeAction(const Action &action)
 
         auto defender = gs->getUnitAt(action.attackTarget);
         defender->face = getFacing(hTgt, hSrc, defender->face);
+        defender->takeDamage(action.damage);
+
+        // TODO: choose the die animation instead if unit size reduced to 0
 
         attackSeq->add(std::move(anim1));
         attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
@@ -296,12 +299,11 @@ void logAction(const Action &action)
     if (action.type != ActionType::ATTACK && action.type != ActionType::RANGED) {
         return;
     }
-
     if (!action.attacker || !action.defender) {
         return;
     }
 
-    int numKilled = 0;
+    int numKilled = action.defender->simulateDamage(action.damage);
 
     std::ostringstream ostr("- ", std::ios::ate);
     if (action.attacker->num == 1) {
@@ -357,8 +359,8 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
                 action.computeDamage();
-                executeAction(action);
                 logAction(action);
+                executeAction(action);
                 bf->clearHighlights();
                 bf->deselectHex();
                 actionTaken = true;
@@ -385,12 +387,13 @@ bool parseUnits(const rapidjson::Document &doc)
 }
 
 // Create a drawable entity for the size of a unit.  Return its id.
-// TODO: must update this whenever unit size changes.
 int createUnitLabel(int num, Point hex)
 {
-    auto label = sdlPreRender(labelFont, num, WHITE);
-    auto id = gs->addEntity(std::move(hex), label, ZOrder::CREATURE);
-    gs->getEntity(id).alignBottomCenter();
+    auto txt = sdlPreRender(labelFont, num, WHITE);
+    auto id = gs->addEntity(std::move(hex), txt, ZOrder::CREATURE);
+    auto &label = gs->getEntity(id);
+    label.font = labelFont;
+    label.alignBottomCenter();
     return id;
 }
 

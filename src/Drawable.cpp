@@ -18,7 +18,8 @@ Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
     img{std::move(surf)},
     frame{-1},
     z{std::move(order)},
-    visible{true}
+    visible{true},
+    font{}
 {
 }
 

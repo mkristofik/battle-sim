@@ -14,6 +14,7 @@
 
 #include "UnitType.h"
 #include "algo.h"
+#include <cstdlib>
 #include <random>
 
 Unit::Unit(const UnitType &t)
@@ -23,7 +24,8 @@ Unit::Unit(const UnitType &t)
     aHex{-1},
     face{Facing::RIGHT},
     type{&t},
-    labelId{-1}
+    labelId{-1},
+    hpLeft{type->hp}
 {
 }
 
@@ -40,4 +42,37 @@ int Unit::randomDamage(ActionType action) const
     }
 
     return 0;
+}
+
+int Unit::takeDamage(int dmg)
+{
+    if (dmg < hpLeft) {
+        hpLeft -= dmg;
+        return 0;
+    }
+
+    int startSize = num;
+
+    // Remove the top creature in the stack.
+    dmg -= hpLeft;
+    hpLeft = type->hp;
+    --num;
+
+    // Remove as many whole creatures as possible.
+    auto result = div(dmg, type->hp);
+    num -= result.quot;
+    if (num < 0) {
+        num = 0;
+        hpLeft = 0;
+        return startSize;
+    }
+
+    // Damage the top remaining creature.
+    hpLeft -= result.rem;
+    return startSize - num;
+}
+
+int Unit::simulateDamage(int dmg) const
+{
+    return Unit(*this).takeDamage(dmg);
 }

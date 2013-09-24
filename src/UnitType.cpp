@@ -18,6 +18,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     : name{},
     plural{},
     moves{1},
+    hp{1},
     hasRangedAttack{false},
     minDmg{1},
     maxDmg{1},
@@ -43,6 +44,9 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("moves")) {
         moves = json["moves"].GetInt();
+    }
+    if (json.HasMember("hp")) {
+        hp = json["hp"].GetInt();
     }
     if (json.HasMember("img")) {
         auto img = sdlLoadImage(json["img"].GetString());

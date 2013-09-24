@@ -32,6 +32,7 @@ struct Drawable
     int frame;
     ZOrder z;
     bool visible;
+    SdlFont font;
 
     Drawable(Point h, SdlSurface surf, ZOrder order);
 

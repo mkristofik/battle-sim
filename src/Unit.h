@@ -29,10 +29,14 @@ struct Unit
     Facing face;
     const UnitType *type;
     int labelId;  // entity id of text label showing number of creatures
+    int hpLeft;  // hp of top creature in the stack
 
     Unit(const UnitType &t);
-
     int randomDamage(ActionType action) const;
+
+    // Apply damage, return number of creatures killed.
+    int takeDamage(int dmg);
+    int simulateDamage(int dmg) const;
 };
 
 #endif
