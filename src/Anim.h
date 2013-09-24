@@ -132,6 +132,23 @@ private:
 };
 
 
+class AnimDie : public Anim
+{
+public:
+    AnimDie(const Unit &unit, Uint32 hitsAt);
+
+private:
+    void run(Uint32 elapsed) override;
+    void stop() override;
+
+    void setFrame(Uint32 elapsed);
+
+    const Unit &unit_;
+    bool faceLeft_;
+    Uint32 hitTime_;
+};
+
+
 class AnimParallel : public Anim
 {
 public:

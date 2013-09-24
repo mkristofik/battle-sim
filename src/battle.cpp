@@ -265,11 +265,14 @@ void executeAction(const Action &action)
         defender->takeDamage(action.damage);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
-        // TODO: choose the die animation instead if unit size reduced to 0
-
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
-        rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        if (defender->num > 0) {
+            rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        }
+        else {
+            rangedSeq->add(make_unique<AnimDie>(*defender, hitTime));
+        }
         anims.emplace_back(std::move(rangedSeq));
     }
     else if (action.type == ActionType::ATTACK) {
@@ -286,10 +289,13 @@ void executeAction(const Action &action)
         defender->face = getFacing(hTgt, hSrc, defender->face);
         defender->takeDamage(action.damage);
 
-        // TODO: choose the die animation instead if unit size reduced to 0
-
         attackSeq->add(std::move(anim1));
-        attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        if (defender->num > 0) {
+            attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        }
+        else {
+            attackSeq->add(make_unique<AnimDie>(*defender, hitTime));
+        }
         anims.emplace_back(std::move(attackSeq));
     }
 }

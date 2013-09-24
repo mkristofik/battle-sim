@@ -368,6 +368,33 @@ void AnimProjectile::stop()
 }
 
 
+AnimDie::AnimDie(const Unit &unit, Uint32 hitsAt)
+    : Anim(),
+    unit_(unit),
+    faceLeft_{unit_.face == Facing::LEFT},
+    hitTime_{hitsAt}
+{
+    runTime_ = hitTime_;
+    // TODO: runTime_ = hitTime_ + animate and fade out
+}
+
+void AnimDie::run(Uint32 elapsed)
+{
+}
+
+void AnimDie::stop()
+{
+    auto &entity = gs->getEntity(unit_.entityId);
+    auto &label = gs->getEntity(unit_.labelId);
+    entity.visible = false;
+    label.visible = false;
+}
+
+void AnimDie::setFrame(Uint32 elapsed)
+{
+}
+
+
 AnimParallel::AnimParallel()
     : Anim(),
     animList_{}
