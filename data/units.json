@@ -23,7 +23,9 @@
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
-        "img-defend": "marshal-defend.png"
+        "img-defend": "marshal-defend.png",
+        "anim-die": "marshal-die.png",
+        "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 875, 1000]
     },
     "orc1": {
         "name": "Orc",

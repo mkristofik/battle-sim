@@ -34,7 +34,10 @@ UnitType::UnitType(const rapidjson::Value &json)
     rangedFrames{},
     projectile{},
     imgDefend{},
-    reverseImgDefend{}
+    reverseImgDefend{},
+    animDie{},
+    reverseAnimDie{},
+    dieFrames{}
 {
     if (json.HasMember("name")) {
         name = json["name"].GetString();
@@ -112,6 +115,19 @@ UnitType::UnitType(const rapidjson::Value &json)
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());
     }
-    if (json.HasMember("anim-die")) {
+    if (json.HasMember("anim-die") && json.HasMember("die-frames")) {
+        // TODO: refactor this
+        const auto &frameList = json["die-frames"];
+        transform(frameList.Begin(),
+                  frameList.End(),
+                  std::back_inserter(dieFrames),
+                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+
+        auto baseAnim = sdlLoadImage(json["anim-die"].GetString());
+        if (baseAnim) {
+            animDie = applyTeamColors(baseAnim);
+            reverseAnimDie = applyTeamColors(sdlFlipSheetH(baseAnim,
+                dieFrames.size()));
+        }
     }
 }

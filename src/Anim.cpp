@@ -375,23 +375,51 @@ AnimDie::AnimDie(const Unit &unit, Uint32 hitsAt)
     hitTime_{hitsAt}
 {
     runTime_ = hitTime_;
-    // TODO: runTime_ = hitTime_ + animate and fade out
+    if (!unit_.type->dieFrames.empty()) {
+        runTime_ += unit_.type->dieFrames.back();
+    }
+    // TODO: add a fade out
 }
 
 void AnimDie::run(Uint32 elapsed)
 {
+    if (elapsed < hitTime_) {
+        return;
+    }
+
+    auto &label = gs->getEntity(unit_.labelId);
+    label.visible = false;
+    setFrame(elapsed);
 }
 
 void AnimDie::stop()
 {
     auto &entity = gs->getEntity(unit_.entityId);
-    auto &label = gs->getEntity(unit_.labelId);
     entity.visible = false;
-    label.visible = false;
 }
 
 void AnimDie::setFrame(Uint32 elapsed)
 {
+    // TODO: refactor this
+    auto &entity = gs->getEntity(unit_.entityId);
+    entity.frame = getFrame(unit_.type->dieFrames, elapsed - hitTime_);
+
+    if (faceLeft_) {
+        if (!unit_.type->reverseAnimDie.empty() && entity.frame >= 0) {
+            entity.img = unit_.type->reverseAnimDie[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->reverseImg[unit_.team];
+        }
+    }
+    else {
+        if (!unit_.type->animDie.empty() && entity.frame >= 0) {
+            entity.img = unit_.type->animDie[unit_.team];
+        }
+        else {
+            entity.img = unit_.type->baseImg[unit_.team];
+        }
+    }
 }
 
 

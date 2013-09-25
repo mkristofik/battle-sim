@@ -49,6 +49,9 @@ struct UnitType
     SdlSurface projectile;
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
+    ImageSet animDie;
+    ImageSet reverseAnimDie;
+    FrameList dieFrames;
 
     UnitType(const rapidjson::Value &json);
 };
