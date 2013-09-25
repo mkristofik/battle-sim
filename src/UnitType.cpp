@@ -14,6 +14,42 @@
 #include <algorithm>
 #include <iterator>
 
+namespace
+{
+    void loadImages(const rapidjson::Value &json,
+                    const char *imgName,
+                    ImageSet &img,
+                    ImageSet &reverseImg)
+    {
+        auto tempImg = sdlLoadImage(json[imgName].GetString());
+        if (tempImg) {
+            img = applyTeamColors(tempImg);
+            reverseImg = applyTeamColors(sdlFlipH(tempImg));
+        }
+    }
+
+    void loadAnimation(const rapidjson::Value &json,
+                       const char *animName,
+                       ImageSet &anim,
+                       ImageSet &reverseAnim,
+                       const char *framesName,
+                       FrameList &frames)
+    {
+        const auto &frameListJson = json[framesName];
+        transform(frameListJson.Begin(),
+                  frameListJson.End(),
+                  std::back_inserter(frames),
+                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+
+        auto baseAnim = sdlLoadImage(json[animName].GetString());
+        if (baseAnim) {
+            anim = applyTeamColors(baseAnim);
+            reverseAnim = applyTeamColors(sdlFlipSheetH(baseAnim,
+                frames.size()));
+        }
+    }
+}
+
 UnitType::UnitType(const rapidjson::Value &json)
     : name{},
     plural{},
@@ -52,53 +88,21 @@ UnitType::UnitType(const rapidjson::Value &json)
         hp = json["hp"].GetInt();
     }
     if (json.HasMember("img")) {
-        auto img = sdlLoadImage(json["img"].GetString());
-        if (img) {
-            baseImg = applyTeamColors(img);
-            reverseImg = applyTeamColors(sdlFlipH(img));
-        }
+        loadImages(json, "img", baseImg, reverseImg);
     }
     if (json.HasMember("img-move")) {
-        auto img = sdlLoadImage(json["img-move"].GetString());
-        if (img) {
-            imgMove = applyTeamColors(img);
-            reverseImgMove = applyTeamColors(sdlFlipH(img));
-        }
+        loadImages(json, "img-move", imgMove, reverseImgMove);
     }
     if (json.HasMember("img-defend")) {
-        auto img = sdlLoadImage(json["img-defend"].GetString());
-        if (img) {
-            imgDefend = applyTeamColors(img);
-            reverseImgDefend = applyTeamColors(sdlFlipH(img));
-        }
+        loadImages(json, "img-defend", imgDefend, reverseImgDefend);
     }
     if (json.HasMember("anim-attack") && json.HasMember("attack-frames")) {
-        const auto &frameList = json["attack-frames"];
-        transform(frameList.Begin(),
-                  frameList.End(),
-                  std::back_inserter(attackFrames),
-                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
-
-        auto baseAnim = sdlLoadImage(json["anim-attack"].GetString());
-        if (baseAnim) {
-            animAttack = applyTeamColors(baseAnim);
-            reverseAnimAttack = applyTeamColors(sdlFlipSheetH(baseAnim,
-                attackFrames.size()));
-        }
+        loadAnimation(json, "anim-attack", animAttack, reverseAnimAttack,
+                      "attack-frames", attackFrames);
     }
     if (json.HasMember("anim-ranged") && json.HasMember("ranged-frames")) {
-        const auto &frameList = json["ranged-frames"];
-        transform(frameList.Begin(),
-                  frameList.End(),
-                  std::back_inserter(rangedFrames),
-                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
-
-        auto baseAnim = sdlLoadImage(json["anim-ranged"].GetString());
-        if (baseAnim) {
-            animRanged = applyTeamColors(baseAnim);
-            reverseAnimRanged = applyTeamColors(sdlFlipSheetH(baseAnim,
-                rangedFrames.size()));
-        }
+        loadAnimation(json, "anim-ranged", animRanged, reverseAnimRanged,
+                      "ranged-frames", rangedFrames);
     }
     if (json.HasMember("damage")) {
         const auto &damageList = json["damage"];
@@ -116,18 +120,7 @@ UnitType::UnitType(const rapidjson::Value &json)
         projectile = sdlLoadImage(json["projectile"].GetString());
     }
     if (json.HasMember("anim-die") && json.HasMember("die-frames")) {
-        // TODO: refactor this
-        const auto &frameList = json["die-frames"];
-        transform(frameList.Begin(),
-                  frameList.End(),
-                  std::back_inserter(dieFrames),
-                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
-
-        auto baseAnim = sdlLoadImage(json["anim-die"].GetString());
-        if (baseAnim) {
-            animDie = applyTeamColors(baseAnim);
-            reverseAnimDie = applyTeamColors(sdlFlipSheetH(baseAnim,
-                dieFrames.size()));
-        }
+        loadAnimation(json, "anim-die", animDie, reverseAnimDie, "die-frames",
+                      dieFrames);
     }
 }
