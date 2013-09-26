@@ -12,6 +12,8 @@
 */
 #include "sdl_helper.h"
 
+#include "algo.h"
+
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
@@ -257,6 +259,32 @@ SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
             flipH(surf, x, frameWidth);
         }
     });
+    return surf;
+}
+
+SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)
+{
+    auto surf = sdlDeepCopy(src);
+    if (!surf) {
+        return nullptr;
+    }
+
+    auto aVal = static_cast<Uint8>(bound(alpha, 0.0, 1.0) * SDL_ALPHA_OPAQUE);
+
+    SdlLock(surf, [&] {
+        auto *begin = static_cast<Uint32 *>(surf->pixels);
+        auto *end = begin + surf->w * surf->h;
+        auto *i = begin;
+        // TODO: maybe multiply existing alpha channel instead of overwriting it
+        while (i != end) {
+            if ((*i & surf->format->Amask) != 0) { // if not already transparent
+                *i &= ~surf->format->Amask;  // clear old alpha channel
+                *i |= (aVal << surf->format->Ashift);  // replace it
+            }
+            ++i;
+        }
+    });
+
     return surf;
 }
 

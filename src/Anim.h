@@ -146,6 +146,8 @@ private:
     const Unit &unit_;
     bool faceLeft_;
     Uint32 hitTime_;
+    Uint32 fadeTime_;
+    static const Uint32 fadeLength_ = 1000;
 };
 
 

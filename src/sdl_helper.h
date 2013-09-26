@@ -42,6 +42,10 @@ SdlSurface sdlDeepCopy(const SdlSurface &src);
 SdlSurface sdlFlipH(const SdlSurface &src);
 SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames);
 
+// Set the alpha channel of all non-transparent pixels (because SDL_SetAlpha
+// doesn't work for images that already have per-pixel alpha channel).
+SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha);
+
 // Draw the full surface to the screen using (px,py) as the upper-left corner.
 // Use the raw SDL_BlitSurface if you need something more specific.
 void sdlBlit(const SdlSurface &surf, Sint16 px, Sint16 py);

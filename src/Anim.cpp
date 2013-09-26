@@ -38,6 +38,8 @@ namespace
     // Compute the frame index to use.
     int getFrame(const FrameList &frames, Uint32 elapsed)
     {
+        if (frames.empty()) return -1;
+
         int size = frames.size();
         for (int i = 0; i < size; ++i) {
             if (elapsed < frames[i]) {
@@ -45,7 +47,7 @@ namespace
             }
         }
 
-        return -1;
+        return frames.size() - 1;
     }
 }
 
@@ -372,11 +374,13 @@ AnimDie::AnimDie(const Unit &unit, Uint32 hitsAt)
     : Anim(),
     unit_(unit),
     faceLeft_{unit_.face == Facing::LEFT},
-    hitTime_{hitsAt}
+    hitTime_{hitsAt},
+    fadeTime_{hitsAt}
 {
-    runTime_ = hitTime_;
+    runTime_ = hitTime_ + fadeLength_;
     if (!unit_.type->dieFrames.empty()) {
         runTime_ += unit_.type->dieFrames.back();
+        fadeTime_ += unit_.type->dieFrames.back();
     }
     // TODO: add a fade out, use defend img if no die animation exists
 }
@@ -390,6 +394,14 @@ void AnimDie::run(Uint32 elapsed)
     auto &label = gs->getEntity(unit_.labelId);
     label.visible = false;
     setFrame(elapsed);
+
+    // Fade out the unit until it disappears.
+    if (elapsed > fadeTime_) {
+        auto &entity = gs->getEntity(unit_.entityId);
+        auto frac = static_cast<double>(fadeLength_ - (elapsed - fadeTime_)) /
+            fadeLength_;
+        entity.img = sdlSetAlpha(entity.img, frac);
+    }
 }
 
 void AnimDie::stop()
@@ -402,13 +414,15 @@ void AnimDie::stop()
 
 void AnimDie::setFrame(Uint32 elapsed)
 {
-    // TODO: refactor this
     auto &entity = gs->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->dieFrames, elapsed - hitTime_);
 
     if (faceLeft_) {
         if (!unit_.type->reverseAnimDie.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimDie[unit_.team];
+        }
+        else if (!unit_.type->reverseImgDefend.empty()) {
+            entity.img = unit_.type->reverseImgDefend[unit_.team];
         }
         else {
             entity.img = unit_.type->reverseImg[unit_.team];
@@ -417,6 +431,9 @@ void AnimDie::setFrame(Uint32 elapsed)
     else {
         if (!unit_.type->animDie.empty() && entity.frame >= 0) {
             entity.img = unit_.type->animDie[unit_.team];
+        }
+        else if (!unit_.type->imgDefend.empty()) {
+            entity.img = unit_.type->imgDefend[unit_.team];
         }
         else {
             entity.img = unit_.type->baseImg[unit_.team];
