@@ -7,11 +7,13 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Mouseover highlights indicating move and attack targets.
 - Attack and defend animations.
 - Labels indicating unit size.
+- Random damage rolls, separate values for melee and ranged attacks.
+- Units have hit points, disappear when killed.
 - Scrolling battle log to record every attack action.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
-There's a [demo video](http://youtu.be/109w5Zc0YNk) too.
+There's a [demo video](http://youtu.be/d6f6UnAOV1U) too.
 
 ## Core Principles
 
