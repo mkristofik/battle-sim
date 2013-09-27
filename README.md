@@ -8,8 +8,9 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Attack and defend animations.
 - Labels indicating unit size.
 - Random damage rolls, separate values for melee and ranged attacks.
-- Units have hit points, disappear when killed.
+- Units have hit points, animate and fade out when killed.
 - Scrolling battle log to record every attack action.
+- Report a winner when one side is defeated.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
@@ -35,13 +36,13 @@ There's a [demo video](http://youtu.be/d6f6UnAOV1U) too.
 in the top-level directory)
 
 ## Special Thanks To
-[Battle for Wesnoth](www.wesnoth.org) for all of the art assets.  They can
-draw, and I can't.
+[Battle for Wesnoth](www.wesnoth.org) for all of the art and sound assets.
 
 ## License
 
 Copyright 2013 by Michael Kristofik  
-The license for code and art assets is described in the file COPYING.txt.
+The license for code, art, and sound assets is described in the file
+COPYING.txt.
 
 ## Contact Info
 

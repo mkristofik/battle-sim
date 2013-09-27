@@ -30,6 +30,8 @@ void GameState::nextTurn()
     auto nextUnit = activeUnit_;
     int totalUnits = bfUnits_.size();
     int numTried = 0;
+
+    // Loop through the units until we find one that is still alive.
     while (numTried < totalUnits) {
         ++nextUnit;
         if (nextUnit >= totalUnits) {
@@ -49,6 +51,28 @@ void GameState::nextTurn()
 int GameState::getRound() const
 {
     return roundNum_;
+}
+
+Winner GameState::getWinner() const
+{
+    int numAlive[] = {0, 0};
+    for (const auto &unit: bfUnits_) {
+        if (unit.num > 0) {
+            ++numAlive[unit.team];
+        }
+    }
+
+    if (numAlive[0] > 0 && numAlive[1] > 0) {
+        return Winner::NOBODY_YET;
+    }
+    if (numAlive[0] > 0) {
+        return Winner::TEAM_1;
+    }
+    if (numAlive[1] > 0) {
+        return Winner::TEAM_2;
+    }
+
+    return Winner::DRAW;
 }
 
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)

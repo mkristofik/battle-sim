@@ -515,6 +515,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     bool isDone = false;
+    bool gameOver = false;
     bool needRedraw = false;
     SDL_Event event;
     while (!isDone) {
@@ -523,10 +524,11 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
                 isDone = true;
             }
 
+            // No action other than Quit allowed after game ends.
+            if (gameOver) continue;
+
             // Ignore mouse events while animating.
-            if (!anims.empty()) {
-                continue;
-            }
+            if (!anims.empty()) continue;
 
             if (event.type == SDL_MOUSEMOTION) {
                 handleMouseMotion(event.motion);
@@ -553,9 +555,29 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
         // the next turn.
         if (actionTaken && anims.empty()) {
             actionTaken = false;
-            gs->nextTurn();
-            checkNewRound();
-            bf->selectHex(gs->getActiveUnit()->aHex);
+            auto winningTeam = gs->getWinner();
+            if (winningTeam == Winner::NOBODY_YET) {
+                gs->nextTurn();
+                checkNewRound();
+                bf->selectHex(gs->getActiveUnit()->aHex);
+            }
+            else {
+                logv->add(" ");
+                if (winningTeam == Winner::DRAW) {
+                    logv->add("It's a draw.");
+                }
+                else {
+                    auto teamNum = static_cast<int>(winningTeam);
+                    std::string msg("** Team ");
+                    msg += boost::lexical_cast<std::string>(teamNum);
+                    msg += " wins! **";
+                    logv->add(msg);
+                }
+
+                gameOver = true;
+                bf->clearHighlights();
+                needRedraw = true;
+            }
         }
 
         if (needRedraw) {

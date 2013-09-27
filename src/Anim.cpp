@@ -382,7 +382,6 @@ AnimDie::AnimDie(const Unit &unit, Uint32 hitsAt)
         runTime_ += unit_.type->dieFrames.back();
         fadeTime_ += unit_.type->dieFrames.back();
     }
-    // TODO: add a fade out, use defend img if no die animation exists
 }
 
 void AnimDie::run(Uint32 elapsed)
@@ -408,8 +407,6 @@ void AnimDie::stop()
 {
     auto &entity = gs->getEntity(unit_.entityId);
     entity.visible = false;
-    auto &label = gs->getEntity(unit_.labelId);
-    label.visible = false;
 }
 
 void AnimDie::setFrame(Uint32 elapsed)
