@@ -59,6 +59,7 @@ namespace
     bool actionTaken = false;
     int roundNum = 1;
     bool logHasFocus = false;  // battlefield has focus by default
+    bool gameOver = false;  // only certain actions allowed after game ends
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -361,7 +362,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             logv->handleMouseUp(event);
             logHasFocus = false;
         }
-        else if (insideRect(event.x, event.y, bfWindow)) {
+        else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
                 action.computeDamage();
@@ -515,7 +516,6 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     bool isDone = false;
-    bool gameOver = false;
     bool needRedraw = false;
     SDL_Event event;
     while (!isDone) {
@@ -524,13 +524,10 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
                 isDone = true;
             }
 
-            // No action other than Quit allowed after game ends.
-            if (gameOver) continue;
-
             // Ignore mouse events while animating.
             if (!anims.empty()) continue;
 
-            if (event.type == SDL_MOUSEMOTION) {
+            if (event.type == SDL_MOUSEMOTION && !gameOver) {
                 handleMouseMotion(event.motion);
                 needRedraw = true;
             }
