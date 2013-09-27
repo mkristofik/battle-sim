@@ -269,17 +269,16 @@ SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)
         return nullptr;
     }
 
-    auto aVal = static_cast<Uint8>(bound(alpha, 0.0, 1.0) * SDL_ALPHA_OPAQUE);
-
     SdlLock(surf, [&] {
         auto *begin = static_cast<Uint32 *>(surf->pixels);
         auto *end = begin + surf->w * surf->h;
         auto *i = begin;
-        // TODO: maybe multiply existing alpha channel instead of overwriting it
         while (i != end) {
-            if ((*i & surf->format->Amask) != 0) { // if not already transparent
-                *i &= ~surf->format->Amask;  // clear old alpha channel
-                *i |= (aVal << surf->format->Ashift);  // replace it
+            auto curAlpha = (*i & surf->format->Amask) >> surf->format->Ashift;
+            if (curAlpha != SDL_ALPHA_TRANSPARENT) {
+                Uint8 newAlpha = curAlpha * bound(alpha, 0.0, 1.0);
+                *i &= ~surf->format->Amask;
+                *i |= (newAlpha << surf->format->Ashift);
             }
             ++i;
         }
