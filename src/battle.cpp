@@ -471,7 +471,7 @@ bool checkNewRound()
     std::string msg("Round ");
     msg += boost::lexical_cast<std::string>(roundNum);
     msg += " begins.";
-    logv->add(" ");
+    logv->addBlankLine();
     logv->add(msg);
     return true;
 }
@@ -559,7 +559,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
                 bf->selectHex(gs->getActiveUnit()->aHex);
             }
             else {
-                logv->add(" ");
+                logv->addBlankLine();
                 if (winningTeam == Winner::DRAW) {
                     logv->add("It's a draw.");
                 }

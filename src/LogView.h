@@ -24,6 +24,7 @@ class LogView
 public:
     LogView(SDL_Rect dispArea, const SdlFont &f);
     void add(std::string msg);
+    void addBlankLine();
 
     void draw();
     void handleMouseDown(const SDL_MouseButtonEvent &event);

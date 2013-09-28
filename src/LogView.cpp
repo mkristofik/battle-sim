@@ -71,6 +71,11 @@ void LogView::add(std::string msg)
     isDirty_ = true;
 }
 
+void LogView::addBlankLine()
+{
+    add(" ");
+}
+
 void LogView::draw()
 {
     if (!isDirty_) {
