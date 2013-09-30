@@ -23,6 +23,10 @@
         "id": "human3",
         "num": 22
     },
+    "t2p1": {
+        "id": "wolf1",
+        "num": 5
+    },
     "t2p2": {
         "id": "goblin1",
         "num": 12
@@ -30,6 +34,14 @@
     "t2p3": {
         "id": "orc1",
         "num": 4
+    },
+    "t2p4": {
+        "id": "ogre1",
+        "num": 4
+    },
+    "t2p6": {
+        "id": "troll1",
+        "num": 3
     },
     "t2p7": {
         "id": "orc2",

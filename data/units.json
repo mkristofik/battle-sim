@@ -114,5 +114,43 @@
         "anim-attack": "goblin-attack-melee.png",
         "attack-frames": [50, 150, 350, 450],
         "img-defend": "goblin-defend.png"
+    },
+    "wolf1": {
+        "name": "Wolf",
+        "plural": "Wolves",
+        "moves": 2,
+        "hp": 20,
+        "damage": [3, 5],
+        "img": "wolf.png",
+        "anim-attack": "wolf-attack-melee.png",
+        "attack-frames": [100, 300, 550],
+        "img-defend": "wolf-defend.png",
+        "img-move": "wolf-move.png"
+    },
+    "ogre1": {
+        "name": "Ogre",
+        "plural": "Ogres",
+        "moves": 1,
+        "hp": 40,
+        "damage": [4, 6],
+        "img": "ogre.png",
+        "anim-attack": "ogre-attack-melee.png",
+        "attack-frames": [75, 175, 250, 425, 525],
+        "img-defend": "ogre-defend.png"
+    },
+    "troll1": {
+        "name": "Troll",
+        "plural": "Trolls",
+        "moves": 1,
+        "hp": 40,
+        "damage": [1, 1],
+        "damage-ranged": [5, 7],
+        "img": "troll.png",
+        "anim-attack": "troll-attack-melee.png",
+        "attack-frames": [50, 300, 400],
+        "anim-ranged": "troll-attack-ranged.png",
+        "ranged-frames": [300, 500, 600],
+        "img-defend": "troll-defend.png",
+        "projectile": "stone-large.png"
     }
 }
