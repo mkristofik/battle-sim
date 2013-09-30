@@ -63,6 +63,19 @@
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
+    "human6": {
+        "name": "Swordsman",
+        "plural": "Swordsmen",
+        "moves": 1,
+        "hp": 25,
+        "damage": [4, 6],
+        "img": "swordsman.png",
+        "anim-attack": "swordsman-attack-melee.png",
+        "attack-frames": [75, 150, 300, 400],
+        "img-defend": "swordsman-defend.png",
+        "anim-die": "swordsman-die.png",
+        "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 675]
+    },
     "orc1": {
         "name": "Orc",
         "plural": "Orcs",
@@ -90,5 +103,16 @@
         "ranged-frames": [65, 140, 215, 315, 445, 510],
         "img-defend": "orc-archer-defend.png",
         "projectile": "missile.png"
+    },
+    "goblin1": {
+        "name": "Goblin",
+        "plural": "Goblins",
+        "moves": 1,
+        "hp": 3,
+        "damage": [1, 2],
+        "img": "goblin.png",
+        "anim-attack": "goblin-attack-melee.png",
+        "attack-frames": [50, 150, 350, 450],
+        "img-defend": "goblin-defend.png"
     }
 }
