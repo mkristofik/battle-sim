@@ -1,11 +1,23 @@
 {
     "t1p1": {
         "id": "human2",
-        "num": 6
+        "num": 2
+    },
+    "t1p2": {
+        "id": "human5",
+        "num": 3
+    },
+    "t1p4": {
+        "id": "human4",
+        "num": 5
     },
     "t1p5": {
         "id": "human1",
-        "num": 12
+        "num": 8
+    },
+    "t1p6": {
+        "id": "human3",
+        "num": 22
     },
     "t2p3": {
         "id": "orc1",

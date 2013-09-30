@@ -95,7 +95,7 @@ namespace
 
         rapidjson::FileStream file(fp.get());
         if (doc.ParseStream<0>(file).HasParseError()) {
-            std::cerr << "Error reading json file " << dataPath.c_str() << ": "
+            std::cerr << "Error reading json file " << dataPath.string() << ": "
                 << doc.GetParseError() << '\n';
             return false;
         }

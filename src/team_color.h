@@ -25,8 +25,8 @@ using ImageSet = std::vector<SdlSurface>;  // store 1 image per team color
 
 // Reference color for each team.  The other 18 shades are offset from this, 14
 // darker and 4 lighter.
-const std::vector<SDL_Color> teamColors = {{0xFF, 0, 0},       // red
-                                           {0x2E, 0x41, 0x9B}  // blue
+const std::vector<SDL_Color> teamColors = {{0x2E, 0x41, 0x9B}, // blue
+                                           {0xFF, 0, 0},       // red
                                           };
 const int numTeams = teamColors.size();
 

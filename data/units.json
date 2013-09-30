@@ -15,17 +15,53 @@
         "projectile": "missile.png"
     },
     "human2": {
-        "name": "Swordsman",
-        "plural": "Swordsmen",
+        "name": "Paladin",
+        "plural": "Paladins",
         "moves": 1,
-        "hp": 20,
-        "damage": [3, 5],
+        "hp": 50,
+        "damage": [10, 20],
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
         "img-defend": "marshal-defend.png",
         "anim-die": "marshal-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 875, 1000]
+    },
+    "human3": {
+        "name": "Peasant",
+        "plural": "Peasants",
+        "moves": 1,
+        "hp": 2,
+        "damage": [1, 2],
+        "img": "peasant.png",
+        "anim-attack": "peasant-attack-melee.png",
+        "attack-frames": [50, 300, 400, 450],
+        "img-defend": "peasant-defend.png"
+    },
+    "human4": {
+        "name": "Pikeman",
+        "plural": "Pikemen",
+        "moves": 1,
+        "hp": 15,
+        "damage": [3, 4],
+        "img": "pikeman.png",
+        "anim-attack": "pikeman-attack-melee.png",
+        "attack-frames": [100, 350, 425],
+        "img-defend": "pikeman-defend.png",
+        "anim-die": "pikeman-die.png",
+        "die-frames": [80, 160, 240, 320, 400]
+    },
+    "human5": {
+        "name": "Cavalier",
+        "plural": "Cavaliers",
+        "moves": 3,
+        "hp": 30,
+        "damage": [5, 10],
+        "img": "cavalier.png",
+        "anim-attack": "cavalier-attack-melee.png",
+        "attack-frames": [25, 75, 375, 425, 450],
+        "img-defend": "cavalier-defend.png",
+        "img-move": "cavalier-move.png"
     },
     "orc1": {
         "name": "Orc",
