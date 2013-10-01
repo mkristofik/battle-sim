@@ -476,7 +476,15 @@ bool checkNewRound()
     return true;
 }
 
-extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
+const char * getScenario(int argc, char *argv[])
+{
+    if (argc < 2) {
+        return "scenario.json";
+    }
+    return argv[1];
+}
+
+extern "C" int SDL_main(int argc, char *argv[])
 {
     if (!sdlInit(288, 420, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
@@ -501,7 +509,7 @@ extern "C" int SDL_main(int, char **)  // 2-arg form is required by SDL
     translateUnitPos();
 
     rapidjson::Document scenario;
-    if (!parseJson("scenario.json", scenario)) {
+    if (!parseJson(getScenario(argc, argv), scenario)) {
         return EXIT_FAILURE;
     }
     parseScenario(scenario);
