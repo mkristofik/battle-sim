@@ -54,6 +54,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     : name{},
     plural{},
     moves{1},
+    initiative{0},
     hp{1},
     hasRangedAttack{false},
     minDmg{1},
@@ -83,6 +84,9 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("moves")) {
         moves = json["moves"].GetInt();
+    }
+    if (json.HasMember("initiative")) {
+        initiative = json["initiative"].GetInt();
     }
     if (json.HasMember("hp")) {
         hp = json["hp"].GetInt();

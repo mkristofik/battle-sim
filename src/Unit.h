@@ -37,6 +37,10 @@ struct Unit
     // Apply damage, return number of creatures killed.
     int takeDamage(int dmg);
     int simulateDamage(int dmg) const;
+
+    bool isAlive() const;
 };
+
+bool sortByInitiative(const Unit *lhs, const Unit *rhs);
 
 #endif

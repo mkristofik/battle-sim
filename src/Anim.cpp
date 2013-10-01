@@ -47,7 +47,7 @@ namespace
             }
         }
 
-        return frames.size() - 1;
+        return size - 1;
     }
 }
 

@@ -76,3 +76,13 @@ int Unit::simulateDamage(int dmg) const
 {
     return Unit(*this).takeDamage(dmg);
 }
+
+bool Unit::isAlive() const
+{
+    return num > 0;
+}
+
+bool sortByInitiative(const Unit *lhs, const Unit *rhs)
+{
+    return lhs->type->initiative > rhs->type->initiative;
+}

@@ -30,6 +30,7 @@ struct UnitType
     std::string name;
     std::string plural;
     int moves;
+    int initiative;
     int hp;
     bool hasRangedAttack;
     int minDmg;

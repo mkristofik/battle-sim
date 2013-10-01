@@ -38,7 +38,7 @@ void GameState::nextTurn()
             ++roundNum_;
             nextUnit = 0;
         }
-        if (bfUnits_[nextUnit].num > 0) {
+        if (bfUnits_[nextUnit].isAlive()) {
             activeUnit_ = nextUnit;
             return;
         }
@@ -57,7 +57,7 @@ Winner GameState::getWinner() const
 {
     int numAlive[] = {0, 0};
     for (const auto &unit: bfUnits_) {
-        if (unit.num > 0) {
+        if (unit.isAlive()) {
             ++numAlive[unit.team];
         }
     }
