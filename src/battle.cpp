@@ -268,7 +268,7 @@ void executeAction(const Action &action)
 
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
-        if (defender->num > 0) {
+        if (defender->isAlive()) {
             rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
         }
         else {
@@ -291,7 +291,7 @@ void executeAction(const Action &action)
         defender->takeDamage(action.damage);
 
         attackSeq->add(std::move(anim1));
-        if (defender->num > 0) {
+        if (defender->isAlive()) {
             attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
         }
         else {

@@ -12,6 +12,7 @@
 */
 #include "GameState.h"
 
+#include <algorithm>
 #include <cassert>
 
 std::unique_ptr<GameState> gs;
@@ -55,20 +56,18 @@ int GameState::getRound() const
 
 Winner GameState::getWinner() const
 {
-    int numAlive[] = {0, 0};
-    for (const auto &unit: bfUnits_) {
-        if (unit.isAlive()) {
-            ++numAlive[unit.team];
-        }
-    }
+    bool alive1 = any_of(std::begin(bfUnits_), std::end(bfUnits_),
+        [] (const Unit &unit) { return unit.isAlive() && unit.team == 0; });
+    bool alive2 = any_of(std::begin(bfUnits_), std::end(bfUnits_),
+        [] (const Unit &unit) { return unit.isAlive() && unit.team == 1; });
 
-    if (numAlive[0] > 0 && numAlive[1] > 0) {
+    if (alive1 && alive2) {
         return Winner::NOBODY_YET;
     }
-    if (numAlive[0] > 0) {
+    if (alive1) {
         return Winner::TEAM_1;
     }
-    if (numAlive[1] > 0) {
+    if (alive2) {
         return Winner::TEAM_2;
     }
 
@@ -133,7 +132,7 @@ Unit * GameState::getActiveUnit()
 Unit * GameState::getUnitAt(int aIndex)
 {
     for (auto &u : bfUnits_) {
-        if (u.aHex == aIndex && u.num > 0) {
+        if (u.aHex == aIndex && u.isAlive()) {
             return &u;
         }
     }
