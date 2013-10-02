@@ -21,32 +21,27 @@ GameState::GameState()
     : entities_{},
     unitRef_{},
     bfUnits_{},
-    activeUnit_{-1},
-    roundNum_{1}
+    liveUnits_{},
+    activeUnit_{std::end(liveUnits_)},
+    roundNum_{0}
 {
 }
 
 void GameState::nextTurn()
 {
-    auto nextUnit = activeUnit_;
-    int totalUnits = bfUnits_.size();
-    int numTried = 0;
-
-    // Loop through the units until we find one that is still alive.
-    while (numTried < totalUnits) {
-        ++nextUnit;
-        if (nextUnit >= totalUnits) {
-            ++roundNum_;
-            nextUnit = 0;
-        }
-        if (bfUnits_[nextUnit].isAlive()) {
-            activeUnit_ = nextUnit;
-            return;
-        }
-        ++numTried;
+    if (roundNum_ == 0) {
+        firstRound();
+        return;
     }
 
-    activeUnit_ = -1;
+    activeUnit_ = find_if(std::next(activeUnit_), std::end(liveUnits_),
+                              std::mem_fn(&Unit::isAlive));
+    if (activeUnit_ != std::end(liveUnits_)) return;
+
+    nextRound();
+    activeUnit_ = find_if(std::begin(liveUnits_), std::end(liveUnits_),
+                              std::mem_fn(&Unit::isAlive));
+    assert(activeUnit_ != std::end(liveUnits_));
 }
 
 int GameState::getRound() const
@@ -118,15 +113,13 @@ const UnitType * GameState::getUnitType(const std::string &name) const
 void GameState::addUnit(Unit u)
 {
     bfUnits_.emplace_back(std::move(u));
+    // note: this invalidates liveUnits_ and activeUnit_.
 }
 
 Unit * GameState::getActiveUnit()
 {
-    if (activeUnit_ < 0) {
-        return nullptr;
-    }
-
-    return &bfUnits_[activeUnit_];
+    if (activeUnit_ == std::end(liveUnits_)) return nullptr;
+    return *activeUnit_;
 }
 
 Unit * GameState::getUnitAt(int aIndex)
@@ -138,4 +131,24 @@ Unit * GameState::getUnitAt(int aIndex)
     }
 
     return nullptr;
+}
+
+void GameState::firstRound()
+{
+    nextRound();
+    assert(!liveUnits_.empty());
+    activeUnit_ = std::begin(liveUnits_);
+}
+
+void GameState::nextRound()
+{
+    liveUnits_.clear();
+    for (auto &unit : bfUnits_) {
+        if (unit.isAlive()) {
+            liveUnits_.push_back(&unit);
+        }
+    }
+
+    stable_sort(std::begin(liveUnits_), std::end(liveUnits_), sortByInitiative);
+    ++roundNum_;
 }
