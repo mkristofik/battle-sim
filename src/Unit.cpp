@@ -82,7 +82,12 @@ bool Unit::isAlive() const
     return num > 0;
 }
 
-bool sortByInitiative(const Unit *lhs, const Unit *rhs)
+bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
-    return lhs->type->initiative > rhs->type->initiative;
+    return lhs.type->initiative > rhs.type->initiative;
+}
+
+bool sortByAlive(const Unit &lhs, const Unit &rhs)
+{
+    return lhs.isAlive() && !rhs.isAlive();
 }

@@ -54,14 +54,12 @@ public:
     Unit * getUnitAt(int aIndex);
 
 private:
-    void firstRound();
     void nextRound();
 
     std::vector<Drawable> entities_;
     UnitTypeMap unitRef_;
     std::vector<Unit> bfUnits_;
-    std::vector<Unit *> liveUnits_;
-    std::vector<Unit *>::iterator activeUnit_;
+    std::vector<Unit>::iterator activeUnit_;
     int roundNum_;
 };
 

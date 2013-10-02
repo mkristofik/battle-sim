@@ -21,8 +21,7 @@ GameState::GameState()
     : entities_{},
     unitRef_{},
     bfUnits_{},
-    liveUnits_{},
-    activeUnit_{std::end(liveUnits_)},
+    activeUnit_{std::end(bfUnits_)},
     roundNum_{0}
 {
 }
@@ -30,18 +29,20 @@ GameState::GameState()
 void GameState::nextTurn()
 {
     if (roundNum_ == 0) {
-        firstRound();
+        nextRound();
+        activeUnit_ = std::begin(bfUnits_);
         return;
     }
 
-    activeUnit_ = find_if(std::next(activeUnit_), std::end(liveUnits_),
-                              std::mem_fn(&Unit::isAlive));
-    if (activeUnit_ != std::end(liveUnits_)) return;
+    activeUnit_ = find_if(std::next(activeUnit_), std::end(bfUnits_),
+                          std::mem_fn(&Unit::isAlive));
+    if (activeUnit_ != std::end(bfUnits_)) {
+        return;
+    }
 
     nextRound();
-    activeUnit_ = find_if(std::begin(liveUnits_), std::end(liveUnits_),
-                              std::mem_fn(&Unit::isAlive));
-    assert(activeUnit_ != std::end(liveUnits_));
+    activeUnit_ = find_if(std::begin(bfUnits_), std::end(bfUnits_),
+                          std::mem_fn(&Unit::isAlive));
 }
 
 int GameState::getRound() const
@@ -113,13 +114,13 @@ const UnitType * GameState::getUnitType(const std::string &name) const
 void GameState::addUnit(Unit u)
 {
     bfUnits_.emplace_back(std::move(u));
-    // note: this invalidates liveUnits_ and activeUnit_.
+    // note: this invalidates the active unit
 }
 
 Unit * GameState::getActiveUnit()
 {
-    if (activeUnit_ == std::end(liveUnits_)) return nullptr;
-    return *activeUnit_;
+    if (activeUnit_ == std::end(bfUnits_)) return nullptr;
+    return &(*activeUnit_);
 }
 
 Unit * GameState::getUnitAt(int aIndex)
@@ -133,22 +134,9 @@ Unit * GameState::getUnitAt(int aIndex)
     return nullptr;
 }
 
-void GameState::firstRound()
-{
-    nextRound();
-    assert(!liveUnits_.empty());
-    activeUnit_ = std::begin(liveUnits_);
-}
-
 void GameState::nextRound()
 {
-    liveUnits_.clear();
-    for (auto &unit : bfUnits_) {
-        if (unit.isAlive()) {
-            liveUnits_.push_back(&unit);
-        }
-    }
-
-    stable_sort(std::begin(liveUnits_), std::end(liveUnits_), sortByInitiative);
+    stable_sort(std::begin(bfUnits_), std::end(bfUnits_), sortByInitiative);
+    stable_sort(std::begin(bfUnits_), std::end(bfUnits_), sortByAlive);
     ++roundNum_;
 }
