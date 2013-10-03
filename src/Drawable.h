@@ -36,7 +36,8 @@ struct Drawable
 
     Drawable(Point h, SdlSurface surf, ZOrder order);
 
-    // Align the image with the bottom-center of its hex.
+    // Align the image relative to its hex.
+    void alignCenter();
     void alignBottomCenter();
 };
 

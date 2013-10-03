@@ -23,6 +23,12 @@ Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
 {
 }
 
+void Drawable::alignCenter()
+{
+    pOffset.x = pHexSize / 2 - img->w / 2;
+    pOffset.y = pHexSize / 2 - img->h / 2;
+}
+
 void Drawable::alignBottomCenter()
 {
     pOffset.x = pHexSize / 2 - img->w / 2;

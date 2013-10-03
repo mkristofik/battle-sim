@@ -73,9 +73,10 @@ Sint16 hexDist(const Point &h1, const Point &h2);
 // bounds checking.
 Point adjacent(const Point &hSrc, Dir d);
 
-// Return the direction of travel between two adjacent hexes.
+// Return the direction of travel between two hexes.
 Dir direction(const Point &h1, const Point &h2);
 Dir8 direction8(const Point &h1, const Point &h2);
+double hexAngle_rad(const Point &h1, const Point &h2);
 
 // Find which of the six triangles of a hex contains the given point.  (0,0) is
 // the point where the hex is drawn (and thus is not itself within the hex).

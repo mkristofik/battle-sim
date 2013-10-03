@@ -23,7 +23,6 @@ namespace
     void idle(const Unit &unit, bool faceLeft)
     {
         auto &entity = gs->getEntity(unit.entityId);
-        entity.pOffset = {0, 0};
         entity.frame = -1;
         entity.z = ZOrder::CREATURE;
 
@@ -33,6 +32,7 @@ namespace
         else {
             entity.img = unit.type->baseImg[unit.team];
         }
+        entity.alignCenter();
     }
 
     // Compute the frame index to use.

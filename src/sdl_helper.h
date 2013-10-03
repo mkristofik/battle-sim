@@ -42,6 +42,10 @@ SdlSurface sdlDeepCopy(const SdlSurface &src);
 SdlSurface sdlFlipH(const SdlSurface &src);
 SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames);
 
+// Rotate a surface counter-clockwise.  Creates a new surface.  Note that the
+// rotated image is likely not the same size as the original.
+SdlSurface sdlRotate(const SdlSurface &src, double angle_rad);
+
 // Set the alpha channel of all non-transparent pixels (because SDL_SetAlpha
 // doesn't work for images that already have per-pixel alpha channel).
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha);

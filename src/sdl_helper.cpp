@@ -14,6 +14,8 @@
 
 #include "algo.h"
 
+#include "SDL_rotozoom.h"
+
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
@@ -260,6 +262,11 @@ SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
         }
     });
     return surf;
+}
+
+SdlSurface sdlRotate(const SdlSurface &src, double angle_rad)
+{
+    return make_surface(rotozoomSurface(src.get(), 315, 1, SMOOTHING_ON));
 }
 
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)
