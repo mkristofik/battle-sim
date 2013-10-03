@@ -136,7 +136,8 @@ Unit * GameState::getUnitAt(int aIndex)
 
 void GameState::nextRound()
 {
-    stable_sort(std::begin(bfUnits_), std::end(bfUnits_), sortByInitiative);
-    stable_sort(std::begin(bfUnits_), std::end(bfUnits_), sortByAlive);
+    auto lastAlive = stable_partition(std::begin(bfUnits_), std::end(bfUnits_),
+                                      std::mem_fn(&Unit::isAlive));
+    stable_sort(std::begin(bfUnits_), lastAlive, sortByInitiative);
     ++roundNum_;
 }

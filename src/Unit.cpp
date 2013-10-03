@@ -86,8 +86,3 @@ bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
     return lhs.type->initiative > rhs.type->initiative;
 }
-
-bool sortByAlive(const Unit &lhs, const Unit &rhs)
-{
-    return lhs.isAlive() && !rhs.isAlive();
-}

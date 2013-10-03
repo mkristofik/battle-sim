@@ -42,6 +42,5 @@ struct Unit
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);
-bool sortByAlive(const Unit &lhs, const Unit &rhs);
 
 #endif
