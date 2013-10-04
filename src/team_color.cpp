@@ -104,11 +104,11 @@ namespace
             auto pixel = static_cast<Uint32 *>(img->pixels);
             auto end = pixel + img->w * img->h;
             for (; pixel != end; ++pixel) {
-                Uint32 alpha = (*pixel) & 0xFF000000;
+                Uint32 alpha = (*pixel) & img->format->Amask;
                 if (alpha == 0) continue;  // skip invisible pixels
 
                 // Base team colors are RGB only, mask off alpha channel.
-                Uint32 curColor = (*pixel) & 0x00FFFFFF;
+                Uint32 curColor = (*pixel) & ~img->format->Amask;
                 const auto &colorKey = baseColors.find(curColor);
                 if (colorKey != std::end(baseColors)) {
                     *pixel = alpha + allShades[team][colorKey->second];
@@ -129,4 +129,13 @@ ImageSet applyTeamColors(const SdlSurface &baseImg)
     }
 
     return ret;
+}
+
+SDL_Color getLabelColor(int team)
+{
+    assert(team >= 0 && team < numTeams);
+    auto screen = SDL_GetVideoSurface();
+    Uint8 red, green, blue;
+    SDL_GetRGB(allShades[team][18], screen->format, &red, &green, &blue);
+    return {red, green, blue};
 }

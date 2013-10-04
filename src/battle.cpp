@@ -393,9 +393,9 @@ bool parseUnits(const rapidjson::Document &doc)
 }
 
 // Create a drawable entity for the size of a unit.  Return its id.
-int createUnitLabel(int num, Point hex)
+int createUnitLabel(int num, int team, Point hex)
 {
-    auto txt = sdlPreRender(labelFont, num, WHITE);
+    auto txt = sdlPreRender(labelFont, num, getLabelColor(team));
     auto id = gs->addEntity(std::move(hex), txt, ZOrder::CREATURE);
     auto &label = gs->getEntity(id);
     label.font = labelFont;
@@ -443,7 +443,7 @@ void parseScenario(const rapidjson::Document &doc)
         newUnit.face = (newUnit.team == 0) ? Facing::RIGHT : Facing::LEFT;
         if (json.HasMember("num")) {
             newUnit.num = json["num"].GetInt();
-            newUnit.labelId = createUnitLabel(newUnit.num, bfHex);
+            newUnit.labelId = createUnitLabel(newUnit.num, newUnit.team, bfHex);
         }
 
         SdlSurface img;

@@ -33,4 +33,7 @@ const int numTeams = teamColors.size();
 // Apply each team color to create a series of images.
 ImageSet applyTeamColors(const SdlSurface &baseImg);
 
+// Return the color used for unit labels.
+SDL_Color getLabelColor(int team);
+
 #endif

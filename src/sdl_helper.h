@@ -48,6 +48,7 @@ SdlSurface sdlRotate(const SdlSurface &src, double angle_rad);
 
 // Set the alpha channel of all non-transparent pixels (because SDL_SetAlpha
 // doesn't work for images that already have per-pixel alpha channel).
+// 0 = transparent, 1 = opaque
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha);
 
 // Draw the full surface to the screen using (px,py) as the upper-left corner.
