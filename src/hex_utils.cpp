@@ -129,37 +129,6 @@ Dir direction(const Point &h1, const Point &h2)
     }
 }
 
-Dir8 direction8(const Point &h1, const Point &h2)
-{
-    auto angle = hexAngle_rad(h1, h2);
-
-    // Interior angles of an octagon sector are 45 degrees (0.785 radians).
-    if (angle > 1.963 && angle <= 2.749) {
-        return Dir8::NW;
-    }
-    else if (angle > 1.178 && angle <= 1.963) {
-        return Dir8::N;
-    }
-    else if (angle > 0.393 && angle <= 1.178) {
-        return Dir8::NE;
-    }
-    else if (angle > -0.393 && angle <= 0.393) {
-        return Dir8::E;
-    }
-    else if (angle > -1.178 && angle <= -0.393) {
-        return Dir8::SE;
-    }
-    else if (angle > -1.963 && angle <= -1.178) {
-        return Dir8::S;
-    }
-    else if (angle > -2.749 && angle <= -1.963) {
-        return Dir8::SW;
-    }
-    else {
-        return Dir8::W;
-    }
-}
-
 double hexAngle_rad(const Point &h1, const Point &h2)
 {
     // Our coordinate system has y-axis increasing as you go down the screen,

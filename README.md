@@ -27,6 +27,14 @@ There's a [demo video](http://youtu.be/d6f6UnAOV1U) too.  And another one, a [fu
 - Magic should be **magical**.  Direct-damage spells (e.g., Fireball, Lightning) are boring, and not very effective as stack sizes get larger.
 - Good spells should have a large-scale effect.  Spells that affect the entire battlefield indiscriminantly are even better.
 
+## Artwork Notes
+
+Here are the decisions I've made to simplify the code that deals with art assets.
+
+- Hexes are 72x72 pixels.  Anything designed to fit in one hex should use the same size.
+- Animated images are stored in a sprite sheet with the first frame on the left and no padding between frames.  Frames are assumed to be 72x72.
+- Projectiles are drawn with their trailing edges in the center of the hex and facing East.  The image rotation code goes counter-clockwise, like angles on the Unit Circle.
+
 ## Requirements
 
 [SDL 1.2.15](http://www.libsdl.org/)  
