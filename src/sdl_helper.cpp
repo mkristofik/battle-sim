@@ -266,7 +266,8 @@ SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
 
 SdlSurface sdlRotate(const SdlSurface &src, double angle_rad)
 {
-    return make_surface(rotozoomSurface(src.get(), 315, 1, SMOOTHING_ON));
+    double angle_deg = angle_rad * 180.0 / M_PI;
+    return make_surface(rotozoomSurface(src.get(), angle_deg, 1, SMOOTHING_ON));
 }
 
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)

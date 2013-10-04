@@ -129,17 +129,16 @@ std::vector<int> getPathTo(int aTgt)
 
 // Return true if the active unit has a ranged attack and there are no enemies
 // adjacent to it.
-bool isRangedAttackAllowed()
+bool isRangedAttackAllowed(const Unit &attacker)
 {
-    const auto attacker = gs->getActiveUnit();
-    if (!attacker || !attacker->type->hasRangedAttack) {
+    if (!attacker.type->hasRangedAttack) {
         return false;
     }
 
-    auto enemy = (attacker->team == 0) ? 1 : 0;
-    for (auto n : bf->aryNeighbors(attacker->aHex)) {
-        const auto defender = gs->getUnitAt(n);
-        if (defender && defender->team == enemy) {
+    auto enemy = (attacker.team == 0) ? 1 : 0;
+    for (auto n : bf->aryNeighbors(attacker.aHex)) {
+        const auto adjUnit = gs->getUnitAt(n);
+        if (adjUnit && adjUnit->team == enemy) {
             return false;
         }
     }
@@ -171,7 +170,7 @@ Action getPossibleAction(int px, int py)
     auto moveRange = static_cast<unsigned>(action.attacker->type->moves) + 1;
 
     if (action.defender && action.defender->team == enemy) {
-        if (isRangedAttackAllowed()) {
+        if (isRangedAttackAllowed(*action.attacker)) {
             action.type = ActionType::RANGED;
             return action;
         }
