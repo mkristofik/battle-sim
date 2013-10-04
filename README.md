@@ -9,6 +9,7 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Labels indicating unit size.
 - Random damage rolls, separate values for melee and ranged attacks.
 - Units have hit points, animate and fade out when killed.
+- Initiative stat determines the order in which units get to act.
 - Scrolling battle log to record every attack action.
 - Report a winner when one side is defeated.
 
@@ -32,6 +33,7 @@ There's a [demo video](http://youtu.be/d6f6UnAOV1U) too.  And another one, a [fu
 [SDL\_image 1.2.12](http://www.libsdl.org/projects/SDL_image/)  
 [SDL\_ttf 2.0.11](http://www.libsdl.org/projects/SDL_ttf/)  
 [SDL\_mixer 1.2.12](http://www.libsdl.org/projects/SDL_mixer/)  
+[SDL\_gfx 2.0.24](http://www.ferzkopp.net/joomla/content/view/19/14/)
 [DejaVuSans](http://dejavu-fonts.org/wiki/Main_Page) font (drop the .ttf file
 in the top-level directory)
 

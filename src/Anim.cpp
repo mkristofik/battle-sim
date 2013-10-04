@@ -330,16 +330,8 @@ AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
 
     auto &entity = gs->getEntity(id_);
     entity.hex = std::move(hSrc);
-
-    // Support projectile images that can rotate to face the target.
-    if (entity.img->w == pHexSize * 6) {
-        auto dir = direction(entity.hex, hTarget_);
-        entity.frame = static_cast<int>(dir);
-    }
-    else if (entity.img->w == pHexSize * 8) {
-        auto dir = direction8(entity.hex, hTarget_);
-        entity.frame = static_cast<int>(dir);
-    }
+    entity.img = sdlRotate(entity.img, hexAngle_rad(entity.hex, hTarget_));
+    entity.alignCenter();
 }
 
 Uint32 AnimProjectile::getFlightTime() const
@@ -359,7 +351,10 @@ void AnimProjectile::run(Uint32 elapsed)
     auto pSrc = pixelFromHex(entity.hex);
     auto pTgt = pixelFromHex(hTarget_);
     auto frac = static_cast<double>(elapsed - shotTime_) / flightTime_;
-    entity.pOffset = (pTgt - pSrc) * frac;
+    entity.pOffset = (pTgt - pSrc) * frac * 0.9;
+    // Projectiles are drawn with their trailing edge at the center of the hex.
+    // Instead of doing all the work to figure out where their leading edge
+    // needs to hit, we just shorten the flight distance by a little bit.
 }
 
 void AnimProjectile::stop()
