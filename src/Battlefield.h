@@ -39,6 +39,10 @@ public:
     Point hexFromPixel(int spx, int spy) const;
     int aryFromPixel(int spx, int spy) const;
 
+    // Return the screen coordinates of a hex.
+    Point sPixelFromHex(int hx, int hy) const;
+    Point sPixelFromHex(const Point &hex) const;
+
     // Get a list of hexes adjacent to the given hex.
     std::vector<int> aryNeighbors(int aIndex) const;
 
@@ -65,10 +69,6 @@ public:
     void draw() const;
 
 private:
-    // Return the screen coordinates of a hex.
-    Point sPixelFromHex(int hx, int hy) const;
-    Point sPixelFromHex(const Point &hex) const;
-
     SDL_Rect displayArea_;
     HexGrid grid_;
 

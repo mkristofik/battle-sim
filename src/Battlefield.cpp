@@ -75,6 +75,11 @@ bool Battlefield::isHexValid(int hx, int hy) const
     return false;
 }
 
+bool Battlefield::isHexValid(const Point &hex) const
+{
+    return isHexValid(hex.x, hex.y);
+}
+
 bool Battlefield::isHexValid(int aIndex) const
 {
     return isHexValid(grid_.hexFromAry(aIndex));
@@ -102,9 +107,18 @@ int Battlefield::aryFromPixel(int spx, int spy) const
     return grid_.aryFromHex(hexFromPixel(spx, spy));
 }
 
-bool Battlefield::isHexValid(const Point &hex) const
+Point Battlefield::sPixelFromHex(int hx, int hy) const
 {
-    return isHexValid(hex.x, hex.y);
+    auto basePixel = pixelFromHex(hx, hy);
+    int px = basePixel.x + displayArea_.x;
+    int py = basePixel.y + displayArea_.y;
+
+    return {px, py};
+}
+
+Point Battlefield::sPixelFromHex(const Point &hex) const
+{
+    return sPixelFromHex(hex.x, hex.y);
 }
 
 std::vector<int> Battlefield::aryNeighbors(int aIndex) const
@@ -287,18 +301,4 @@ void Battlefield::draw() const
             }
         }
     });
-}
-
-Point Battlefield::sPixelFromHex(int hx, int hy) const
-{
-    auto basePixel = pixelFromHex(hx, hy);
-    int px = basePixel.x + displayArea_.x;
-    int py = basePixel.y + displayArea_.y;
-
-    return {px, py};
-}
-
-Point Battlefield::sPixelFromHex(const Point &hex) const
-{
-    return sPixelFromHex(hex.x, hex.y);
 }
