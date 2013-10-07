@@ -51,8 +51,8 @@ namespace
 {
     std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
-    SDL_Rect bfWindow = {0, 0, 288, 360};
-    SDL_Rect logWindow = {0, 360, 288, 60};
+    SDL_Rect bfWindow = {200, 0, 288, 360};
+    SDL_Rect logWindow = {200, 360, 288, 60};
     SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::unique_ptr<Anim>> anims;
@@ -176,7 +176,7 @@ Action getPossibleAction(int px, int py)
         }
 
         action.type = ActionType::ATTACK;
-        auto pOffset = Point{px, py} - pixelFromHex(hTgt);
+        auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = bf->aryFromHex(hMoveTo);
@@ -485,7 +485,7 @@ const char * getScenario(int argc, char *argv[])
 
 extern "C" int SDL_main(int argc, char *argv[])
 {
-    if (!sdlInit(288, 420, "icon.png", "Battle Sim")) {
+    if (!sdlInit(688, 420, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 
@@ -512,6 +512,34 @@ extern "C" int SDL_main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     parseScenario(scenario);
+
+    // TODO: this needs to be configurable
+    auto hero1 = sdlLoadImage("portrait-knight.png");
+    sdlBlit(hero1, 0, 0);
+    auto hero2 = sdlFlipH(sdlLoadImage("portrait-barbarian.png"));
+    sdlBlit(hero2, bfWindow.x + bfWindow.w, 0);
+    SDL_Rect txt1;
+    txt1.y = 200;
+    txt1.w = 200;
+    txt1.h = 15;
+    sdlDrawText(font, "Lord Kilburn (Knight)", txt1, WHITE);
+    txt1.y += 15;
+    sdlDrawText(font, "Attack: 2  Defense: 2", txt1, WHITE);
+    SDL_Rect txt2;
+    txt2.x = 488;
+    txt2.y = 200;
+    txt2.w = 200;
+    txt2.h = 15;
+    sdlDrawText(font, "Crag Hack (Barbarian)", txt2, WHITE, Justify::RIGHT);
+    txt2.y += 15;
+    sdlDrawText(font, "Attack: 3  Defense: 1", txt2, WHITE, Justify::RIGHT);
+
+    // TODO: borders around the battlefield
+    // dark bg 1: 32/32/24
+    // dark bg 2: 24/28/24
+    // light fg: 96/100/96
+    // light fg 2: 104/100/96
+    // fg is only one pixel wide
 
     gs->nextTurn();
     bf->selectHex(gs->getActiveUnit()->aHex);

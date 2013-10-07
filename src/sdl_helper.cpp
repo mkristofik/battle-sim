@@ -237,6 +237,11 @@ SdlSurface sdlRotate(const SdlSurface &src, double angle_rad)
     return make_surface(rotozoomSurface(src.get(), angle_deg, 1, SMOOTHING_ON));
 }
 
+SdlSurface sdlZoom(const SdlSurface &src, double zoom)
+{
+    return make_surface(rotozoomSurface(src.get(), 0, zoom, SMOOTHING_ON));
+}
+
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)
 {
     auto surf = sdlDeepCopy(src);
@@ -465,6 +470,9 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
             auto xPos = pos.x;
             if (just == Justify::CENTER) {
                 xPos += (pos.w / 2 - textImg->w / 2);
+            }
+            else if (just == Justify::RIGHT) {
+                xPos += pos.w - textImg->w;
             }
 
             sdlBlit(textImg, xPos, yPos);

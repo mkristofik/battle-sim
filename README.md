@@ -41,7 +41,7 @@ Here are the decisions I've made to simplify the code that deals with art assets
 [SDL\_image 1.2.12](http://www.libsdl.org/projects/SDL_image/)  
 [SDL\_ttf 2.0.11](http://www.libsdl.org/projects/SDL_ttf/)  
 [SDL\_mixer 1.2.12](http://www.libsdl.org/projects/SDL_mixer/)  
-[SDL\_gfx 2.0.24](http://www.ferzkopp.net/joomla/content/view/19/14/)
+[SDL\_gfx 2.0.24](http://www.ferzkopp.net/joomla/content/view/19/14/)  
 [DejaVuSans](http://dejavu-fonts.org/wiki/Main_Page) font (drop the .ttf file
 in the top-level directory)
 

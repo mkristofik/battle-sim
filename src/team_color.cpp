@@ -136,6 +136,8 @@ SDL_Color getLabelColor(int team)
     assert(team >= 0 && team < numTeams);
     auto screen = SDL_GetVideoSurface();
     Uint8 red, green, blue;
+
+    // Get the lightest shade in the palette.
     SDL_GetRGB(allShades[team][18], screen->format, &red, &green, &blue);
     return {red, green, blue};
 }

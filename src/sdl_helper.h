@@ -46,6 +46,9 @@ SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames);
 // rotated image is likely not the same size as the original.
 SdlSurface sdlRotate(const SdlSurface &src, double angle_rad);
 
+// Scale a surface up (> 1.0) or down (< 1.0).  Creates a new surface.
+SdlSurface sdlZoom(const SdlSurface &src, double zoom);
+
 // Set the alpha channel of all non-transparent pixels (because SDL_SetAlpha
 // doesn't work for images that already have per-pixel alpha channel).
 // 0 = transparent, 1 = opaque
@@ -139,7 +142,7 @@ Dir8 nearEdge(Sint16 x, Sint16 y, const SDL_Rect &rect);
 SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y);
 
 // Draw text to the screen.  Return the number of word-wrapped lines of text.
-enum class Justify {LEFT, CENTER};
+enum class Justify {LEFT, CENTER, RIGHT};
 int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
                 const SDL_Color &color, Justify just = Justify::LEFT);
 int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
