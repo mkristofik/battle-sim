@@ -22,6 +22,7 @@ GameState::GameState()
     unitRef_{},
     bfUnits_{},
     activeUnit_{std::end(bfUnits_)},
+    commanders_(2),
     roundNum_{0}
 {
 }
@@ -132,6 +133,18 @@ Unit * GameState::getUnitAt(int aIndex)
     }
 
     return nullptr;
+}
+
+void GameState::setCommander(Commander c, int team)
+{
+    assert(team == 0 || team == 1);
+    commanders_[team] = std::move(c);
+}
+
+Commander & GameState::getCommander(int team)
+{
+    assert(team == 0 || team == 1);
+    return commanders_[team];
 }
 
 void GameState::nextRound()

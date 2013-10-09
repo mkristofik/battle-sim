@@ -300,6 +300,25 @@ void executeAction(const Action &action)
     }
 }
 
+void computeDamage(Action &action)
+{
+    if (!action.attacker || !action.defender) return;
+
+    double attackBonus = 1.0;
+    int attackDiff = gs->getCommander(action.attacker->team).attack -
+        gs->getCommander(action.defender->team).defense;
+    if (attackDiff > 0) {
+        attackBonus += attackDiff * 0.1;
+    }
+    else {
+        attackBonus += attackDiff * 0.05;
+    }
+    attackBonus = bound(attackBonus, 0.3, 3.0);
+
+    action.damage = action.attacker->num *
+        action.attacker->randomDamage(action.type) * attackBonus;
+}
+
 void logAction(const Action &action)
 {
     if (action.type != ActionType::ATTACK && action.type != ActionType::RANGED) {
@@ -364,7 +383,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
-                action.computeDamage();
+                computeDamage(action);
                 logAction(action);
                 executeAction(action);
                 bf->clearHighlights();
@@ -416,8 +435,16 @@ void parseScenario(const rapidjson::Document &doc)
         std::string posStr = i->name.GetString();
         auto posIter = mapUnitPos.find(posStr);
         if (posIter == std::end(mapUnitPos)) {
-            std::cerr << "scenario: skipping unit at position '"
-                << i->name.GetString() << "'\n";
+            if (posStr == "c1") {
+                gs->setCommander(Commander(i->value), 0);
+            }
+            else if (posStr == "c2") {
+                gs->setCommander(Commander(i->value), 1);
+            }
+            else {
+                std::cerr << "scenario: skipping unit at position '"
+                    << i->name.GetString() << "'\n";
+            }
             continue;
         }
         int posIdx = posIter->second;

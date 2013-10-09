@@ -1,4 +1,11 @@
 {
+    "c1": {
+        "name": "Lord Kilburn",
+        "alignment": "Knight",
+        "portrait": "portrait-knight.png",
+        "attack": 2,
+        "defense": 2
+    },
     "t1p1": {
         "id": "human2",
         "num": 2
@@ -22,6 +29,13 @@
     "t1p6": {
         "id": "human3",
         "num": 22
+    },
+    "c2": {
+        "name": "Crag Hack",
+        "alignment": "Barbarian",
+        "portrait": "portrait-barbarian.png",
+        "attack": 3,
+        "defense": 1
     },
     "t2p1": {
         "id": "ogre1",

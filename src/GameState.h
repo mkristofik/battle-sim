@@ -13,6 +13,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include "Commander.h"
 #include "Drawable.h"
 #include "Unit.h"
 #include "UnitType.h"
@@ -53,6 +54,10 @@ public:
     Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
 
+    // Leaders of each army.
+    void setCommander(Commander c, int team);
+    Commander & getCommander(int team);
+
 private:
     void nextRound();
 
@@ -60,6 +65,7 @@ private:
     UnitTypeMap unitRef_;
     std::vector<Unit> bfUnits_;
     std::vector<Unit>::iterator activeUnit_;
+    std::vector<Commander> commanders_;
     int roundNum_;
 };
 
