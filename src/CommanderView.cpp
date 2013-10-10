@@ -37,7 +37,7 @@ void CommanderView::draw() const
     sdlBlit(img, displayArea_.x, displayArea_.y);
 
     // Draw the name below it.
-    auto lineHeight = TTF_FontLineSkip(font_.get()) + 1;  // TODO move this
+    auto lineHeight = sdlLineHeight(font_);
     SDL_Rect txtArea;
     txtArea.x = displayArea_.x + 5;  // get away from the screen edges a bit
     txtArea.y = displayArea_.y + img->h;

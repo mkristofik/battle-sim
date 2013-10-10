@@ -157,6 +157,9 @@ SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
 SdlSurface sdlPreRender(const SdlFont &font, int number,
                         const SDL_Color &color);
 
+// Return the default space between lines of text.
+int sdlLineHeight(const SdlFont &font);
+
 // Play sound files at a reasonable volume.
 void sdlPlayMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);

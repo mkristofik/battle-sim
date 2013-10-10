@@ -31,8 +31,8 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     downState_{ButtonState::DISABLED},
     textArea_(displayArea_),
     font_(f),
-    lineHeight_{TTF_FontLineSkip(font_.get())},
-    maxLines_{0},
+    lineHeight_{sdlLineHeight(font_)},
+    maxLines_{textArea_.h / lineHeight_},
     msgs_{},
     beginMsg_{0},
     endMsg_{0},
@@ -40,11 +40,6 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
 {
     // Allow space for the scroll buttons.
     textArea_.w -= btnUp_->w;
-
-    // The descender on lowercase g tends to run into the next message.
-    // Increase the spacing to allow for it.
-    ++lineHeight_;
-    maxLines_ = textArea_.h / lineHeight_;
 
     // Draw the arrow buttons on the right edge.
     btnUpArea_.x = displayArea_.x + displayArea_.w - btnUp_->w;

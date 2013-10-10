@@ -476,7 +476,7 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
             }
 
             sdlBlit(textImg, xPos, yPos);
-            yPos += TTF_FontLineSkip(font.get());
+            yPos += sdlLineHeight(font);
             ++numRendered;
         }
     });
@@ -511,6 +511,13 @@ SdlSurface sdlPreRender(const SdlFont &font, int number,
                         const SDL_Color &color)
 {
     return sdlPreRender(font, boost::lexical_cast<std::string>(number), color);
+}
+
+int sdlLineHeight(const SdlFont &font)
+{
+    // The descender on lowercase g tends to run into the next line.  Increase
+    // the spacing to allow for it.
+    return TTF_FontLineSkip(font.get()) + 1;
 }
 
 void sdlPlayMusic(const SdlMusic &music)
