@@ -13,6 +13,7 @@
 #include "Action.h"
 #include "Anim.h"
 #include "Battlefield.h"
+#include "CommanderView.h"
 #include "GameState.h"
 #include "LogView.h"
 #include "Pathfinder.h"
@@ -51,6 +52,8 @@ namespace
 {
     std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
+    SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
+    SDL_Rect cmdrWindow2 = {488, 0, 200, 230};
     SDL_Rect bfWindow = {200, 0, 288, 360};
     SDL_Rect logWindow = {200, 360, 288, 60};
     SdlFont labelFont;
@@ -540,26 +543,8 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
     parseScenario(scenario);
 
-    // TODO: this needs to be configurable
-    auto hero1 = sdlLoadImage("portrait-knight.png");
-    sdlBlit(hero1, 0, 0);
-    auto hero2 = sdlFlipH(sdlLoadImage("portrait-barbarian.png"));
-    sdlBlit(hero2, bfWindow.x + bfWindow.w, 0);
-    SDL_Rect txt1;
-    txt1.y = 200;
-    txt1.w = 200;
-    txt1.h = 15;
-    sdlDrawText(font, "Lord Kilburn (Knight)", txt1, WHITE);
-    txt1.y += 15;
-    sdlDrawText(font, "Attack: 2  Defense: 2", txt1, WHITE);
-    SDL_Rect txt2;
-    txt2.x = 488;
-    txt2.y = 200;
-    txt2.w = 200;
-    txt2.h = 15;
-    sdlDrawText(font, "Crag Hack (Barbarian)", txt2, WHITE, Justify::RIGHT);
-    txt2.y += 15;
-    sdlDrawText(font, "Attack: 3  Defense: 1", txt2, WHITE, Justify::RIGHT);
+    CommanderView cView1{gs->getCommander(0), 0, font, cmdrWindow1};
+    CommanderView cView2{gs->getCommander(1), 1, font, cmdrWindow2};
 
     // TODO: borders around the battlefield
     // dark bg 1: 32/32/24
@@ -573,6 +558,8 @@ extern "C" int SDL_main(int argc, char *argv[])
     bf->draw();
     logv->add("Round 1 begins.");
     logv->draw();
+    cView1.draw();
+    cView2.draw();
 
     SDL_Surface *screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
