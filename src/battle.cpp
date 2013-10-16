@@ -52,10 +52,15 @@ namespace
 {
     std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
+    Uint16 winWidth = 698;
+    Uint16 winHeight = 425;
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
-    SDL_Rect cmdrWindow2 = {488, 0, 200, 230};
-    SDL_Rect bfWindow = {200, 0, 288, 360};
-    SDL_Rect logWindow = {200, 360, 288, 60};
+    SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
+    SDL_Rect border1 = {200, 0, 5, winHeight};
+    SDL_Rect border2 = {493, 0, 5, winHeight};
+    SDL_Rect border3 = {200, 360, 293, 5};
+    SDL_Rect bfWindow = {205, 0, 288, 360};
+    SDL_Rect logWindow = {205, 365, 288, 60};
     SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
     std::deque<std::unique_ptr<Anim>> anims;
@@ -513,9 +518,43 @@ const char * getScenario(int argc, char *argv[])
     return argv[1];
 }
 
+SDL_Rect getBorderFgLine(const SDL_Rect &border)
+{
+    auto line = border;
+    if (border.h > border.w) {
+        line.x += border.w / 2;
+        line.w = 1;
+    }
+    else {
+        line.y += border.h / 2;
+        line.h = 1;
+    }
+    return line;
+}
+
+void drawBorders()
+{
+    auto screen = SDL_GetVideoSurface();
+    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
+                               BORDER_BG.b);
+    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
+                               BORDER_FG.b);
+
+    SDL_FillRect(screen, &border1, bgColor);
+    SDL_FillRect(screen, &border2, bgColor);
+    SDL_FillRect(screen, &border3, bgColor);
+
+    SDL_Rect line1 = getBorderFgLine(border1);
+    SDL_FillRect(screen, &line1, fgColor);
+    SDL_Rect line2 = getBorderFgLine(border2);
+    SDL_FillRect(screen, &line2, fgColor);
+    SDL_Rect line3 = getBorderFgLine(border3);
+    SDL_FillRect(screen, &line3, fgColor);
+}
+
 extern "C" int SDL_main(int argc, char *argv[])
 {
-    if (!sdlInit(688, 420, "icon.png", "Battle Sim")) {
+    if (!sdlInit(winWidth, winHeight, "icon.png", "Battle Sim")) {
         return EXIT_FAILURE;
     }
 
@@ -560,8 +599,9 @@ extern "C" int SDL_main(int argc, char *argv[])
     logv->draw();
     cView1.draw();
     cView2.draw();
+    drawBorders();
 
-    SDL_Surface *screen = SDL_GetVideoSurface();
+    auto screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     bool isDone = false;

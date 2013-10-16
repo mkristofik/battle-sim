@@ -166,5 +166,7 @@ void sdlPlaySound(const SdlSound &Sound);
 
 // Common colors.
 const SDL_Color WHITE = SDL_Color{255, 255, 255, 0};
+const SDL_Color BORDER_FG = SDL_Color{96, 100, 96, 0};
+const SDL_Color BORDER_BG = SDL_Color{32, 32, 24, 0};
 
 #endif
