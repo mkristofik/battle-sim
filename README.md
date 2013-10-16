@@ -12,6 +12,7 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Initiative stat determines the order in which units get to act.
 - Scrolling battle log to record every attack action.
 - Report a winner when one side is defeated.
+- Commanders have influence over the strength of their units.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
@@ -34,6 +35,7 @@ Here are the decisions I've made to simplify the code that deals with art assets
 - Hexes are 72x72 pixels.  Anything designed to fit in one hex should use the same size.
 - Animated images are stored in a sprite sheet with the first frame on the left and no padding between frames.  Frames are assumed to be 72x72.
 - Projectiles are drawn with their trailing edges in the center of the hex and facing East.  The image rotation code goes counter-clockwise, like angles on the Unit Circle.
+- Commander portraits are 200x200 pixels.
 
 ## Requirements
 
