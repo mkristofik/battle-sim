@@ -339,26 +339,13 @@ void logAction(const Action &action)
     int numKilled = action.defender->simulateDamage(action.damage);
 
     std::ostringstream ostr("- ", std::ios::ate);
-    if (action.attacker->num == 1) {
-        ostr << "1 " << action.attacker->type->name << " attacks ";
-    }
-    else {
-        ostr << action.attacker->num << ' ' << action.attacker->type->plural <<
-            " attack ";
-    }
-    if (action.defender->num == 1) {
-        ostr << "1 " << action.defender->type->name;
-    }
-    else {
-        ostr << action.defender->num << ' ' << action.defender->type->plural;
-    }
+    ostr << action.attacker->getName();
+    ostr << (action.attacker->num == 1 ? " attacks " : " attack ");
+    ostr << action.defender->getName();
     ostr << " for " << action.damage << " damage.";
-    if (numKilled == 1) {
-        ostr << "  1 " << action.defender->type->name << " perishes.";
-    }
-    else if (numKilled > 1) {
-        ostr << "  " << numKilled << ' ' << action.defender->type->plural <<
-            " perish.";
+    if (numKilled > 0) {
+        ostr << "  " << action.defender->getName(numKilled);
+        ostr << (numKilled > 1 ? " perish." : " perishes.");
     }
 
     logv->add(ostr.str());
@@ -552,6 +539,13 @@ void drawBorders()
     SDL_FillRect(screen, &line3, fgColor);
 }
 
+void nextTurn()
+{
+    gs->nextTurn();
+    auto unit = gs->getActiveUnit();
+    std::cout << unit->getName() << '\n';
+}
+
 extern "C" int SDL_main(int argc, char *argv[])
 {
     if (!sdlInit(winWidth, winHeight, "icon.png", "Battle Sim")) {
@@ -585,14 +579,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     CommanderView cView1{gs->getCommander(0), 0, font, cmdrWindow1};
     CommanderView cView2{gs->getCommander(1), 1, font, cmdrWindow2};
 
-    // TODO: borders around the battlefield
-    // dark bg 1: 32/32/24
-    // dark bg 2: 24/28/24
-    // light fg: 96/100/96
-    // light fg 2: 104/100/96
-    // fg is only one pixel wide
-
-    gs->nextTurn();
+    nextTurn();
     bf->selectHex(gs->getActiveUnit()->aHex);
     bf->draw();
     logv->add("Round 1 begins.");
@@ -643,7 +630,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             actionTaken = false;
             auto winningTeam = gs->getWinner();
             if (winningTeam == Winner::NOBODY_YET) {
-                gs->nextTurn();
+                nextTurn();
                 checkNewRound();
                 bf->selectHex(gs->getActiveUnit()->aHex);
             }

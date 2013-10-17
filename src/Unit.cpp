@@ -14,6 +14,8 @@
 
 #include "UnitType.h"
 #include "algo.h"
+
+#include "boost/lexical_cast.hpp"
 #include <cstdlib>
 #include <random>
 
@@ -80,6 +82,19 @@ int Unit::simulateDamage(int dmg) const
 bool Unit::isAlive() const
 {
     return num > 0;
+}
+
+std::string Unit::getName(int number) const
+{
+    if (number == 1) {
+        return "1 " + type->name;
+    }
+    return boost::lexical_cast<std::string>(number) + ' ' + type->plural;
+}
+
+std::string Unit::getName() const
+{
+    return getName(num);
 }
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)

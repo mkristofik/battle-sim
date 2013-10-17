@@ -14,6 +14,7 @@
 #define UNIT_H
 
 #include "Action.h"
+#include <string>
 
 class UnitType;
 
@@ -39,6 +40,10 @@ struct Unit
     int simulateDamage(int dmg) const;
 
     bool isAlive() const;
+
+    // Example: getName(5) for archer unit returns "5 Archers".
+    std::string getName(int number) const;
+    std::string getName() const;  // use current unit size
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);
