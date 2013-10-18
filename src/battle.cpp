@@ -41,8 +41,6 @@
 #include <vector>
 
 // TODO: ideas
-// - make a bigger window with some portraits to indicate heroes
-//      * need some scaling because the portraits are big
 // - leave space to write unit stats for the highlighted hex
 
 // TODO: things we need to figure all this out
@@ -539,11 +537,41 @@ void drawBorders()
     SDL_FillRect(screen, &line3, fgColor);
 }
 
+bool checkWinner(int score1, int score2)
+{
+    if (score1 == 0 && score2 == 0) {
+        logv->addBlankLine();
+        logv->add("It's a draw.");
+        return true;
+    }
+    else if (score1 == 0) {
+        logv->addBlankLine();
+        logv->add("** Team 2 wins! **");
+        return true;
+    }
+    else if (score2 == 0) {
+        logv->addBlankLine();
+        logv->add("** Team 1 wins! **");
+        return true;
+    }
+
+    return false;
+}
+
 void nextTurn()
 {
-    gs->nextTurn();
-    auto unit = gs->getActiveUnit();
-    std::cout << unit->getName() << '\n';
+    auto score = gs->getScore();
+    gameOver = checkWinner(score.first, score.second);
+
+    if (!gameOver) {
+        gs->nextTurn();
+        auto unit = gs->getActiveUnit();
+        std::cout << unit->getName();
+    }
+    else {
+        std::cout << "Game over";
+    }
+    std::cout << " (score: " << score.first << '-' << score.second << ")\n";
 }
 
 extern "C" int SDL_main(int argc, char *argv[])
@@ -628,26 +656,12 @@ extern "C" int SDL_main(int argc, char *argv[])
         // the next turn.
         if (actionTaken && anims.empty()) {
             actionTaken = false;
-            auto winningTeam = gs->getWinner();
-            if (winningTeam == Winner::NOBODY_YET) {
-                nextTurn();
+            nextTurn();
+            if (!gameOver) {
                 checkNewRound();
                 bf->selectHex(gs->getActiveUnit()->aHex);
             }
             else {
-                logv->addBlankLine();
-                if (winningTeam == Winner::DRAW) {
-                    logv->add("It's a draw.");
-                }
-                else {
-                    auto teamNum = static_cast<int>(winningTeam);
-                    std::string msg("** Team ");
-                    msg += boost::lexical_cast<std::string>(teamNum);
-                    msg += " wins! **";
-                    logv->add(msg);
-                }
-
-                gameOver = true;
                 bf->clearHighlights();
                 needRedraw = true;
             }

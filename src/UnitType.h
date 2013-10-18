@@ -37,6 +37,7 @@ struct UnitType
     int maxDmg;
     int minDmgRanged;
     int maxDmgRanged;
+    int growth;
     ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet imgMove;

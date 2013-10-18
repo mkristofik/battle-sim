@@ -120,6 +120,9 @@ UnitType::UnitType(const rapidjson::Value &json)
         minDmgRanged = damageList[0u].GetInt();
         maxDmgRanged = damageList[1u].GetInt();
     }
+    if (json.HasMember("growth")) {
+        growth = json["growth"].GetInt();
+    }
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());
     }

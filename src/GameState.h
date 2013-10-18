@@ -22,9 +22,8 @@
 #include "rapidjson/document.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
-
-enum class Winner {NOBODY_YET = -1, DRAW, TEAM_1, TEAM_2};
 
 class GameState
 {
@@ -33,7 +32,6 @@ public:
 
     void nextTurn();
     int getRound() const;
-    Winner getWinner() const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
@@ -53,6 +51,10 @@ public:
     void addUnit(Unit u);
     Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
+
+    // Score the current battle state for each side.  Normalize each unit by
+    // comparing size to growth rate.
+    std::pair<int, int> getScore() const;
 
     // Leaders of each army.
     void setCommander(Commander c, int team);

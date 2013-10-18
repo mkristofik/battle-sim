@@ -51,26 +51,6 @@ int GameState::getRound() const
     return roundNum_;
 }
 
-Winner GameState::getWinner() const
-{
-    bool alive1 = any_of(std::begin(bfUnits_), std::end(bfUnits_),
-        [] (const Unit &unit) { return unit.isAlive() && unit.team == 0; });
-    bool alive2 = any_of(std::begin(bfUnits_), std::end(bfUnits_),
-        [] (const Unit &unit) { return unit.isAlive() && unit.team == 1; });
-
-    if (alive1 && alive2) {
-        return Winner::NOBODY_YET;
-    }
-    if (alive1) {
-        return Winner::TEAM_1;
-    }
-    if (alive2) {
-        return Winner::TEAM_2;
-    }
-
-    return Winner::DRAW;
-}
-
 int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)
 {
     int id = numEntities();
@@ -133,6 +113,16 @@ Unit * GameState::getUnitAt(int aIndex)
     }
 
     return nullptr;
+}
+
+std::pair<int, int> GameState::getScore() const
+{
+    int score[] = {0, 0};
+    for (auto &u : bfUnits_) {
+        assert(u.team == 0 || u.team == 1);
+        score[u.team] += u.num * 100 / u.type->growth;
+    }
+    return {score[0], score[1]};
 }
 
 void GameState::setCommander(Commander c, int team)

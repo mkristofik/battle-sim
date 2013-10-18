@@ -30,17 +30,22 @@ void CommanderView::draw() const
     sdlClear(displayArea_);
 
     // Draw the portrait.
-    auto img = cmdr_.portrait;
-    if (txtAlign_ == Justify::RIGHT) {
-        img = sdlFlipH(img);
+    // TODO: need a default portrait
+    auto imgHeight = 200;
+    if (cmdr_.portrait) {
+        auto img = cmdr_.portrait;
+        imgHeight = img->h;
+        if (txtAlign_ == Justify::RIGHT) {
+            img = sdlFlipH(img);
+        }
+        sdlBlit(img, displayArea_.x, displayArea_.y);
     }
-    sdlBlit(img, displayArea_.x, displayArea_.y);
 
     // Draw the name below it.
     auto lineHeight = sdlLineHeight(font_);
     SDL_Rect txtArea;
     txtArea.x = displayArea_.x + 5;  // get away from the screen edges a bit
-    txtArea.y = displayArea_.y + img->h;
+    txtArea.y = displayArea_.y + imgHeight;
     txtArea.w = displayArea_.w - 10;
     txtArea.h = lineHeight;
     auto title = cmdr_.name + " (" + cmdr_.alignment + ")";
