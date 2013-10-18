@@ -30,7 +30,6 @@ void CommanderView::draw() const
     sdlClear(displayArea_);
 
     // Draw the portrait.
-    // TODO: need a default portrait
     auto imgHeight = 200;
     if (cmdr_.portrait) {
         auto img = cmdr_.portrait;

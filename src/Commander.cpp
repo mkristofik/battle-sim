@@ -15,7 +15,7 @@
 Commander::Commander()
     : name{"Captain"},
     alignment{"Neutral"},
-    portrait{},
+    portrait{sdlLoadImage("portrait-captain.png")},
     attack{0},
     defense{0}
 {
