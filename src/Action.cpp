@@ -15,7 +15,6 @@
 
 Action::Action()
     : path{},
-    attackTarget{-1},
     damage{0},
     type{ActionType::NONE},
     attacker{nullptr},

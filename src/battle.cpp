@@ -161,7 +161,6 @@ Action getPossibleAction(int px, int py)
     if (aTgt < 0) {
         return {};
     }
-    action.attackTarget = aTgt;
     auto hTgt = bf->hexFromAry(aTgt);
 
     action.attacker = gs->getActiveUnit();
@@ -254,10 +253,10 @@ void executeAction(const Action &action)
     // These animations happen after the attacker is done moving.
     if (action.type == ActionType::RANGED) {
         auto rangedSeq = make_unique<AnimParallel>();
+        auto defender = action.defender;
 
         auto hSrc = bf->hexFromAry(unit->aHex);
-        auto aTgt = action.attackTarget;
-        auto hTgt = bf->hexFromAry(aTgt);
+        auto hTgt = bf->hexFromAry(defender->aHex);
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
         auto animShooter = make_unique<AnimRanged>(*unit, hTgt);
@@ -265,7 +264,6 @@ void executeAction(const Action &action)
         auto animShot = make_unique<AnimProjectile>(unit->type->projectile,
              hSrc, hTgt, animShooter->getShotTime());
 
-        auto defender = gs->getUnitAt(aTgt);
         defender->face = getFacing(hTgt, hSrc, defender->face);
         defender->takeDamage(action.damage);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
@@ -284,15 +282,15 @@ void executeAction(const Action &action)
              action.type == ActionType::RETALIATE)
     {
         auto attackSeq = make_unique<AnimParallel>();
+        auto defender = action.defender;
 
         auto hSrc = bf->hexFromAry(unit->aHex);
-        auto hTgt = bf->hexFromAry(action.attackTarget);
+        auto hTgt = bf->hexFromAry(defender->aHex);
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
         auto anim1 = make_unique<AnimAttack>(*unit, hTgt);
         auto hitTime = anim1->getHitTime();
 
-        auto defender = gs->getUnitAt(action.attackTarget);
         defender->face = getFacing(hTgt, hSrc, defender->face);
         defender->takeDamage(action.damage);
 
@@ -307,7 +305,7 @@ void executeAction(const Action &action)
     }
 
     if (action.type == ActionType::RETALIATE) {
-        action.attacker->retaliated = true;
+        unit->retaliated = true;
     }
 }
 
@@ -373,7 +371,6 @@ Action retaliate(const Action &action)
     retaliation.attacker = action.defender;
     retaliation.defender = action.attacker;
     retaliation.type = ActionType::RETALIATE;
-    retaliation.attackTarget = action.attacker->aHex;
     return retaliation;
 }
 
