@@ -142,5 +142,7 @@ void GameState::nextRound()
     auto lastAlive = stable_partition(std::begin(bfUnits_), std::end(bfUnits_),
                                       std::mem_fn(&Unit::isAlive));
     stable_sort(std::begin(bfUnits_), lastAlive, sortByInitiative);
+    for_each(std::begin(bfUnits_), lastAlive,
+             [] (Unit &unit) {unit.retaliated = false;});
     ++roundNum_;
 }
