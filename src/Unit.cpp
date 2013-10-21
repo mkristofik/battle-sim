@@ -27,13 +27,14 @@ Unit::Unit(const UnitType &t)
     face{Facing::RIGHT},
     type{&t},
     labelId{-1},
-    hpLeft{type->hp}
+    hpLeft{type->hp},
+    retaliated{false}
 {
 }
 
 int Unit::randomDamage(ActionType action) const
 {
-    if (action == ActionType::ATTACK) {
+    if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
         std::uniform_int_distribution<int> dmg(type->minDmg, type->maxDmg);
         return dmg(randomGenerator());
     }

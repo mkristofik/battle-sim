@@ -18,12 +18,12 @@
 class Unit;
 
 // Definition of a possible action a unit may take (where it can move, a target to attack, etc.).
-enum class ActionType {NONE, MOVE, ATTACK, RANGED};
+enum class ActionType {NONE, MOVE, ATTACK, RANGED, RETALIATE};
 
 struct Action
 {
     std::vector<int> path;
-    int attackTarget;
+    int attackTarget;  // TODO: don't need this anymore
     int damage;
     ActionType type;
     Unit *attacker;

@@ -31,6 +31,7 @@ struct Unit
     const UnitType *type;
     int labelId;  // entity id of text label showing number of creatures
     int hpLeft;  // hp of top creature in the stack
+    bool retaliated;  // used retaliation this round
 
     Unit(const UnitType &t);
     int randomDamage(ActionType action) const;

@@ -61,6 +61,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     maxDmg{1},
     minDmgRanged{0},
     maxDmgRanged{0},
+    growth{1},
     baseImg{},
     reverseImg{},
     animAttack{},

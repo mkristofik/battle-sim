@@ -225,14 +225,13 @@ Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
     return Facing::RIGHT;
 }
 
-// Make the active unit carry out the given action.
 void executeAction(const Action &action)
 {
     if (action.type == ActionType::NONE) {
         return;
     }
 
-    auto unit = gs->getActiveUnit();
+    auto unit = action.attacker;
     if (!unit) {
         return;
     }
@@ -281,7 +280,9 @@ void executeAction(const Action &action)
         }
         anims.emplace_back(std::move(rangedSeq));
     }
-    else if (action.type == ActionType::ATTACK) {
+    else if (action.type == ActionType::ATTACK ||
+             action.type == ActionType::RETALIATE)
+    {
         auto attackSeq = make_unique<AnimParallel>();
 
         auto hSrc = bf->hexFromAry(unit->aHex);
@@ -303,6 +304,10 @@ void executeAction(const Action &action)
             attackSeq->add(make_unique<AnimDie>(*defender, hitTime));
         }
         anims.emplace_back(std::move(attackSeq));
+    }
+
+    if (action.type == ActionType::RETALIATE) {
+        action.attacker->retaliated = true;
     }
 }
 
@@ -327,7 +332,7 @@ void computeDamage(Action &action)
 
 void logAction(const Action &action)
 {
-    if (action.type != ActionType::ATTACK && action.type != ActionType::RANGED) {
+    if (action.type == ActionType::MOVE || action.type == ActionType::NONE) {
         return;
     }
     if (!action.attacker || !action.defender) {
@@ -338,8 +343,13 @@ void logAction(const Action &action)
 
     std::ostringstream ostr("- ", std::ios::ate);
     ostr << action.attacker->getName();
-    ostr << (action.attacker->num == 1 ? " attacks " : " attack ");
-    ostr << action.defender->getName();
+    if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {
+        ostr << (action.attacker->num == 1 ? " attacks " : " attack ");
+        ostr << action.defender->getName();
+    }
+    else if (action.type == ActionType::RETALIATE) {
+        ostr << (action.attacker->num == 1 ? " retaliates" : " retaliate");
+    }
     ostr << " for " << action.damage << " damage.";
     if (numKilled > 0) {
         ostr << "  " << action.defender->getName(numKilled);
@@ -347,6 +357,24 @@ void logAction(const Action &action)
     }
 
     logv->add(ostr.str());
+}
+
+bool isRetaliationAllowed(const Action &action)
+{
+    return action.type == ActionType::ATTACK &&
+           action.attacker && action.attacker->isAlive() &&
+           action.defender && action.defender->isAlive() &&
+           !action.defender->retaliated;
+}
+
+Action retaliate(const Action &action)
+{
+    Action retaliation;
+    retaliation.attacker = action.defender;
+    retaliation.defender = action.attacker;
+    retaliation.type = ActionType::RETALIATE;
+    retaliation.attackTarget = action.attacker->aHex;
+    return retaliation;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -379,6 +407,12 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
                 computeDamage(action);
                 logAction(action);
                 executeAction(action);
+                if (isRetaliationAllowed(action)) {
+                    auto retaliation = retaliate(action);
+                    computeDamage(retaliation);
+                    logAction(retaliation);
+                    executeAction(retaliation);
+                }
                 bf->clearHighlights();
                 bf->deselectHex();
                 actionTaken = true;
