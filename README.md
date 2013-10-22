@@ -13,10 +13,11 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Scrolling battle log to record every attack action.
 - Report a winner when one side is defeated.
 - Commanders have influence over the strength of their units.
+- Units can retaliate against melee attacks once per round.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
-There's a [demo video](http://youtu.be/d6f6UnAOV1U) too.  And another one, a [full-scale battle](http://youtu.be/JwuI4xIqpAM).
+There's a [demo video](http://youtu.be/2TbIJfgpM-o) too.
 
 ## Core Principles
 
