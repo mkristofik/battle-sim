@@ -61,6 +61,7 @@ namespace
     SDL_Rect logWindow = {205, 365, 288, 60};
     SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
+    UnitTypeMap unitRef;
     std::deque<std::unique_ptr<Anim>> anims;
     bool actionTaken = false;
     int roundNum = 1;
@@ -91,6 +92,16 @@ namespace
         mapUnitPos.emplace("t2p5", 11);
         mapUnitPos.emplace("t2p6", 12);
         mapUnitPos.emplace("t2p7", 13);
+    }
+
+    const UnitType * getUnitType(const std::string &name)
+    {
+        auto iter = unitRef.find(name);
+        if (iter != std::end(unitRef)) {
+            return &iter->second;
+        }
+
+        return nullptr;
     }
 
     bool parseJson(const char *filename, rapidjson::Document &doc)
@@ -428,7 +439,7 @@ bool parseUnits(const rapidjson::Document &doc)
             continue;
         }
 
-        gs->addUnitType(i->name.GetString(), UnitType(i->value));
+        unitRef.emplace(i->name.GetString(), UnitType(i->value));
         unitAdded = true;
     }
 
@@ -481,7 +492,7 @@ void parseScenario(const rapidjson::Document &doc)
         if (json.HasMember("id")) {
             name = json["id"].GetString();
         }
-        const auto unitType = gs->getUnitType(name);
+        const auto unitType = getUnitType(name);
         if (!unitType) {
             std::cerr << "scenario: skipping unit with unknown id '" <<
                 unitType << "'\n";
@@ -708,6 +719,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
 
     // Ensure SDL resources are cleaned up before the subsystems are torn down.
+    // TODO: can we encapsulate these so this isn't necessary?
     gs.reset();
     bf.reset();
     labelFont.reset();

@@ -15,10 +15,7 @@
 
 #include "Commander.h"
 #include "Unit.h"
-#include "UnitType.h"
 #include "sdl_helper.h"
-
-#include "rapidjson/document.h"
 
 #include <memory>
 #include <utility>
@@ -31,10 +28,6 @@ public:
 
     void nextTurn();
     int getRound() const;
-
-    // The set of available unit types.
-    void addUnitType(std::string name, UnitType u);
-    const UnitType * getUnitType(const std::string &name) const;
 
     // Unit stacks on the battlefield.
     void addUnit(Unit u);
@@ -52,7 +45,6 @@ public:
 private:
     void nextRound();
 
-    UnitTypeMap unitRef_;
     std::vector<Unit> bfUnits_;
     std::vector<Unit>::iterator activeUnit_;
     std::vector<Commander> commanders_;

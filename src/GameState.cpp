@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "GameState.h"
+#include "UnitType.h"
 
 #include <algorithm>
 #include <cassert>
@@ -18,8 +19,7 @@
 std::unique_ptr<GameState> gs;
 
 GameState::GameState()
-    : unitRef_{},
-    bfUnits_{},
+    : bfUnits_{},
     activeUnit_{std::end(bfUnits_)},
     commanders_(2),
     roundNum_{0}
@@ -48,21 +48,6 @@ void GameState::nextTurn()
 int GameState::getRound() const
 {
     return roundNum_;
-}
-
-void GameState::addUnitType(std::string name, UnitType u)
-{
-    unitRef_.emplace(std::move(name), std::move(u));
-}
-
-const UnitType * GameState::getUnitType(const std::string &name) const
-{
-    auto iter = unitRef_.find(name);
-    if (iter != std::end(unitRef_)) {
-        return &iter->second;
-    }
-
-    return nullptr;
 }
 
 void GameState::addUnit(Unit u)
