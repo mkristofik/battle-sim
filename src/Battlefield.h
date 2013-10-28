@@ -13,6 +13,7 @@
 #ifndef BATTLEFIELD_H
 #define BATTLEFIELD_H
 
+#include "Drawable.h"
 #include "HexGrid.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
@@ -26,6 +27,15 @@ class Battlefield
 {
 public:
     Battlefield(SDL_Rect dispArea);
+
+    // Add a drawable entity to the battlefield.  Return its unique id number.
+    int addEntity(Point hex, SdlSurface img, ZOrder z);
+    int addHiddenEntity(SdlSurface img, ZOrder z);
+
+    // References might get invalidated at any time.  Recommend calling this
+    // instead of holding on to entity object refs for too long.
+    Drawable & getEntity(int id);
+    const Drawable & getEntity(int id) const;
 
     bool isHexValid(int hx, int hy) const;
     bool isHexValid(const Point &hex) const;
@@ -71,6 +81,7 @@ public:
 private:
     SDL_Rect displayArea_;
     HexGrid grid_;
+    std::vector<Drawable> entities_;
 
     // Entities for display features.
     int hexShadow_;

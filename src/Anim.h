@@ -19,9 +19,15 @@
 #include <memory>
 #include <vector>
 
+class Battlefield;
+
 class Anim
 {
 public:
+    // All animations need access to the battlefield view.  Set this before
+    // creating any Anim objects.
+    static void setBattlefield(Battlefield &b);
+
     Anim();
     virtual ~Anim();
 
@@ -31,6 +37,7 @@ public:
 
 protected:
     Uint32 runTime_;
+    static Battlefield *bf_;
 
 private:
     virtual void start();

@@ -18,8 +18,7 @@
 std::unique_ptr<GameState> gs;
 
 GameState::GameState()
-    : entities_{},
-    unitRef_{},
+    : unitRef_{},
     bfUnits_{},
     activeUnit_{std::end(bfUnits_)},
     commanders_(2),
@@ -49,32 +48,6 @@ void GameState::nextTurn()
 int GameState::getRound() const
 {
     return roundNum_;
-}
-
-int GameState::addEntity(Point hex, SdlSurface img, ZOrder z)
-{
-    int id = numEntities();
-    entities_.emplace_back(std::move(hex), std::move(img), std::move(z));
-
-    return id;
-}
-
-int GameState::addHiddenEntity(SdlSurface img, ZOrder z)
-{
-    auto id = addEntity(hInvalid, std::move(img), std::move(z));
-    entities_[id].visible = false;
-    return id;
-}
-
-int GameState::numEntities() const
-{
-    return entities_.size();
-}
-
-Drawable & GameState::getEntity(int id)
-{
-    assert(id >= 0 && id < static_cast<int>(entities_.size()));
-    return entities_[id];
 }
 
 void GameState::addUnitType(std::string name, UnitType u)

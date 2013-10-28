@@ -14,7 +14,6 @@
 #define GAME_STATE_H
 
 #include "Commander.h"
-#include "Drawable.h"
 #include "Unit.h"
 #include "UnitType.h"
 #include "sdl_helper.h"
@@ -32,16 +31,6 @@ public:
 
     void nextTurn();
     int getRound() const;
-
-    // Add a drawable entity to the battlefield.  Return its unique id number.
-    int addEntity(Point hex, SdlSurface img, ZOrder z);
-    int addHiddenEntity(SdlSurface img, ZOrder z);
-
-    int numEntities() const;
-
-    // References might get invalidated at any time.  Recommend calling this
-    // instead of holding on to entity object refs for too long.
-    Drawable & getEntity(int id);
 
     // The set of available unit types.
     void addUnitType(std::string name, UnitType u);
@@ -63,7 +52,6 @@ public:
 private:
     void nextRound();
 
-    std::vector<Drawable> entities_;
     UnitTypeMap unitRef_;
     std::vector<Unit> bfUnits_;
     std::vector<Unit>::iterator activeUnit_;

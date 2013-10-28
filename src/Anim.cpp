@@ -11,7 +11,8 @@
     See the COPYING.txt file for more details.
 */
 #include "Anim.h"
-#include "GameState.h"
+#include "Battlefield.h"
+#include "UnitType.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,9 +21,8 @@
 namespace
 {
     // Restore the unit to the center of its hex and return to the base image.
-    void idle(const Unit &unit, bool faceLeft)
+    void idle(Drawable &entity, const Unit &unit, bool faceLeft)
     {
-        auto &entity = gs->getEntity(unit.entityId);
         entity.frame = -1;
         entity.z = ZOrder::CREATURE;
 
@@ -51,11 +51,19 @@ namespace
     }
 }
 
+Battlefield *Anim::bf_ = nullptr;
+
+void Anim::setBattlefield(Battlefield &b)
+{
+    bf_ = &b;
+}
+
 Anim::Anim()
     : runTime_{0},
     done_{false},
     startTime_{0}
 {
+    assert(bf_);
 }
 
 Anim::~Anim()
@@ -113,7 +121,7 @@ AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
 
 void AnimMove::start()
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     if (faceLeft_) {
         if (!unit_.type->reverseImgMove.empty()) {
             entity.img = unit_.type->reverseImgMove[unit_.team];
@@ -132,13 +140,13 @@ void AnimMove::start()
     }
     entity.z = ZOrder::ANIMATING;
 
-    auto &labelEntity = gs->getEntity(unit_.labelId);
+    auto &labelEntity = bf_->getEntity(unit_.labelId);
     labelEntity.visible = false;
 }
 
 void AnimMove::run(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     auto frac = static_cast<double>(elapsed) / runTime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
     entity.pOffset = dhex * frac;
@@ -146,11 +154,11 @@ void AnimMove::run(Uint32 elapsed)
 
 void AnimMove::stop()
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.hex = destHex_;
-    idle(unit_, faceLeft_);
+    idle(entity, unit_, faceLeft_);
 
-    auto &labelEntity = gs->getEntity(unit_.labelId);
+    auto &labelEntity = bf_->getEntity(unit_.labelId);
     labelEntity.hex = destHex_;
     labelEntity.visible = true;
 }
@@ -172,7 +180,7 @@ Uint32 AnimAttack::getHitTime() const
 
 void AnimAttack::start()
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.z = ZOrder::ANIMATING;
 }
 
@@ -184,12 +192,12 @@ void AnimAttack::run(Uint32 elapsed)
 
 void AnimAttack::stop()
 {
-    idle(unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
 }
 
 void AnimAttack::setPosition(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     auto pSrc = pixelFromHex(entity.hex);
     auto pTgt = pixelFromHex(hTarget_);
     auto halfway = (pTgt - pSrc) / 2;
@@ -205,7 +213,7 @@ void AnimAttack::setPosition(Uint32 elapsed)
 
 void AnimAttack::setFrame(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->attackFrames, elapsed);
 
     if (faceLeft_) {
@@ -239,7 +247,7 @@ AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt)
 
 void AnimDefend::run(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     if (faceLeft_) {
         if (elapsed >= hitTime_ && !unit_.type->reverseImgDefend.empty()) {
             entity.img = unit_.type->reverseImgDefend[unit_.team];
@@ -260,10 +268,10 @@ void AnimDefend::run(Uint32 elapsed)
 
 void AnimDefend::stop()
 {
-    idle(unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
 
     // Update the label with the new size.
-    auto &label = gs->getEntity(unit_.labelId);
+    auto &label = bf_->getEntity(unit_.labelId);
     assert(label.font);
     label.img = sdlPreRender(label.font, unit_.num, getLabelColor(unit_.team));
     label.alignBottomCenter();
@@ -291,12 +299,12 @@ void AnimRanged::run(Uint32 elapsed)
 
 void AnimRanged::stop()
 {
-    idle(unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
 }
 
 void AnimRanged::setFrame(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->rangedFrames, elapsed);
 
     if (faceLeft_) {
@@ -321,14 +329,14 @@ void AnimRanged::setFrame(Uint32 elapsed)
 AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
                                Uint32 shotTime)
     : Anim(),
-    id_{gs->addHiddenEntity(std::move(img), ZOrder::PROJECTILE)},
+    id_{bf_->addHiddenEntity(std::move(img), ZOrder::PROJECTILE)},
     hTarget_{std::move(hTgt)},
     shotTime_{shotTime},
     flightTime_{hexDist(hSrc, hTarget_) * timePerHex_}
 {
     runTime_ = shotTime_ + flightTime_;
 
-    auto &entity = gs->getEntity(id_);
+    auto &entity = bf_->getEntity(id_);
     entity.hex = std::move(hSrc);
     entity.img = sdlRotate(entity.img, hexAngle_rad(entity.hex, hTarget_));
     entity.alignCenter();
@@ -345,7 +353,7 @@ void AnimProjectile::run(Uint32 elapsed)
         return;
     }
 
-    auto &entity = gs->getEntity(id_);
+    auto &entity = bf_->getEntity(id_);
     entity.visible = true;
 
     auto pSrc = pixelFromHex(entity.hex);
@@ -359,7 +367,7 @@ void AnimProjectile::run(Uint32 elapsed)
 
 void AnimProjectile::stop()
 {
-    auto &entity = gs->getEntity(id_);
+    auto &entity = bf_->getEntity(id_);
     entity.visible = false;
     entity.img.reset();
 }
@@ -385,13 +393,13 @@ void AnimDie::run(Uint32 elapsed)
         return;
     }
 
-    auto &label = gs->getEntity(unit_.labelId);
+    auto &label = bf_->getEntity(unit_.labelId);
     label.visible = false;
     setFrame(elapsed);
 
     // Fade out the unit until it disappears.
     if (elapsed > fadeTime_) {
-        auto &entity = gs->getEntity(unit_.entityId);
+        auto &entity = bf_->getEntity(unit_.entityId);
         auto frac = static_cast<double>(fadeLength_ - (elapsed - fadeTime_)) /
             fadeLength_;
         entity.img = sdlSetAlpha(entity.img, frac);
@@ -400,13 +408,13 @@ void AnimDie::run(Uint32 elapsed)
 
 void AnimDie::stop()
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.visible = false;
 }
 
 void AnimDie::setFrame(Uint32 elapsed)
 {
-    auto &entity = gs->getEntity(unit_.entityId);
+    auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->dieFrames, elapsed - hitTime_);
 
     if (faceLeft_) {

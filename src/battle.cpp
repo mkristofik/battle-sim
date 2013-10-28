@@ -439,8 +439,8 @@ bool parseUnits(const rapidjson::Document &doc)
 int createUnitLabel(int num, int team, Point hex)
 {
     auto txt = sdlPreRender(labelFont, num, getLabelColor(team));
-    auto id = gs->addEntity(std::move(hex), txt, ZOrder::CREATURE);
-    auto &label = gs->getEntity(id);
+    auto id = bf->addEntity(std::move(hex), txt, ZOrder::CREATURE);
+    auto &label = bf->getEntity(id);
     label.font = labelFont;
     label.alignBottomCenter();
     return id;
@@ -505,7 +505,7 @@ void parseScenario(const rapidjson::Document &doc)
             img = newUnit.type->reverseImg[1];
         }
 
-        newUnit.entityId = gs->addEntity(bfHex, img, ZOrder::CREATURE);
+        newUnit.entityId = bf->addEntity(bfHex, img, ZOrder::CREATURE);
         gs->addUnit(newUnit);
     }
 }
@@ -613,6 +613,7 @@ extern "C" int SDL_main(int argc, char *argv[])
 
     gs = make_unique<GameState>();
     bf = make_unique<Battlefield>(bfWindow);
+    Anim::setBattlefield(*bf);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
     labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);

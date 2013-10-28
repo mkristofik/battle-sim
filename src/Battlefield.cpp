@@ -14,7 +14,7 @@
 
 #include "Action.h"
 #include "Drawable.h"
-#include "GameState.h"
+#include "Unit.h"
 
 #include "boost/lexical_cast.hpp"
 #include <algorithm>
@@ -25,18 +25,19 @@
 Battlefield::Battlefield(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     grid_{5, 5},
-    hexShadow_{gs->addHiddenEntity(sdlLoadImage("hex-shadow.png"),
-                                   ZOrder::SHADOW)},
-    redHex_{gs->addHiddenEntity(sdlLoadImage("hex-red.png"),
-                                ZOrder::HIGHLIGHT)},
-    yellowHex_{gs->addHiddenEntity(sdlLoadImage("hex-yellow.png"),
-                                   ZOrder::HIGHLIGHT)},
-    greenHex_{gs->addHiddenEntity(sdlLoadImage("hex-green.png"),
-                                  ZOrder::HIGHLIGHT)},
-    attackSrc_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
-                                   ZOrder::HIGHLIGHT)},
-    attackTgt_{gs->addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
-                                   ZOrder::HIGHLIGHT)},
+    entities_{},
+    hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
+                               ZOrder::SHADOW)},
+    redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"),
+                            ZOrder::HIGHLIGHT)},
+    yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
+                               ZOrder::HIGHLIGHT)},
+    greenHex_{addHiddenEntity(sdlLoadImage("hex-green.png"),
+                              ZOrder::HIGHLIGHT)},
+    attackSrc_{addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
+                               ZOrder::HIGHLIGHT)},
+    attackTgt_{addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
+                               ZOrder::HIGHLIGHT)},
     font_{sdlLoadFont("../DejaVuSans.ttf", 8)}
 {
     auto tile = sdlLoadImage("grass.png");
@@ -47,12 +48,38 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     for (int hx = -1; hx <= 5; ++hx) {
         for (int hy = -1; hy <= 5; ++hy) {
             Point hex = {hx, hy};
-            gs->addEntity(hex, tile, ZOrder::TERRAIN);
+            addEntity(hex, tile, ZOrder::TERRAIN);
             if (isHexValid(hex)) {
-                gs->addEntity(hex, grid, ZOrder::GRID);
+                addEntity(hex, grid, ZOrder::GRID);
             }
         }
     }
+}
+
+int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
+{
+    int id = entities_.size();
+    entities_.emplace_back(std::move(hex), std::move(img), std::move(z));
+
+    return id;
+}
+
+int Battlefield::addHiddenEntity(SdlSurface img, ZOrder z)
+{
+    auto id = addEntity(hInvalid, std::move(img), std::move(z));
+    entities_[id].visible = false;
+    return id;
+}
+
+Drawable & Battlefield::getEntity(int id)
+{
+    assert(id >= 0 && id < static_cast<int>(entities_.size()));
+    return entities_[id];
+}
+
+const Drawable & Battlefield::getEntity(int id) const
+{
+    return const_cast<Battlefield *>(this)->getEntity(id);
 }
 
 bool Battlefield::isHexValid(int hx, int hy) const
@@ -174,7 +201,7 @@ void Battlefield::showMouseover(const Point &hex)
         return;
     }
 
-    auto &shadow = gs->getEntity(hexShadow_);
+    auto &shadow = getEntity(hexShadow_);
     shadow.hex = hex;
     shadow.visible = true;
 }
@@ -186,19 +213,19 @@ void Battlefield::showMouseover(int aIndex)
 
 void Battlefield::hideMouseover()
 {
-    gs->getEntity(hexShadow_).visible = false;
+    getEntity(hexShadow_).visible = false;
 }
 
 void Battlefield::selectHex(int aIndex)
 {
-    auto &selected = gs->getEntity(yellowHex_);
+    auto &selected = getEntity(yellowHex_);
     selected.hex = hexFromAry(aIndex);
     selected.visible = true;
 }
 
 void Battlefield::deselectHex()
 {
-    gs->getEntity(yellowHex_).visible = false;
+    getEntity(yellowHex_).visible = false;
 }
 
 void Battlefield::setMoveTarget(const Point &hex)
@@ -208,7 +235,7 @@ void Battlefield::setMoveTarget(const Point &hex)
         return;
     }
 
-    auto &target = gs->getEntity(greenHex_);
+    auto &target = getEntity(greenHex_);
     target.hex = hex;
     target.visible = true;
 }
@@ -220,7 +247,7 @@ void Battlefield::setMoveTarget(int aIndex)
 
 void Battlefield::clearMoveTarget()
 {
-    gs->getEntity(greenHex_).visible = false;
+    getEntity(greenHex_).visible = false;
 }
 
 void Battlefield::setRangedTarget(const Point &hex)
@@ -230,7 +257,7 @@ void Battlefield::setRangedTarget(const Point &hex)
         return;
     }
 
-    auto &target = gs->getEntity(redHex_);
+    auto &target = getEntity(redHex_);
     target.hex = hex;
     target.visible = true;
 }
@@ -242,15 +269,15 @@ void Battlefield::setRangedTarget(int aIndex)
 
 void Battlefield::clearRangedTarget()
 {
-    gs->getEntity(redHex_).visible = false;
+    getEntity(redHex_).visible = false;
 }
 
 void Battlefield::showAttackArrow(int aSrc, int aTgt)
 {
     auto hSrc = hexFromAry(aSrc);
     auto hTgt = hexFromAry(aTgt);
-    auto &source = gs->getEntity(attackSrc_);
-    auto &target = gs->getEntity(attackTgt_);
+    auto &source = getEntity(attackSrc_);
+    auto &target = getEntity(attackTgt_);
 
     // Direction graphics are arranged like the wind; we want the direction the
     // attack is coming from.
@@ -266,8 +293,8 @@ void Battlefield::showAttackArrow(int aSrc, int aTgt)
 
 void Battlefield::hideAttackArrow()
 {
-    gs->getEntity(attackSrc_).visible = false;
-    gs->getEntity(attackTgt_).visible = false;
+    getEntity(attackSrc_).visible = false;
+    getEntity(attackTgt_).visible = false;
 }
 
 void Battlefield::clearHighlights()
@@ -280,17 +307,17 @@ void Battlefield::clearHighlights()
 
 void Battlefield::draw() const
 {
-    std::vector<int> entityIds(gs->numEntities());
+    std::vector<int> entityIds(entities_.size());
     iota(std::begin(entityIds), std::end(entityIds), 0);
 
     // Arrange entities logically by z-order.
     sort(std::begin(entityIds), std::end(entityIds), [&] (int a, int b)
-         { return gs->getEntity(a).z < gs->getEntity(b).z; });
+         { return getEntity(a).z < getEntity(b).z; });
 
     sdlClear(displayArea_);
     SdlSetClipRect(displayArea_, [&] {
         for (auto id : entityIds) {
-            const auto &e = gs->getEntity(id);
+            const auto &e = getEntity(id);
             if (e.visible) {
                 if (e.frame < 0) {
                     sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
