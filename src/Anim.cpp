@@ -265,7 +265,7 @@ void AnimDefend::stop()
     // Update the label with the new size.
     auto &label = gs->getEntity(unit_.labelId);
     assert(label.font);
-    label.img = sdlPreRender(label.font, unit_.num, WHITE);
+    label.img = sdlPreRender(label.font, unit_.num, getLabelColor(unit_.team));
     label.alignBottomCenter();
 }
 
