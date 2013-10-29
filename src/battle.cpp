@@ -125,10 +125,9 @@ namespace
     }
 }
 
-// Get path from the active unit's hex to the target hex.
-std::vector<int> getPathTo(int aTgt)
+std::vector<int> getPathTo(int aSrc, int aTgt)
 {
-    auto emptyHexes = [&] (int aIndex) {
+    auto emptyHexes = [] (int aIndex) {
         std::vector<int> nbrs;
         for (auto n : bf->aryNeighbors(aIndex)) {
             if (!gs->getUnitAt(n)) {
@@ -141,7 +140,7 @@ std::vector<int> getPathTo(int aTgt)
     Pathfinder pf;
     pf.setNeighbors(emptyHexes);
     pf.setGoal(aTgt);
-    return pf.getPathFrom(gs->getActiveUnit()->aHex);
+    return pf.getPathFrom(aSrc);
 }
 
 // Return true if the active unit has a ranged attack and there are no enemies
@@ -196,14 +195,14 @@ Action getPossibleAction(int px, int py)
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = bf->aryFromHex(hMoveTo);
-        action.path = getPathTo(aMoveTo);
+        action.path = getPathTo(action.attacker->aHex, aMoveTo);
         if (!action.path.empty() && action.path.size() <= moveRange) {
             return action;
         }
     }
     else if (!action.defender) {
         action.type = ActionType::MOVE;
-        action.path = getPathTo(aTgt);
+        action.path = getPathTo(action.attacker->aHex, aTgt);
         if (action.path.size() > 1 && action.path.size() <= moveRange) {
             return action;
         }
@@ -368,6 +367,13 @@ void logAction(const Action &action)
     logv->add(ostr.str());
 }
 
+void doAction(Action &action)
+{
+    computeDamage(action);
+    logAction(action);
+    executeAction(action);
+}
+
 bool isRetaliationAllowed(const Action &action)
 {
     return action.type == ActionType::ATTACK &&
@@ -412,14 +418,10 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
-                computeDamage(action);
-                logAction(action);
-                executeAction(action);
+                doAction(action);
                 if (isRetaliationAllowed(action)) {
                     auto retaliation = retaliate(action);
-                    computeDamage(retaliation);
-                    logAction(retaliation);
-                    executeAction(retaliation);
+                    doAction(retaliation);
                 }
                 bf->clearHighlights();
                 bf->deselectHex();
