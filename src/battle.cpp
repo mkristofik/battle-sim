@@ -48,6 +48,7 @@
 
 namespace
 {
+    std::unique_ptr<GameState> gs;
     std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
     Uint16 winWidth = 698;

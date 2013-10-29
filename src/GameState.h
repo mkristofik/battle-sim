@@ -17,7 +17,6 @@
 #include "Unit.h"
 #include "sdl_helper.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -50,7 +49,5 @@ private:
     std::vector<Commander> commanders_;
     int roundNum_;
 };
-
-extern std::unique_ptr<GameState> gs;
 
 #endif

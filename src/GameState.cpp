@@ -16,8 +16,6 @@
 #include <algorithm>
 #include <cassert>
 
-std::unique_ptr<GameState> gs;
-
 GameState::GameState()
     : bfUnits_{},
     activeUnit_{std::end(bfUnits_)},
