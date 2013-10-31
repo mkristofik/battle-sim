@@ -23,15 +23,15 @@
 class GameState
 {
 public:
-    GameState();
+    GameState(int bfSize);
 
     void nextTurn();
     int getRound() const;
 
-    // Unit stacks on the battlefield.
     void addUnit(Unit u);
     Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
+    void moveUnit(Unit &u, int aDest);
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
@@ -44,8 +44,13 @@ public:
 private:
     void nextRound();
 
+    // Rebuild the mapping of unit positions.  Call this whenever 'bfUnits_' is
+    // invalidated.
+    void remapUnitPos();
+
     std::vector<Unit> bfUnits_;
-    std::vector<Unit>::iterator activeUnit_;
+    std::vector<Unit>::iterator activeUnit_;  // TODO: use an index instead, for copyability
+    std::vector<int> unitIdxAtPos_;
     std::vector<Commander> commanders_;
     int roundNum_;
 };

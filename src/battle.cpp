@@ -57,7 +57,7 @@ namespace
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
     SDL_Rect border1 = {200, 0, 5, winHeight};
     SDL_Rect border2 = {493, 0, 5, winHeight};
-    SDL_Rect border3 = {200, 360, 293, 5};
+    SDL_Rect border3 = {203, 360, 293, 5};
     SDL_Rect bfWindow = {205, 0, 288, 360};
     SDL_Rect logWindow = {205, 365, 288, 60};
     SdlFont labelFont;
@@ -152,7 +152,7 @@ bool isRangedAttackAllowed(const Unit &attacker)
         return false;
     }
 
-    auto enemy = (attacker.team == 0) ? 1 : 0;
+    auto enemy = attacker.getEnemyTeam();
     for (auto n : bf->aryNeighbors(attacker.aHex)) {
         const auto adjUnit = gs->getUnitAt(n);
         if (adjUnit && adjUnit->team == enemy) {
@@ -180,12 +180,13 @@ Action getPossibleAction(int px, int py)
     }
 
     action.defender = gs->getUnitAt(aTgt);
-    int enemy = (action.attacker->team == 0) ? 1 : 0;
 
     // Pathfinder includes the current hex.
     auto moveRange = static_cast<unsigned>(action.attacker->type->moves) + 1;
 
-    if (action.defender && action.defender->team == enemy) {
+    if (action.defender &&
+        action.defender->team == action.attacker->getEnemyTeam())
+    {
         if (isRangedAttackAllowed(*action.attacker)) {
             action.type = ActionType::RANGED;
             return action;
@@ -211,6 +212,22 @@ Action getPossibleAction(int px, int py)
 
     return {};
 }
+
+/*
+ * TODO:
+ * getAllPossibleActions():
+ *      BFS to find all reachable hexes
+ *      - bf->aryNeighbors lists all adjacent hexes
+ *      - gs needs a more efficient getUnitAt(), possibly encapsulate unit move
+ *      possible: move to each of those hexes
+ *      list all adjacent enemies at each hex
+ *      - gs needs function to do this
+ *      - isRangedAttackAllowed() can use it
+ *      possible: melee attack each enemy from each hex
+ *      if ranged attack allowed from current hex:
+ *              possible: ranged attack each enemy
+ *      possible: skip turn
+ */
 
 // Get direction to have a unit in the source hex face the target hex.
 Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
@@ -257,7 +274,7 @@ void executeAction(const Action &action)
 
             anims.emplace_back(make_unique<AnimMove>(*unit, hDest, facing));
         }
-        unit->aHex = action.path.back();
+        gs->moveUnit(*unit, action.path.back());
         unit->face = facing;
     }
 
@@ -625,8 +642,8 @@ extern "C" int SDL_main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    gs = make_unique<GameState>();
     bf = make_unique<Battlefield>(bfWindow);
+    gs = make_unique<GameState>(bf->size());
     Anim::setBattlefield(*bf);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);

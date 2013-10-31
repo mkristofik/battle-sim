@@ -16,9 +16,10 @@
 #include <algorithm>
 #include <cassert>
 
-GameState::GameState()
+GameState::GameState(int bfSize)
     : bfUnits_{},
     activeUnit_{std::end(bfUnits_)},
+    unitIdxAtPos_(bfSize, -1),
     commanders_(2),
     roundNum_{0}
 {
@@ -50,8 +51,11 @@ int GameState::getRound() const
 
 void GameState::addUnit(Unit u)
 {
+    assert(unitIdxAtPos_[u.aHex] == -1);
+
     bfUnits_.emplace_back(std::move(u));
     // note: this invalidates the active unit
+    unitIdxAtPos_[bfUnits_.back().aHex] = bfUnits_.size() - 1;
 }
 
 Unit * GameState::getActiveUnit()
@@ -62,13 +66,29 @@ Unit * GameState::getActiveUnit()
 
 Unit * GameState::getUnitAt(int aIndex)
 {
-    for (auto &u : bfUnits_) {
-        if (u.aHex == aIndex && u.isAlive()) {
-            return &u;
-        }
+    assert(aIndex >= 0 && aIndex < static_cast<int>(unitIdxAtPos_.size()));
+
+    auto unitIndex = unitIdxAtPos_[aIndex];
+    if (unitIndex == -1) return nullptr;
+
+    auto &unit = bfUnits_[unitIndex];
+    assert(unit.aHex == aIndex);
+    if (unit.isAlive()) {
+        return &unit;
     }
 
     return nullptr;
+}
+
+void GameState::moveUnit(Unit &u, int aDest)
+{
+    assert(unitIdxAtPos_[aDest] == -1);
+
+    int curHex = u.aHex;
+    int unitIdx = unitIdxAtPos_[curHex];
+    unitIdxAtPos_[curHex] = -1;
+    unitIdxAtPos_[aDest] = unitIdx;
+    u.aHex = aDest;
 }
 
 std::pair<int, int> GameState::getScore() const
@@ -100,5 +120,19 @@ void GameState::nextRound()
     stable_sort(std::begin(bfUnits_), lastAlive, sortByInitiative);
     for_each(std::begin(bfUnits_), lastAlive,
              [] (Unit &unit) {unit.retaliated = false;});
+    remapUnitPos();
     ++roundNum_;
+}
+
+void GameState::remapUnitPos()
+{
+    fill(std::begin(unitIdxAtPos_), std::end(unitIdxAtPos_), -1);
+
+    int size = bfUnits_.size();
+    for (int i = 0; i < size; ++i) {
+        const auto &unit = bfUnits_[i];
+        if (unit.isAlive()) {
+            unitIdxAtPos_[unit.aHex] = i;
+        }
+    }
 }

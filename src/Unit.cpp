@@ -98,6 +98,11 @@ std::string Unit::getName() const
     return getName(num);
 }
 
+int Unit::getEnemyTeam() const
+{
+    return (team == 0) ? 1 : 0;
+}
+
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
     return lhs.type->initiative > rhs.type->initiative;

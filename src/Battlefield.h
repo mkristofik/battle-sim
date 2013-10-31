@@ -28,6 +28,8 @@ class Battlefield
 public:
     Battlefield(SDL_Rect dispArea);
 
+    int size() const;
+
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
     int addHiddenEntity(SdlSurface img, ZOrder z);
@@ -90,8 +92,6 @@ private:
     int greenHex_;
     int attackSrc_;
     int attackTgt_;
-
-    SdlFont font_;
 };
 
 #endif

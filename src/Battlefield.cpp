@@ -37,8 +37,7 @@ Battlefield::Battlefield(SDL_Rect dispArea)
     attackSrc_{addHiddenEntity(sdlLoadImage("attack-arrow-source.png"),
                                ZOrder::HIGHLIGHT)},
     attackTgt_{addHiddenEntity(sdlLoadImage("attack-arrow-target.png"),
-                               ZOrder::HIGHLIGHT)},
-    font_{sdlLoadFont("../DejaVuSans.ttf", 8)}
+                               ZOrder::HIGHLIGHT)}
 {
     auto tile = sdlLoadImage("grass.png");
     auto grid = sdlLoadImage("hex-grid.png");
@@ -54,6 +53,11 @@ Battlefield::Battlefield(SDL_Rect dispArea)
             }
         }
     }
+}
+
+int Battlefield::size() const
+{
+    return grid_.size();
 }
 
 int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
