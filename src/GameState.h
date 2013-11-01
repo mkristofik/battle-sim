@@ -44,11 +44,11 @@ public:
 private:
     void nextRound();
 
-    // Rebuild the mapping of unit positions.  Call this whenever 'bfUnits_' is
+    // Rebuild the mapping of unit positions.  Call this whenever 'units_' is
     // invalidated.
     void remapUnitPos();
 
-    std::vector<Unit> bfUnits_;
+    std::vector<Unit> units_;
     std::vector<Unit>::iterator activeUnit_;  // TODO: use an index instead, for copyability
     std::vector<int> unitIdxAtPos_;
     std::vector<Commander> commanders_;

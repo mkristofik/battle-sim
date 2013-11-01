@@ -26,7 +26,7 @@ struct Unit
     int entityId;
     int num;
     int team;
-    int aHex;
+    int aHex;  // change this only via GameState::moveUnit
     Facing face;
     const UnitType *type;
     int labelId;  // entity id of text label showing number of creatures
