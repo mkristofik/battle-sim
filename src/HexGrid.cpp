@@ -13,6 +13,7 @@
 #include "HexGrid.h"
 
 #include "algo.h"
+#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <random>
@@ -20,7 +21,8 @@
 HexGrid::HexGrid(int width, int height)
     : width_{width},
     height_{height},
-    size_{width_ * height_}
+    size_{width_ * height_},
+    invalidHexes_{}
 {
     assert(width_ > 0 && height_ > 0);
 }
@@ -46,7 +48,7 @@ Point HexGrid::hexFromAry(int aIndex) const
         return hInvalid;
     }
 
-    return {aIndex % width_, aIndex / width_};
+    return hexFromAryImpl(aIndex);
 }
 
 int HexGrid::aryFromHex(int hx, int hy) const
@@ -60,7 +62,7 @@ int HexGrid::aryFromHex(const Point &hex) const
         return -1;
     }
 
-    return hex.y * width_ + hex.x;
+    return aryFromHexImpl(hex);
 }
 
 int HexGrid::aryCorner(Dir d) const
@@ -136,10 +138,41 @@ std::vector<Point> HexGrid::hexNeighbors(const Point &hex) const
     return hv;
 }
 
+void HexGrid::erase(int hx, int hy)
+{
+    int aIndex = aryFromHexImpl({hx, hy});
+    invalidHexes_.push_back(aIndex);
+    sort(std::begin(invalidHexes_), std::end(invalidHexes_));
+}
+
 bool HexGrid::offGrid(const Point &hex) const
 {
+    if (wasErased(aryFromHexImpl(hex))) return true;
+
     return hex.x < 0 ||
            hex.y < 0 ||
            hex.x >= width_ ||
            hex.y >= height_;
+}
+
+bool HexGrid::offGrid(int aIndex) const
+{
+    if (wasErased(aIndex)) return true;
+    return aIndex < 0 || aIndex >= size_;
+}
+
+Point HexGrid::hexFromAryImpl(int aIndex) const
+{
+    return {aIndex % width_, aIndex / width_};
+}
+
+int HexGrid::aryFromHexImpl(const Point &hex) const
+{
+    return hex.y * width_ + hex.x;
+}
+
+bool HexGrid::wasErased(int aIndex) const
+{
+    return binary_search(std::begin(invalidHexes_), std::end(invalidHexes_),
+                         aIndex);
 }

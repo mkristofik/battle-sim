@@ -16,7 +16,6 @@
 #include "hex_utils.h"
 #include <vector>
 
-// Logical view of a hex grid.  Designed to be cheap to create, copy, etc.
 class HexGrid
 {
 public:
@@ -49,13 +48,25 @@ public:
     std::vector<int> aryNeighbors(int aIndex) const;
     std::vector<Point> hexNeighbors(const Point &hex) const;
 
+    // Erase a hex to create an irregular map.
+    void erase(int hx, int hy);
+
     // Return true if hex is outside the grid boundary.
     bool offGrid(const Point &hex) const;
+    bool offGrid(int aIndex) const;
 
 private:
+    // Convert between hex and array representations without bounds checking.
+    Point hexFromAryImpl(int aIndex) const;
+    int aryFromHexImpl(const Point &hex) const;
+
+    // Return true if the given hex is in the set of erased hexes.
+    bool wasErased(int aIndex) const;
+
     int width_;
     int height_;
     int size_;
+    std::vector<int> invalidHexes_;
 };
 
 #endif
