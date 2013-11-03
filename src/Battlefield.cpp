@@ -22,9 +22,9 @@
 #include <numeric>
 #include <string>
 
-Battlefield::Battlefield(SDL_Rect dispArea)
+Battlefield::Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid)
     : displayArea_(std::move(dispArea)),
-    grid_{5, 5},
+    grid_(bfGrid),
     entities_{},
     hexShadow_{addHiddenEntity(sdlLoadImage("hex-shadow.png"),
                                ZOrder::SHADOW)},
@@ -40,16 +40,16 @@ Battlefield::Battlefield(SDL_Rect dispArea)
                                ZOrder::HIGHLIGHT)}
 {
     auto tile = sdlLoadImage("grass.png");
-    auto grid = sdlLoadImage("hex-grid.png");
+    auto gridLines = sdlLoadImage("hex-grid.png");
 
     // Create the background terrain and hex grid.  They can be treated as
     // drawable entities like everything else.
-    for (int hx = -1; hx <= 5; ++hx) {
-        for (int hy = -1; hy <= 5; ++hy) {
+    for (int hx = -1; hx <= grid_.width(); ++hx) {
+        for (int hy = -1; hy <= grid_.height(); ++hy) {
             Point hex = {hx, hy};
             addEntity(hex, tile, ZOrder::TERRAIN);
-            if (isHexValid(hex)) {
-                addEntity(hex, grid, ZOrder::GRID);
+            if (!grid_.offGrid(hex)) {
+                addEntity(hex, gridLines, ZOrder::GRID);
             }
         }
     }

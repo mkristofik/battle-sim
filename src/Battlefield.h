@@ -26,7 +26,7 @@ class Action;
 class Battlefield
 {
 public:
-    Battlefield(SDL_Rect dispArea);
+    Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid);
 
     int size() const;
 
@@ -82,7 +82,7 @@ public:
 
 private:
     SDL_Rect displayArea_;
-    HexGrid grid_;
+    const HexGrid &grid_;
     std::vector<Drawable> entities_;
 
     // Entities for display features.

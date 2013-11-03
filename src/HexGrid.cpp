@@ -44,7 +44,7 @@ int HexGrid::size() const
 
 Point HexGrid::hexFromAry(int aIndex) const
 {
-    if (aIndex < 0 || aIndex >= size_) {
+    if (offGrid(aIndex)) {
         return hInvalid;
     }
 
@@ -96,10 +96,6 @@ Point HexGrid::hexRandom() const
 int HexGrid::aryGetNeighbor(int aSrc, Dir d) const
 {
     auto neighbor = adjacent(hexFromAry(aSrc), d);
-    if (offGrid(neighbor)) {
-        return -1;
-    }
-
     return aryFromHex(neighbor);
 }
 

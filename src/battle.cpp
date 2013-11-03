@@ -95,6 +95,19 @@ namespace
         mapUnitPos.emplace("t2p7", 13);
     }
 
+    HexGrid makeBattleGrid()
+    {
+        HexGrid grid{5, 5};
+        grid.erase(0, 0);
+        grid.erase(0, 4);
+        grid.erase(1, 4);
+        grid.erase(3, 4);
+        grid.erase(4, 0);
+        grid.erase(4, 4);
+
+        return grid;
+    }
+
     const UnitType * getUnitType(const std::string &name)
     {
         auto iter = unitRef.find(name);
@@ -642,7 +655,8 @@ extern "C" int SDL_main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    bf = make_unique<Battlefield>(bfWindow);
+    auto grid = makeBattleGrid();
+    bf = make_unique<Battlefield>(bfWindow, grid);
     gs = make_unique<GameState>(bf->size());
     Anim::setBattlefield(*bf);
 
