@@ -13,7 +13,7 @@
 #include "Battlefield.h"
 
 #include "Action.h"
-#include "Drawable.h"
+#include "HexGrid.h"
 #include "Unit.h"
 
 #include "boost/lexical_cast.hpp"
@@ -55,11 +55,6 @@ Battlefield::Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid)
     }
 }
 
-int Battlefield::size() const
-{
-    return grid_.size();
-}
-
 int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
 {
     int id = entities_.size();
@@ -86,46 +81,6 @@ const Drawable & Battlefield::getEntity(int id) const
     return const_cast<Battlefield *>(this)->getEntity(id);
 }
 
-bool Battlefield::isHexValid(int hx, int hy) const
-{
-    // Battlefield is shaped like a hexagon.  It's a grid with the corners cut
-    // off.
-    if ((hx >= 0 && hx < 5) && (hy >= 1 && hy < 4))
-    {
-        return true;
-    }
-    else if ((hx >= 1 && hx < 4) && (hy == 0))
-    {
-        return true;
-    }
-    else if (hx == 2 && hy == 4)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-bool Battlefield::isHexValid(const Point &hex) const
-{
-    return isHexValid(hex.x, hex.y);
-}
-
-bool Battlefield::isHexValid(int aIndex) const
-{
-    return isHexValid(grid_.hexFromAry(aIndex));
-}
-
-int Battlefield::aryFromHex(const Point &hex) const
-{
-    return grid_.aryFromHex(hex);
-}
-
-Point Battlefield::hexFromAry(int aIndex) const
-{
-    return grid_.hexFromAry(aIndex);
-}
-
 Point Battlefield::hexFromPixel(int spx, int spy) const
 {
     int mpx = spx - displayArea_.x;
@@ -150,23 +105,6 @@ Point Battlefield::sPixelFromHex(int hx, int hy) const
 Point Battlefield::sPixelFromHex(const Point &hex) const
 {
     return sPixelFromHex(hex.x, hex.y);
-}
-
-std::vector<int> Battlefield::aryNeighbors(int aIndex) const
-{
-    if (!isHexValid(aIndex)) {
-        return {};
-    }
-
-    std::vector<int> nbrs;
-    for (auto d : Dir()) {
-        auto aNeighbor = grid_.aryGetNeighbor(aIndex, d);
-        if (isHexValid(aNeighbor)) {
-            nbrs.push_back(aNeighbor);
-        }
-    }
-
-    return nbrs;
 }
 
 void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
@@ -200,7 +138,7 @@ void Battlefield::showMouseover(int spx, int spy)
 
 void Battlefield::showMouseover(const Point &hex)
 {
-    if (!isHexValid(hex)) {
+    if (grid_.offGrid(hex)) {
         hideMouseover();
         return;
     }
@@ -223,7 +161,7 @@ void Battlefield::hideMouseover()
 void Battlefield::selectHex(int aIndex)
 {
     auto &selected = getEntity(yellowHex_);
-    selected.hex = hexFromAry(aIndex);
+    selected.hex = grid_.hexFromAry(aIndex);
     selected.visible = true;
 }
 
@@ -234,7 +172,7 @@ void Battlefield::deselectHex()
 
 void Battlefield::setMoveTarget(const Point &hex)
 {
-    if (!isHexValid(hex)) {
+    if (grid_.offGrid(hex)) {
         clearMoveTarget();
         return;
     }
@@ -246,7 +184,7 @@ void Battlefield::setMoveTarget(const Point &hex)
 
 void Battlefield::setMoveTarget(int aIndex)
 {
-    setMoveTarget(hexFromAry(aIndex));
+    setMoveTarget(grid_.hexFromAry(aIndex));
 }
 
 void Battlefield::clearMoveTarget()
@@ -256,7 +194,7 @@ void Battlefield::clearMoveTarget()
 
 void Battlefield::setRangedTarget(const Point &hex)
 {
-    if (!isHexValid(hex)) {
+    if (grid_.offGrid(hex)) {
         clearRangedTarget();
         return;
     }
@@ -268,7 +206,7 @@ void Battlefield::setRangedTarget(const Point &hex)
 
 void Battlefield::setRangedTarget(int aIndex)
 {
-    setRangedTarget(hexFromAry(aIndex));
+    setRangedTarget(grid_.hexFromAry(aIndex));
 }
 
 void Battlefield::clearRangedTarget()
@@ -278,8 +216,8 @@ void Battlefield::clearRangedTarget()
 
 void Battlefield::showAttackArrow(int aSrc, int aTgt)
 {
-    auto hSrc = hexFromAry(aSrc);
-    auto hTgt = hexFromAry(aTgt);
+    auto hSrc = grid_.hexFromAry(aSrc);
+    auto hTgt = grid_.hexFromAry(aTgt);
     auto &source = getEntity(attackSrc_);
     auto &target = getEntity(attackTgt_);
 

@@ -14,11 +14,11 @@
 #define BATTLEFIELD_H
 
 #include "Drawable.h"
-#include "HexGrid.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
 class Action;
+class HexGrid;
 
 // Handle the drawing of the hexagonal battlefield and all of the drawable
 // entities on the battlefield.
@@ -27,8 +27,6 @@ class Battlefield
 {
 public:
     Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid);
-
-    int size() const;
 
     // Add a drawable entity to the battlefield.  Return its unique id number.
     int addEntity(Point hex, SdlSurface img, ZOrder z);
@@ -39,14 +37,6 @@ public:
     Drawable & getEntity(int id);
     const Drawable & getEntity(int id) const;
 
-    bool isHexValid(int hx, int hy) const;
-    bool isHexValid(const Point &hex) const;
-    bool isHexValid(int aIndex) const;
-
-    // Convert between hex and array index representations.
-    int aryFromHex(const Point &hex) const;
-    Point hexFromAry(int aIndex) const;
-
     // Return the hex containing the given screen coordinates.
     Point hexFromPixel(int spx, int spy) const;
     int aryFromPixel(int spx, int spy) const;
@@ -54,9 +44,6 @@ public:
     // Return the screen coordinates of a hex.
     Point sPixelFromHex(int hx, int hy) const;
     Point sPixelFromHex(const Point &hex) const;
-
-    // Get a list of hexes adjacent to the given hex.
-    std::vector<int> aryNeighbors(int aIndex) const;
 
     void handleMouseMotion(const SDL_MouseMotionEvent &event,
                            const Action &action);

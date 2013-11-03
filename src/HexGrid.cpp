@@ -111,8 +111,9 @@ Point HexGrid::hexGetNeighbor(const Point &hSrc, Dir d) const
 
 std::vector<int> HexGrid::aryNeighbors(int aIndex) const
 {
-    std::vector<int> av;
+    if (offGrid(aIndex)) return {};
 
+    std::vector<int> av;
     for (auto d : Dir()) {
         auto aNeighbor = aryGetNeighbor(aIndex, d);
         if (aNeighbor != -1) {

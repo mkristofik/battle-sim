@@ -15,6 +15,7 @@
 #include "Battlefield.h"
 #include "CommanderView.h"
 #include "GameState.h"
+#include "HexGrid.h"
 #include "LogView.h"
 #include "Pathfinder.h"
 #include "Unit.h"
@@ -48,6 +49,7 @@
 
 namespace
 {
+    std::unique_ptr<HexGrid> grid;
     std::unique_ptr<GameState> gs;
     std::unique_ptr<Battlefield> bf;
     std::unique_ptr<LogView> logv;
@@ -95,17 +97,15 @@ namespace
         mapUnitPos.emplace("t2p7", 13);
     }
 
-    HexGrid makeBattleGrid()
+    void makeBattleGrid()
     {
-        HexGrid grid{5, 5};
-        grid.erase(0, 0);
-        grid.erase(0, 4);
-        grid.erase(1, 4);
-        grid.erase(3, 4);
-        grid.erase(4, 0);
-        grid.erase(4, 4);
-
-        return grid;
+        grid = make_unique<HexGrid>(5, 5);
+        grid->erase(0, 0);
+        grid->erase(0, 4);
+        grid->erase(1, 4);
+        grid->erase(3, 4);
+        grid->erase(4, 0);
+        grid->erase(4, 4);
     }
 
     const UnitType * getUnitType(const std::string &name)
@@ -143,7 +143,7 @@ std::vector<int> getPathTo(int aSrc, int aTgt)
 {
     auto emptyHexes = [] (int aIndex) {
         std::vector<int> nbrs;
-        for (auto n : bf->aryNeighbors(aIndex)) {
+        for (auto n : grid->aryNeighbors(aIndex)) {
             if (!gs->getUnitAt(n)) {
                 nbrs.push_back(n);
             }
@@ -166,7 +166,7 @@ bool isRangedAttackAllowed(const Unit &attacker)
     }
 
     auto enemy = attacker.getEnemyTeam();
-    for (auto n : bf->aryNeighbors(attacker.aHex)) {
+    for (auto n : grid->aryNeighbors(attacker.aHex)) {
         const auto adjUnit = gs->getUnitAt(n);
         if (adjUnit && adjUnit->team == enemy) {
             return false;
@@ -185,7 +185,7 @@ Action getPossibleAction(int px, int py)
     if (aTgt < 0) {
         return {};
     }
-    auto hTgt = bf->hexFromAry(aTgt);
+    auto hTgt = grid->hexFromAry(aTgt);
 
     action.attacker = gs->getActiveUnit();
     if (!action.attacker) {
@@ -209,7 +209,7 @@ Action getPossibleAction(int px, int py)
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
-        auto aMoveTo = bf->aryFromHex(hMoveTo);
+        auto aMoveTo = grid->aryFromHex(hMoveTo);
         action.path = getPathTo(action.attacker->aHex, aMoveTo);
         if (!action.path.empty() && action.path.size() <= moveRange) {
             return action;
@@ -230,7 +230,7 @@ Action getPossibleAction(int px, int py)
  * TODO:
  * getAllPossibleActions():
  *      BFS to find all reachable hexes
- *      - bf->aryNeighbors lists all adjacent hexes
+ *      - grid->aryNeighbors lists all adjacent hexes
  *      - gs needs a more efficient getUnitAt(), possibly encapsulate unit move
  *      possible: move to each of those hexes
  *      list all adjacent enemies at each hex
@@ -280,8 +280,8 @@ void executeAction(const Action &action)
     if (action.path.size() > 1) {
         auto facing = unit->face;
         for (auto i = 1u; i < action.path.size(); ++i) {
-            auto hSrc = bf->hexFromAry(action.path[i - 1]);
-            auto hDest = bf->hexFromAry(action.path[i]);
+            auto hSrc = grid->hexFromAry(action.path[i - 1]);
+            auto hDest = grid->hexFromAry(action.path[i]);
             auto prevFacing = facing;
             facing = getFacing(hSrc, hDest, prevFacing);
 
@@ -296,8 +296,8 @@ void executeAction(const Action &action)
         auto rangedSeq = make_unique<AnimParallel>();
         auto defender = action.defender;
 
-        auto hSrc = bf->hexFromAry(unit->aHex);
-        auto hTgt = bf->hexFromAry(defender->aHex);
+        auto hSrc = grid->hexFromAry(unit->aHex);
+        auto hTgt = grid->hexFromAry(defender->aHex);
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
         auto animShooter = make_unique<AnimRanged>(*unit, hTgt);
@@ -325,8 +325,8 @@ void executeAction(const Action &action)
         auto attackSeq = make_unique<AnimParallel>();
         auto defender = action.defender;
 
-        auto hSrc = bf->hexFromAry(unit->aHex);
-        auto hTgt = bf->hexFromAry(defender->aHex);
+        auto hSrc = grid->hexFromAry(unit->aHex);
+        auto hTgt = grid->hexFromAry(defender->aHex);
 
         unit->face = getFacing(hSrc, hTgt, unit->face);
         auto anim1 = make_unique<AnimAttack>(*unit, hTgt);
@@ -534,7 +534,7 @@ void parseScenario(const rapidjson::Document &doc)
 
         Unit newUnit(*unitType);
         newUnit.team = (posIdx < 7) ? 0 : 1;
-        newUnit.aHex = bf->aryFromHex(bfHex);
+        newUnit.aHex = grid->aryFromHex(bfHex);
         newUnit.face = (newUnit.team == 0) ? Facing::RIGHT : Facing::LEFT;
         if (json.HasMember("num")) {
             newUnit.num = json["num"].GetInt();
@@ -655,9 +655,9 @@ extern "C" int SDL_main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    auto grid = makeBattleGrid();
-    bf = make_unique<Battlefield>(bfWindow, grid);
-    gs = make_unique<GameState>(bf->size());
+    makeBattleGrid();
+    bf = make_unique<Battlefield>(bfWindow, *grid);
+    gs = make_unique<GameState>(grid->size());
     Anim::setBattlefield(*bf);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);

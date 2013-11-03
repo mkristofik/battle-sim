@@ -82,7 +82,9 @@ Unit * GameState::getUnitAt(int aIndex)
 
 void GameState::moveUnit(Unit &u, int aDest)
 {
-    assert(unitIdxAtPos_[aDest] == -1);
+    // TODO: this assertion fails if a unit killed this round is at the
+    // destination hex
+    //assert(unitIdxAtPos_[aDest] == -1);
 
     int curHex = u.aHex;
     int unitIdx = unitIdxAtPos_[curHex];
