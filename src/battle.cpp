@@ -191,16 +191,13 @@ Action getPossibleAction(int px, int py)
 /*
  * TODO:
  * getAllPossibleActions():
+ *      if ranged attack allowed from current hex:
+ *              possible: ranged attack each enemy (precludes melee attack)
  *      BFS to find all reachable hexes
  *      - grid->aryNeighbors lists all adjacent hexes
- *      - gs needs a more efficient getUnitAt(), possibly encapsulate unit move
+ *      - gs->getUnitAt will tell you if it's occupied
  *      possible: move to each of those hexes
- *      list all adjacent enemies at each hex
- *      - gs needs function to do this
- *      - gs->isRangedAttackAllowed() can use it
  *      possible: melee attack each enemy from each hex
- *      if ranged attack allowed from current hex:
- *              possible: ranged attack each enemy
  *      possible: skip turn
  */
 

@@ -32,9 +32,18 @@ public:
     int getRound() const;
 
     void addUnit(Unit u);
+
+    // Unit handles might change over time.  Best to not hold on to them for
+    // longer than the current round.
     Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
+    const Unit * getUnitAt(int aIndex) const;
     void moveUnit(Unit &u, int aDest);
+
+    // Return the list of adjacent enemy units, possibly using a different hex
+    // from the one the unit is standing in.
+    std::vector<Unit *> getAdjEnemies(const Unit &unit);
+    std::vector<Unit *> getAdjEnemies(const Unit &unit, int aIndex);
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.

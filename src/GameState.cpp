@@ -86,6 +86,11 @@ Unit * GameState::getUnitAt(int aIndex)
     return nullptr;
 }
 
+const Unit * GameState::getUnitAt(int aIndex) const
+{
+    return const_cast<GameState *>(this)->getUnitAt(aIndex);
+}
+
 void GameState::moveUnit(Unit &u, int aDest)
 {
     // TODO: this assertion fails if a unit killed this round is at the
@@ -97,6 +102,26 @@ void GameState::moveUnit(Unit &u, int aDest)
     unitIdxAtPos_[curHex] = -1;
     unitIdxAtPos_[aDest] = unitIdx;
     u.aHex = aDest;
+}
+
+std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit)
+{
+    return getAdjEnemies(unit, unit.aHex);
+}
+
+std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
+{
+    std::vector<Unit *> enemies;
+
+    auto enemy = unit.getEnemyTeam();
+    for (auto n : grid_.aryNeighbors(aIndex)) {
+        const auto adjUnit = getUnitAt(n);
+        if (adjUnit && adjUnit->team == enemy) {
+            enemies.push_back(adjUnit);
+        }
+    }
+
+    return enemies;
 }
 
 std::pair<int, int> GameState::getScore() const
@@ -142,19 +167,8 @@ void GameState::computeDamage(Action &action)
 
 bool GameState::isRangedAttackAllowed(const Unit &attacker)
 {
-    if (!attacker.type->hasRangedAttack) {
-        return false;
-    }
-
-    auto enemy = attacker.getEnemyTeam();
-    for (auto n : grid_.aryNeighbors(attacker.aHex)) {
-        const auto adjUnit = getUnitAt(n);
-        if (adjUnit && adjUnit->team == enemy) {
-            return false;
-        }
-    }
-
-    return true;
+    if (!attacker.type->hasRangedAttack) return false;
+    return getAdjEnemies(attacker).empty();
 }
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt)
