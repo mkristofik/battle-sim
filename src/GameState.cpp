@@ -11,15 +11,21 @@
     See the COPYING.txt file for more details.
 */
 #include "GameState.h"
+
+#include "Action.h"
+#include "HexGrid.h"
+#include "Pathfinder.h"
 #include "UnitType.h"
+#include "algo.h"
 
 #include <algorithm>
 #include <cassert>
 
-GameState::GameState(int bfSize)
-    : units_{},
+GameState::GameState(const HexGrid &bfGrid)
+    : grid_(bfGrid),
+    units_{},
     activeUnit_{std::end(units_)},
-    unitIdxAtPos_(bfSize, -1),
+    unitIdxAtPos_(grid_.size(), -1),
     commanders_(2),
     roundNum_{0}
 {
@@ -113,6 +119,60 @@ Commander & GameState::getCommander(int team)
 {
     assert(team == 0 || team == 1);
     return commanders_[team];
+}
+
+void GameState::computeDamage(Action &action)
+{
+    if (!action.attacker || !action.defender) return;
+
+    double attackBonus = 1.0;
+    int attackDiff = getCommander(action.attacker->team).attack -
+        getCommander(action.defender->team).defense;
+    if (attackDiff > 0) {
+        attackBonus += attackDiff * 0.1;
+    }
+    else {
+        attackBonus += attackDiff * 0.05;
+    }
+    attackBonus = bound(attackBonus, 0.3, 3.0);
+
+    action.damage = action.attacker->num *
+        action.attacker->randomDamage(action.type) * attackBonus;
+}
+
+bool GameState::isRangedAttackAllowed(const Unit &attacker)
+{
+    if (!attacker.type->hasRangedAttack) {
+        return false;
+    }
+
+    auto enemy = attacker.getEnemyTeam();
+    for (auto n : grid_.aryNeighbors(attacker.aHex)) {
+        const auto adjUnit = getUnitAt(n);
+        if (adjUnit && adjUnit->team == enemy) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<int> GameState::getPath(int aSrc, int aTgt)
+{
+    auto emptyHexes = [&] (int aIndex) {
+        std::vector<int> nbrs;
+        for (auto n : grid_.aryNeighbors(aIndex)) {
+            if (!getUnitAt(n)) {
+                nbrs.push_back(n);
+            }
+        }
+        return nbrs;
+    };
+
+    Pathfinder pf;
+    pf.setNeighbors(emptyHexes);
+    pf.setGoal(aTgt);
+    return pf.getPathFrom(aSrc);
 }
 
 void GameState::nextRound()

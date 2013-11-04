@@ -20,10 +20,13 @@
 #include <utility>
 #include <vector>
 
+class Action;
+class HexGrid;
+
 class GameState
 {
 public:
-    GameState(int bfSize);
+    GameState(const HexGrid &bfGrid);
 
     void nextTurn();
     int getRound() const;
@@ -41,6 +44,16 @@ public:
     void setCommander(Commander c, int team);
     Commander & getCommander(int team);
 
+    // Set the damage field of an action.
+    void computeDamage(Action &action);
+
+    // Return true if the given unit has a ranged attack and there are no
+    // enemies adjacent to it.
+    bool isRangedAttackAllowed(const Unit &attacker);
+
+    // Get the shortest path between two hexes that is clear of units.
+    std::vector<int> getPath(int aSrc, int aTgt);
+
 private:
     void nextRound();
 
@@ -48,6 +61,7 @@ private:
     // invalidated.
     void remapUnitPos();
 
+    const HexGrid &grid_;
     std::vector<Unit> units_;
     std::vector<Unit>::iterator activeUnit_;  // TODO: use an index instead, for copyability
     std::vector<int> unitIdxAtPos_;

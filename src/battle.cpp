@@ -17,7 +17,6 @@
 #include "GameState.h"
 #include "HexGrid.h"
 #include "LogView.h"
-#include "Pathfinder.h"
 #include "Unit.h"
 #include "UnitType.h"
 #include "algo.h"
@@ -139,43 +138,6 @@ namespace
     }
 }
 
-std::vector<int> getPathTo(int aSrc, int aTgt)
-{
-    auto emptyHexes = [] (int aIndex) {
-        std::vector<int> nbrs;
-        for (auto n : grid->aryNeighbors(aIndex)) {
-            if (!gs->getUnitAt(n)) {
-                nbrs.push_back(n);
-            }
-        }
-        return nbrs;
-    };
-
-    Pathfinder pf;
-    pf.setNeighbors(emptyHexes);
-    pf.setGoal(aTgt);
-    return pf.getPathFrom(aSrc);
-}
-
-// Return true if the active unit has a ranged attack and there are no enemies
-// adjacent to it.
-bool isRangedAttackAllowed(const Unit &attacker)
-{
-    if (!attacker.type->hasRangedAttack) {
-        return false;
-    }
-
-    auto enemy = attacker.getEnemyTeam();
-    for (auto n : grid->aryNeighbors(attacker.aHex)) {
-        const auto adjUnit = gs->getUnitAt(n);
-        if (adjUnit && adjUnit->team == enemy) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 // Human player's function - determine what action the active unit can take if
 // the user clicks at the given screen coordinates.
 Action getPossibleAction(int px, int py)
@@ -200,7 +162,7 @@ Action getPossibleAction(int px, int py)
     if (action.defender &&
         action.defender->team == action.attacker->getEnemyTeam())
     {
-        if (isRangedAttackAllowed(*action.attacker)) {
+        if (gs->isRangedAttackAllowed(*action.attacker)) {
             action.type = ActionType::RANGED;
             return action;
         }
@@ -210,14 +172,14 @@ Action getPossibleAction(int px, int py)
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        action.path = getPathTo(action.attacker->aHex, aMoveTo);
+        action.path = gs->getPath(action.attacker->aHex, aMoveTo);
         if (!action.path.empty() && action.path.size() <= moveRange) {
             return action;
         }
     }
     else if (!action.defender) {
         action.type = ActionType::MOVE;
-        action.path = getPathTo(action.attacker->aHex, aTgt);
+        action.path = gs->getPath(action.attacker->aHex, aTgt);
         if (action.path.size() > 1 && action.path.size() <= moveRange) {
             return action;
         }
@@ -235,7 +197,7 @@ Action getPossibleAction(int px, int py)
  *      possible: move to each of those hexes
  *      list all adjacent enemies at each hex
  *      - gs needs function to do this
- *      - isRangedAttackAllowed() can use it
+ *      - gs->isRangedAttackAllowed() can use it
  *      possible: melee attack each enemy from each hex
  *      if ranged attack allowed from current hex:
  *              possible: ranged attack each enemy
@@ -350,25 +312,6 @@ void executeAction(const Action &action)
     }
 }
 
-void computeDamage(Action &action)
-{
-    if (!action.attacker || !action.defender) return;
-
-    double attackBonus = 1.0;
-    int attackDiff = gs->getCommander(action.attacker->team).attack -
-        gs->getCommander(action.defender->team).defense;
-    if (attackDiff > 0) {
-        attackBonus += attackDiff * 0.1;
-    }
-    else {
-        attackBonus += attackDiff * 0.05;
-    }
-    attackBonus = bound(attackBonus, 0.3, 3.0);
-
-    action.damage = action.attacker->num *
-        action.attacker->randomDamage(action.type) * attackBonus;
-}
-
 void logAction(const Action &action)
 {
     if (action.type == ActionType::MOVE || action.type == ActionType::NONE) {
@@ -400,7 +343,7 @@ void logAction(const Action &action)
 
 void doAction(Action &action)
 {
-    computeDamage(action);
+    gs->computeDamage(action);
     logAction(action);
     executeAction(action);
 }
@@ -657,7 +600,7 @@ extern "C" int SDL_main(int argc, char *argv[])
 
     makeBattleGrid();
     bf = make_unique<Battlefield>(bfWindow, *grid);
-    gs = make_unique<GameState>(grid->size());
+    gs = make_unique<GameState>(*grid);
     Anim::setBattlefield(*bf);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
