@@ -30,3 +30,20 @@ void Action::computeDamage()
 
     damage = attacker->num * attacker->randomDamage(type);
 }
+
+Action Action::retaliate() const
+{
+    Action retaliation;
+    retaliation.attacker = defender;
+    retaliation.defender = attacker;
+    retaliation.type = ActionType::RETALIATE;
+    return retaliation;
+}
+
+bool Action::isRetaliationAllowed() const
+{
+    return type == ActionType::ATTACK &&
+           attacker && attacker->isAlive() &&
+           defender && defender->isAlive() &&
+           !defender->retaliated;
+}

@@ -96,7 +96,7 @@ namespace
         mapUnitPos.emplace("t2p7", 13);
     }
 
-    void makeBattleGrid()
+    void initBattleGrid()
     {
         grid = make_unique<HexGrid>(5, 5);
         grid->erase(0, 0);
@@ -348,23 +348,6 @@ void doAction(Action &action)
     executeAction(action);
 }
 
-bool isRetaliationAllowed(const Action &action)
-{
-    return action.type == ActionType::ATTACK &&
-           action.attacker && action.attacker->isAlive() &&
-           action.defender && action.defender->isAlive() &&
-           !action.defender->retaliated;
-}
-
-Action retaliate(const Action &action)
-{
-    Action retaliation;
-    retaliation.attacker = action.defender;
-    retaliation.defender = action.attacker;
-    retaliation.type = ActionType::RETALIATE;
-    return retaliation;
-}
-
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (insideRect(event.x, event.y, bfWindow) && !logHasFocus) {
@@ -393,8 +376,8 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             auto action = getPossibleAction(event.x, event.y);
             if (action.type != ActionType::NONE) {
                 doAction(action);
-                if (isRetaliationAllowed(action)) {
-                    auto retaliation = retaliate(action);
+                if (action.isRetaliationAllowed()) {
+                    auto retaliation = action.retaliate();
                     doAction(retaliation);
                 }
                 bf->clearHighlights();
@@ -598,7 +581,7 @@ extern "C" int SDL_main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    makeBattleGrid();
+    initBattleGrid();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     gs = make_unique<GameState>(*grid);
     Anim::setBattlefield(*bf);

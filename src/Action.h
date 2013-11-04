@@ -30,6 +30,10 @@ struct Action
 
     Action();
     void computeDamage();
+
+    // Build an action with opposite attacker and defender.
+    Action retaliate() const;
+    bool isRetaliationAllowed() const;
 };
 
 #endif
