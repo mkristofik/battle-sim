@@ -1,6 +1,6 @@
 # Heroes Battle Sim
 
-This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.
+This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.  I've deliberately limited the options at each turn to help a computer player understand them.  If the existing Heroes combat is like chess, this project is like checkers.
 
 ## Features
 
