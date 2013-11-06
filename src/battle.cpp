@@ -140,6 +140,7 @@ namespace
 
 // Human player's function - determine what action the active unit can take if
 // the user clicks at the given screen coordinates.
+// TODO: a lot of this can be moved into GameState
 Action getPossibleAction(int px, int py)
 {
     Action action;
@@ -192,12 +193,13 @@ Action getPossibleAction(int px, int py)
  * TODO:
  * getAllPossibleActions():
  *      if ranged attack allowed from current hex:
- *              possible: ranged attack each enemy (precludes melee attack)
+ *              possible: ranged attack each enemy (precludes melee attacks)
  *      BFS to find all reachable hexes
  *      - grid->aryNeighbors lists all adjacent hexes
  *      - gs->getUnitAt will tell you if it's occupied
  *      possible: move to each of those hexes
  *      possible: melee attack each enemy from each hex
+ *      - gs->getAdjEnemies
  *      possible: skip turn
  */
 
@@ -311,28 +313,34 @@ void executeAction(const Action &action)
 
 void logAction(const Action &action)
 {
-    if (action.type == ActionType::MOVE || action.type == ActionType::NONE) {
-        return;
-    }
-    if (!action.attacker || !action.defender) {
+    if (action.type == ActionType::MOVE) {
         return;
     }
 
-    int numKilled = action.defender->simulateDamage(action.damage);
-
+    assert(action.attacker);
     std::ostringstream ostr("- ", std::ios::ate);
     ostr << action.attacker->getName();
     if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {
+        assert(action.defender);
         ostr << (action.attacker->num == 1 ? " attacks " : " attack ");
         ostr << action.defender->getName();
     }
     else if (action.type == ActionType::RETALIATE) {
+        assert(action.defender);
         ostr << (action.attacker->num == 1 ? " retaliates" : " retaliate");
     }
-    ostr << " for " << action.damage << " damage.";
-    if (numKilled > 0) {
-        ostr << "  " << action.defender->getName(numKilled);
-        ostr << (numKilled > 1 ? " perish." : " perishes.");
+    else if (action.type == ActionType::NONE) {
+        ostr << (action.attacker->num == 1 ? " skips its " : " skip their ");
+        ostr << "turn.";
+    }
+
+    if (action.type != ActionType::NONE) {
+        ostr << " for " << action.damage << " damage.";
+        int numKilled = action.defender->simulateDamage(action.damage);
+        if (numKilled > 0) {
+            ostr << "  " << action.defender->getName(numKilled);
+            ostr << (numKilled > 1 ? " perish." : " perishes.");
+        }
     }
 
     logv->add(ostr.str());
@@ -383,6 +391,17 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             }
         }
     }
+}
+
+void handleKeyPress(const SDL_KeyboardEvent &event)
+{
+    if (event.keysym.sym != SDLK_s || logHasFocus) return;
+
+    auto action = gs->makeSkipAction(gs->getActiveUnit());
+    doAction(action);
+    bf->clearHighlights();
+    bf->deselectHex();
+    actionTaken = true;
 }
 
 bool parseUnits(const rapidjson::Document &doc)
@@ -640,6 +659,9 @@ extern "C" int SDL_main(int argc, char *argv[])
             }
             else if (event.type == SDL_MOUSEBUTTONUP) {
                 handleMouseUp(event.button);
+            }
+            else if (event.type == SDL_KEYUP) {
+                handleKeyPress(event.key);
             }
         }
 

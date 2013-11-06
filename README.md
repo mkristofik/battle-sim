@@ -14,6 +14,7 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Report a winner when one side is defeated.
 - Commanders have influence over the strength of their units.
 - Units can retaliate against melee attacks once per round.
+- Pressing the 'S' key will skip a unit's turn.
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 

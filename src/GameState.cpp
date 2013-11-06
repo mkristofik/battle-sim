@@ -189,6 +189,16 @@ std::vector<int> GameState::getPath(int aSrc, int aTgt)
     return pf.getPathFrom(aSrc);
 }
 
+Action GameState::makeSkipAction(Unit *unit) const
+{
+    assert(unit);
+
+    Action action;
+    action.type = ActionType::NONE;
+    action.attacker = unit;
+    return action;
+}
+
 void GameState::nextRound()
 {
     auto lastAlive = stable_partition(std::begin(units_), std::end(units_),
