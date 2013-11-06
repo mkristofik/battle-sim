@@ -38,12 +38,15 @@ public:
     Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
     const Unit * getUnitAt(int aIndex) const;
+
     void moveUnit(Unit &u, int aDest);
 
     // Return the list of adjacent enemy units, possibly using a different hex
     // from the one the unit is standing in.
     std::vector<Unit *> getAdjEnemies(const Unit &unit);
+    std::vector<const Unit *> getAdjEnemies(const Unit &unit) const;
     std::vector<Unit *> getAdjEnemies(const Unit &unit, int aIndex);
+    std::vector<const Unit *> getAdjEnemies(const Unit &unit, int aIndex) const;
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
@@ -52,18 +55,21 @@ public:
     // Leaders of each army.
     void setCommander(Commander c, int team);
     Commander & getCommander(int team);
+    const Commander & getCommander(int team) const;
 
     // Set the damage field of an action.
-    void computeDamage(Action &action);
+    void computeDamage(Action &action) const;
 
     // Return true if the given unit has a ranged attack and there are no
     // enemies adjacent to it.
-    bool isRangedAttackAllowed(const Unit &attacker);
+    bool isRangedAttackAllowed(const Unit &attacker) const;
 
     // Get the shortest path between two hexes that is clear of units.
-    std::vector<int> getPath(int aSrc, int aTgt);
+    std::vector<int> getPath(int aSrc, int aTgt) const;
 
-    Action makeSkipAction(Unit *unit) const;
+    Action makeMove(Unit *unit, int aTgt) const;
+    Action makeAttack(Unit *attacker, Unit *defender, int aMoveTgt) const;
+    Action makeSkip(Unit *unit) const;
 
 private:
     void nextRound();

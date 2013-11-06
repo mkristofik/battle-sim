@@ -109,6 +109,11 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit)
     return getAdjEnemies(unit, unit.aHex);
 }
 
+std::vector<const Unit *> GameState::getAdjEnemies(const Unit &unit) const
+{
+    return getAdjEnemies(unit, unit.aHex);
+}
+
 std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
 {
     std::vector<Unit *> enemies;
@@ -122,6 +127,14 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
     }
 
     return enemies;
+}
+
+std::vector<const Unit *> GameState::getAdjEnemies(const Unit &unit,
+                                                   int aIndex) const
+{
+    // TODO: it shouldn't be this awkward
+    auto enemies = const_cast<GameState *>(this)->getAdjEnemies(unit, aIndex);
+    return std::vector<const Unit *>(std::begin(enemies), std::end(enemies));
 }
 
 std::pair<int, int> GameState::getScore() const
@@ -146,7 +159,12 @@ Commander & GameState::getCommander(int team)
     return commanders_[team];
 }
 
-void GameState::computeDamage(Action &action)
+const Commander & GameState::getCommander(int team) const
+{
+    return const_cast<GameState *>(this)->getCommander(team);
+}
+
+void GameState::computeDamage(Action &action) const
 {
     if (!action.attacker || !action.defender) return;
 
@@ -165,13 +183,13 @@ void GameState::computeDamage(Action &action)
         action.attacker->randomDamage(action.type) * attackBonus;
 }
 
-bool GameState::isRangedAttackAllowed(const Unit &attacker)
+bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 {
     if (!attacker.type->hasRangedAttack) return false;
     return getAdjEnemies(attacker).empty();
 }
 
-std::vector<int> GameState::getPath(int aSrc, int aTgt)
+std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
     auto emptyHexes = [&] (int aIndex) {
         std::vector<int> nbrs;
@@ -189,7 +207,7 @@ std::vector<int> GameState::getPath(int aSrc, int aTgt)
     return pf.getPathFrom(aSrc);
 }
 
-Action GameState::makeSkipAction(Unit *unit) const
+Action GameState::makeSkip(Unit *unit) const
 {
     assert(unit);
 

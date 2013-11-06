@@ -379,16 +379,16 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         }
         else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
             auto action = getPossibleAction(event.x, event.y);
-            if (action.type != ActionType::NONE) {
-                doAction(action);
-                if (action.isRetaliationAllowed()) {
-                    auto retaliation = action.retaliate();
-                    doAction(retaliation);
-                }
-                bf->clearHighlights();
-                bf->deselectHex();
-                actionTaken = true;
+            if (action.type == ActionType::NONE) return;
+
+            doAction(action);
+            if (action.isRetaliationAllowed()) {
+                auto retaliation = action.retaliate();
+                doAction(retaliation);
             }
+            bf->clearHighlights();
+            bf->deselectHex();
+            actionTaken = true;
         }
     }
 }
@@ -397,7 +397,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s || logHasFocus) return;
 
-    auto action = gs->makeSkipAction(gs->getActiveUnit());
+    auto action = gs->makeSkip(gs->getActiveUnit());
     doAction(action);
     bf->clearHighlights();
     bf->deselectHex();
