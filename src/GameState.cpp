@@ -72,6 +72,11 @@ Unit * GameState::getActiveUnit()
 
 Unit * GameState::getUnitAt(int aIndex)
 {
+    return const_cast<Unit *>(static_cast<const GameState *>(this)->getUnitAt(aIndex));
+}
+
+const Unit * GameState::getUnitAt(int aIndex) const
+{
     assert(aIndex >= 0 && aIndex < static_cast<int>(unitIdxAtPos_.size()));
 
     auto unitIndex = unitIdxAtPos_[aIndex];
@@ -84,11 +89,6 @@ Unit * GameState::getUnitAt(int aIndex)
     }
 
     return nullptr;
-}
-
-const Unit * GameState::getUnitAt(int aIndex) const
-{
-    return const_cast<GameState *>(this)->getUnitAt(aIndex);
 }
 
 void GameState::moveUnit(Unit &u, int aDest)
@@ -109,32 +109,19 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit)
     return getAdjEnemies(unit, unit.aHex);
 }
 
-std::vector<const Unit *> GameState::getAdjEnemies(const Unit &unit) const
-{
-    return getAdjEnemies(unit, unit.aHex);
-}
-
 std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
 {
     std::vector<Unit *> enemies;
 
     auto enemy = unit.getEnemyTeam();
     for (auto n : grid_.aryNeighbors(aIndex)) {
-        const auto adjUnit = getUnitAt(n);
+        auto adjUnit = getUnitAt(n);
         if (adjUnit && adjUnit->team == enemy) {
             enemies.push_back(adjUnit);
         }
     }
 
     return enemies;
-}
-
-std::vector<const Unit *> GameState::getAdjEnemies(const Unit &unit,
-                                                   int aIndex) const
-{
-    // TODO: it shouldn't be this awkward
-    auto enemies = const_cast<GameState *>(this)->getAdjEnemies(unit, aIndex);
-    return std::vector<const Unit *>(std::begin(enemies), std::end(enemies));
 }
 
 std::pair<int, int> GameState::getScore() const
@@ -161,7 +148,8 @@ Commander & GameState::getCommander(int team)
 
 const Commander & GameState::getCommander(int team) const
 {
-    return const_cast<GameState *>(this)->getCommander(team);
+    assert(team == 0 || team == 1);
+    return commanders_[team];
 }
 
 void GameState::computeDamage(Action &action) const
@@ -186,7 +174,15 @@ void GameState::computeDamage(Action &action) const
 bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 {
     if (!attacker.type->hasRangedAttack) return false;
-    return getAdjEnemies(attacker).empty();
+
+    auto enemy = attacker.getEnemyTeam();
+    for (auto n : grid_.aryNeighbors(attacker.aHex)) {
+        const auto adjUnit = getUnitAt(n);
+        if (adjUnit && adjUnit->team == enemy) {
+            return false;
+        }
+    }
+    return true;
 }
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const

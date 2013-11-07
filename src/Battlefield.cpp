@@ -78,7 +78,8 @@ Drawable & Battlefield::getEntity(int id)
 
 const Drawable & Battlefield::getEntity(int id) const
 {
-    return const_cast<Battlefield *>(this)->getEntity(id);
+    assert(id >= 0 && id < static_cast<int>(entities_.size()));
+    return entities_[id];
 }
 
 Point Battlefield::hexFromPixel(int spx, int spy) const

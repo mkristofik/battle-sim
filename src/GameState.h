@@ -44,9 +44,9 @@ public:
     // Return the list of adjacent enemy units, possibly using a different hex
     // from the one the unit is standing in.
     std::vector<Unit *> getAdjEnemies(const Unit &unit);
-    std::vector<const Unit *> getAdjEnemies(const Unit &unit) const;
     std::vector<Unit *> getAdjEnemies(const Unit &unit, int aIndex);
-    std::vector<const Unit *> getAdjEnemies(const Unit &unit, int aIndex) const;
+    // NOTE: Normally you want non-const Units so you can attack them.  It's
+    // not worth the effort to make const versions of these functions.
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
