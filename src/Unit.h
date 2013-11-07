@@ -47,6 +47,10 @@ struct Unit
     std::string getName() const;  // use current unit size
 
     int getEnemyTeam() const;
+
+    // Maximum distance this unit can move in one turn.  Note that Pathfinder
+    // includes the hex the unit is standing in when building paths.
+    unsigned getMaxPathSize() const;
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);

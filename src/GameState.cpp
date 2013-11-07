@@ -203,6 +203,22 @@ std::vector<int> GameState::getPath(int aSrc, int aTgt) const
     return pf.getPathFrom(aSrc);
 }
 
+Action GameState::makeMove(Unit *unit, int aTgt) const
+{
+    assert(unit);
+
+    auto path = getPath(unit->aHex, aTgt);
+    if (path.size() <= 1 || path.size() > unit->getMaxPathSize()) {
+        return {};
+    }
+
+    Action action;
+    action.type = ActionType::MOVE;
+    action.attacker = unit;
+    action.path = path;
+    return action;
+}
+
 Action GameState::makeSkip(Unit *unit) const
 {
     assert(unit);

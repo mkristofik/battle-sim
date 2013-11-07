@@ -179,11 +179,7 @@ Action getPossibleAction(int px, int py)
         }
     }
     else if (!action.defender) {
-        action.type = ActionType::MOVE;
-        action.path = gs->getPath(action.attacker->aHex, aTgt);
-        if (action.path.size() > 1 && action.path.size() <= moveRange) {
-            return action;
-        }
+        return gs->makeMove(action.attacker, aTgt);
     }
 
     return {};
@@ -351,6 +347,9 @@ void doAction(Action &action)
     gs->computeDamage(action);
     logAction(action);
     executeAction(action);
+    bf->clearHighlights();
+    bf->deselectHex();
+    actionTaken = true;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -386,9 +385,6 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
                 auto retaliation = action.retaliate();
                 doAction(retaliation);
             }
-            bf->clearHighlights();
-            bf->deselectHex();
-            actionTaken = true;
         }
     }
 }
@@ -397,11 +393,8 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s || logHasFocus) return;
 
-    auto action = gs->makeSkip(gs->getActiveUnit());
-    doAction(action);
-    bf->clearHighlights();
-    bf->deselectHex();
-    actionTaken = true;
+    auto skipAction = gs->makeSkip(gs->getActiveUnit());
+    doAction(skipAction);
 }
 
 bool parseUnits(const rapidjson::Document &doc)

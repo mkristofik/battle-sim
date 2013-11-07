@@ -103,6 +103,11 @@ int Unit::getEnemyTeam() const
     return (team == 0) ? 1 : 0;
 }
 
+unsigned Unit::getMaxPathSize() const
+{
+    return static_cast<unsigned>(type->moves) + 1;
+}
+
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
     return lhs.type->initiative > rhs.type->initiative;
