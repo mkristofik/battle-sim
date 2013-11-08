@@ -24,7 +24,7 @@
 GameState::GameState(const HexGrid &bfGrid)
     : grid_(bfGrid),
     units_{},
-    activeUnit_{std::end(units_)},
+    activeUnit_{1},
     unitIdxAtPos_(grid_.size(), -1),
     commanders_(2),
     roundNum_{0}
@@ -35,19 +35,21 @@ void GameState::nextTurn()
 {
     if (roundNum_ == 0) {
         nextRound();
-        activeUnit_ = std::begin(units_);
+        activeUnit_ = 0;
         return;
     }
 
-    activeUnit_ = find_if(std::next(activeUnit_), std::end(units_),
-                          std::mem_fn(&Unit::isAlive));
-    if (activeUnit_ != std::end(units_)) {
-        return;
+    std::vector<Unit>::iterator activeIter{&units_[activeUnit_ + 1]};
+    activeIter = find_if(activeIter, std::end(units_),
+                         std::mem_fn(&Unit::isAlive));
+
+    if (activeIter == std::end(units_)) {
+        nextRound();
+        activeIter = find_if(std::begin(units_), std::end(units_),
+                             std::mem_fn(&Unit::isAlive));
     }
 
-    nextRound();
-    activeUnit_ = find_if(std::begin(units_), std::end(units_),
-                          std::mem_fn(&Unit::isAlive));
+    activeUnit_ = distance(std::begin(units_), activeIter);
 }
 
 int GameState::getRound() const
@@ -66,8 +68,8 @@ void GameState::addUnit(Unit u)
 
 Unit * GameState::getActiveUnit()
 {
-    if (activeUnit_ == std::end(units_)) return nullptr;
-    return &(*activeUnit_);
+    if (activeUnit_ == static_cast<int>(units_.size())) return nullptr;
+    return &units_[activeUnit_];
 }
 
 Unit * GameState::getUnitAt(int aIndex)

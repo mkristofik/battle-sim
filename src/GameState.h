@@ -80,7 +80,7 @@ private:
 
     const HexGrid &grid_;
     std::vector<Unit> units_;
-    std::vector<Unit>::iterator activeUnit_;  // TODO: use an index instead, for copyability
+    int activeUnit_;
     std::vector<int> unitIdxAtPos_;
     std::vector<Commander> commanders_;
     int roundNum_;
