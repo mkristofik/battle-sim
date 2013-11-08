@@ -159,10 +159,10 @@ Action getPossibleAction(int px, int py)
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        return gs->makeAttack(attacker, defender, aMoveTo);
+        return gs->makeAttack(*attacker, *defender, aMoveTo);
     }
     else if (!defender) {
-        return gs->makeMove(attacker, aTgt);
+        return gs->makeMove(*attacker, aTgt);
     }
 
     return {};
@@ -376,7 +376,10 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s || logHasFocus) return;
 
-    auto skipAction = gs->makeSkip(gs->getActiveUnit());
+    auto unit = gs->getActiveUnit();
+    if (!unit) return;
+
+    auto skipAction = gs->makeSkip(*unit);
     doAction(skipAction);
 }
 

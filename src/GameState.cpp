@@ -201,37 +201,33 @@ std::vector<int> GameState::getPath(int aSrc, int aTgt) const
     return pf.getPathFrom(aSrc);
 }
 
-Action GameState::makeMove(Unit *unit, int aTgt) const
+Action GameState::makeMove(Unit &unit, int aTgt) const
 {
-    assert(unit);
-
-    auto path = getPath(unit->aHex, aTgt);
-    if (path.size() <= 1 || path.size() > unit->getMaxPathSize()) {
+    auto path = getPath(unit.aHex, aTgt);
+    if (path.size() <= 1 || path.size() > unit.getMaxPathSize()) {
         return {};
     }
 
     Action action;
     action.type = ActionType::MOVE;
-    action.attacker = unit;
+    action.attacker = &unit;
     action.path = path;
     return action;
 }
 
-Action GameState::makeAttack(Unit *attacker, Unit *defender, int aMoveTgt) const
+Action GameState::makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const
 {
-    assert(attacker && defender);
-
     Action action;
-    action.attacker = attacker;
-    action.defender = defender;
+    action.attacker = &attacker;
+    action.defender = &defender;
 
-    if (isRangedAttackAllowed(*attacker)) {
+    if (isRangedAttackAllowed(attacker)) {
         action.type = ActionType::RANGED;
         return action;
     }
 
-    auto path = getPath(attacker->aHex, aMoveTgt);
-    if (path.empty() || path.size() > attacker->getMaxPathSize()) {
+    auto path = getPath(attacker.aHex, aMoveTgt);
+    if (path.empty() || path.size() > attacker.getMaxPathSize()) {
         return {};
     }
     action.type = ActionType::ATTACK;
@@ -239,13 +235,11 @@ Action GameState::makeAttack(Unit *attacker, Unit *defender, int aMoveTgt) const
     return action;
 }
 
-Action GameState::makeSkip(Unit *unit) const
+Action GameState::makeSkip(Unit &unit) const
 {
-    assert(unit);
-
     Action action;
     action.type = ActionType::NONE;
-    action.attacker = unit;
+    action.attacker = &unit;
     return action;
 }
 
