@@ -98,9 +98,9 @@ std::string Unit::getName() const
     return getName(num);
 }
 
-int Unit::getEnemyTeam() const
+bool Unit::isEnemy(const Unit &other) const
 {
-    return (team == 0) ? 1 : 0;
+    return team != other.team;
 }
 
 unsigned Unit::getMaxPathSize() const

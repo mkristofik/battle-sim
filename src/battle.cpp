@@ -140,46 +140,29 @@ namespace
 
 // Human player's function - determine what action the active unit can take if
 // the user clicks at the given screen coordinates.
-// TODO: a lot of this can be moved into GameState
 Action getPossibleAction(int px, int py)
 {
-    Action action;
     auto aTgt = bf->aryFromPixel(px, py);
     if (aTgt < 0) {
         return {};
     }
     auto hTgt = grid->hexFromAry(aTgt);
 
-    action.attacker = gs->getActiveUnit();
-    if (!action.attacker) {
+    auto attacker = gs->getActiveUnit();
+    if (!attacker) {
         return {};
     }
+    auto defender = gs->getUnitAt(aTgt);
 
-    action.defender = gs->getUnitAt(aTgt);
-
-    // Pathfinder includes the current hex.
-    auto moveRange = static_cast<unsigned>(action.attacker->type->moves) + 1;
-
-    if (action.defender &&
-        action.defender->team == action.attacker->getEnemyTeam())
-    {
-        if (gs->isRangedAttackAllowed(*action.attacker)) {
-            action.type = ActionType::RANGED;
-            return action;
-        }
-
-        action.type = ActionType::ATTACK;
+    if (defender && attacker->isEnemy(*defender)) {
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        action.path = gs->getPath(action.attacker->aHex, aMoveTo);
-        if (!action.path.empty() && action.path.size() <= moveRange) {
-            return action;
-        }
+        return gs->makeAttack(attacker, defender, aMoveTo);
     }
-    else if (!action.defender) {
-        return gs->makeMove(action.attacker, aTgt);
+    else if (!defender) {
+        return gs->makeMove(attacker, aTgt);
     }
 
     return {};

@@ -113,10 +113,9 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
 {
     std::vector<Unit *> enemies;
 
-    auto enemy = unit.getEnemyTeam();
     for (auto n : grid_.aryNeighbors(aIndex)) {
         auto adjUnit = getUnitAt(n);
-        if (adjUnit && adjUnit->team == enemy) {
+        if (adjUnit && unit.isEnemy(*adjUnit)) {
             enemies.push_back(adjUnit);
         }
     }
@@ -175,10 +174,9 @@ bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 {
     if (!attacker.type->hasRangedAttack) return false;
 
-    auto enemy = attacker.getEnemyTeam();
     for (auto n : grid_.aryNeighbors(attacker.aHex)) {
         const auto adjUnit = getUnitAt(n);
-        if (adjUnit && adjUnit->team == enemy) {
+        if (adjUnit && attacker.isEnemy(*adjUnit)) {
             return false;
         }
     }
@@ -215,6 +213,28 @@ Action GameState::makeMove(Unit *unit, int aTgt) const
     Action action;
     action.type = ActionType::MOVE;
     action.attacker = unit;
+    action.path = path;
+    return action;
+}
+
+Action GameState::makeAttack(Unit *attacker, Unit *defender, int aMoveTgt) const
+{
+    assert(attacker && defender);
+
+    Action action;
+    action.attacker = attacker;
+    action.defender = defender;
+
+    if (isRangedAttackAllowed(*attacker)) {
+        action.type = ActionType::RANGED;
+        return action;
+    }
+
+    auto path = getPath(attacker->aHex, aMoveTgt);
+    if (path.empty() || path.size() > attacker->getMaxPathSize()) {
+        return {};
+    }
+    action.type = ActionType::ATTACK;
     action.path = path;
     return action;
 }
