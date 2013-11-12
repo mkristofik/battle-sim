@@ -27,7 +27,7 @@ struct Unit
     int num;
     int team;
     int aHex;  // change this only via GameState::moveUnit
-    Facing face;
+    Facing face;  // the only field Animations are allowed to change
     const UnitType *type;
     int labelId;  // entity id of text label showing number of creatures
     int hpLeft;  // hp of top creature in the stack

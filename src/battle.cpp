@@ -327,7 +327,7 @@ void logAction(const Action &action)
 
 void doAction(Action &action)
 {
-    gs->computeDamage(action);
+    action.damage = gs->computeDamage(action);
     logAction(action);
     executeAction(action);
     bf->clearHighlights();

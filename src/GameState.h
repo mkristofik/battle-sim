@@ -58,9 +58,6 @@ public:
     Commander & getCommander(int team);
     const Commander & getCommander(int team) const;
 
-    // Set the damage field of an action.
-    void computeDamage(Action &action) const;
-
     // Return true if the given unit has a ranged attack and there are no
     // enemies adjacent to it.
     bool isRangedAttackAllowed(const Unit &attacker) const;
@@ -72,12 +69,19 @@ public:
     Action makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const;
     Action makeSkip(Unit &unit) const;
 
+    int computeDamage(const Action &action) const;
+    void execute(const Action &action);
+
 private:
     void nextRound();
 
     // Rebuild the mapping of unit positions.  Call this whenever 'units_' is
     // invalidated.
     void remapUnitPos();
+
+    // Compute a weighting factor applied to attack damage influenced by the
+    // commanders of both teams.
+    double getDamageMultiplier(const Action &action) const;
 
     const HexGrid &grid_;
     std::vector<Unit> units_;

@@ -159,25 +159,6 @@ const Commander & GameState::getCommander(int team) const
     return commanders_[team];
 }
 
-void GameState::computeDamage(Action &action) const
-{
-    if (!action.attacker || !action.defender) return;
-
-    double attackBonus = 1.0;
-    int attackDiff = getCommander(action.attacker->team).attack -
-        getCommander(action.defender->team).defense;
-    if (attackDiff > 0) {
-        attackBonus += attackDiff * 0.1;
-    }
-    else {
-        attackBonus += attackDiff * 0.05;
-    }
-    attackBonus = bound(attackBonus, 0.3, 3.0);
-
-    action.damage = action.attacker->num *
-        action.attacker->randomDamage(action.type) * attackBonus;
-}
-
 bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 {
     if (!attacker.type->hasRangedAttack) return false;
@@ -251,6 +232,13 @@ Action GameState::makeSkip(Unit &unit) const
     return action;
 }
 
+int GameState::computeDamage(const Action &action) const
+{
+    if (!action.attacker || !action.defender) return 0;
+    return action.attacker->num * action.attacker->randomDamage(action.type) *
+        getDamageMultiplier(action);
+}
+
 void GameState::nextRound()
 {
     auto lastAlive = stable_partition(std::begin(units_), std::end(units_),
@@ -273,4 +261,22 @@ void GameState::remapUnitPos()
             unitIdxAtPos_[unit.aHex] = i;
         }
     }
+}
+
+double GameState::getDamageMultiplier(const Action &action) const
+{
+    if (!action.attacker || !action.defender) return 0;
+
+    double attackBonus = 1.0;
+    int attackDiff = getCommander(action.attacker->team).attack -
+        getCommander(action.defender->team).defense;
+    if (attackDiff > 0) {
+        attackBonus += attackDiff * 0.1;
+    }
+    else {
+        attackBonus += attackDiff * 0.05;
+    }
+    attackBonus = bound(attackBonus, 0.3, 3.0);
+
+    return attackBonus;
 }
