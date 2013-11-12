@@ -95,15 +95,21 @@ const Unit * GameState::getUnitAt(int aIndex) const
 
 void GameState::moveUnit(Unit &u, int aDest)
 {
-    // TODO: this assertion fails if a unit killed this round is at the
-    // destination hex
-    //assert(unitIdxAtPos_[aDest] == -1);
+    assert(unitIdxAtPos_[aDest] == -1);
 
     int curHex = u.aHex;
     int unitIdx = unitIdxAtPos_[curHex];
     unitIdxAtPos_[curHex] = -1;
     unitIdxAtPos_[aDest] = unitIdx;
     u.aHex = aDest;
+}
+
+void GameState::assignDamage(Unit &u, int damage)
+{
+    u.takeDamage(damage);
+    if (!u.isAlive()) {
+        unitIdxAtPos_[u.aHex] = -1;
+    }
 }
 
 std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit)

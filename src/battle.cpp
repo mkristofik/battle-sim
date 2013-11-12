@@ -246,7 +246,7 @@ void executeAction(const Action &action)
              hSrc, hTgt, animShooter->getShotTime());
 
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        defender->takeDamage(action.damage);
+        gs->assignDamage(*defender, action.damage);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
         rangedSeq->add(std::move(animShooter));
@@ -273,7 +273,7 @@ void executeAction(const Action &action)
         auto hitTime = anim1->getHitTime();
 
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        defender->takeDamage(action.damage);
+        gs->assignDamage(*defender, action.damage);
 
         attackSeq->add(std::move(anim1));
         if (defender->isAlive()) {

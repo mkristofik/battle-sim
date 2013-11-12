@@ -40,6 +40,7 @@ public:
     const Unit * getUnitAt(int aIndex) const;
 
     void moveUnit(Unit &u, int aDest);
+    void assignDamage(Unit &u, int damage);
 
     // Return the list of adjacent enemy units, possibly using a different hex
     // from the one the unit is standing in.
