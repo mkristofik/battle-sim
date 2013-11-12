@@ -239,6 +239,27 @@ int GameState::computeDamage(const Action &action) const
         getDamageMultiplier(action);
 }
 
+void GameState::execute(const Action &action)
+{
+    if (!action.attacker || action.type == ActionType::NONE) return;
+
+    if (action.path.size() > 1) {
+        moveUnit(*action.attacker, action.path.back());
+    }
+
+    if (action.type == ActionType::ATTACK ||
+        action.type == ActionType::RANGED ||
+        action.type == ActionType::RETALIATE)
+    {
+        assert(action.defender);
+        assignDamage(*action.defender, action.damage);
+    }
+
+    if (action.type == ActionType::RETALIATE) {
+        action.attacker->retaliated = true;
+    }
+}
+
 void GameState::nextRound()
 {
     auto lastAlive = stable_partition(std::begin(units_), std::end(units_),

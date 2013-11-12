@@ -205,7 +205,7 @@ Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
     return Facing::RIGHT;
 }
 
-void executeAction(const Action &action)
+void animateAction(const Action &action)
 {
     if (action.type == ActionType::NONE) {
         return;
@@ -227,7 +227,6 @@ void executeAction(const Action &action)
 
             anims.emplace_back(make_unique<AnimMove>(*unit, hDest, facing));
         }
-        gs->moveUnit(*unit, action.path.back());
         unit->face = facing;
     }
 
@@ -246,7 +245,6 @@ void executeAction(const Action &action)
              hSrc, hTgt, animShooter->getShotTime());
 
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        gs->assignDamage(*defender, action.damage);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
         rangedSeq->add(std::move(animShooter));
@@ -273,7 +271,6 @@ void executeAction(const Action &action)
         auto hitTime = anim1->getHitTime();
 
         defender->face = getFacing(hTgt, hSrc, defender->face);
-        gs->assignDamage(*defender, action.damage);
 
         attackSeq->add(std::move(anim1));
         if (defender->isAlive()) {
@@ -283,10 +280,6 @@ void executeAction(const Action &action)
             attackSeq->add(make_unique<AnimDie>(*defender, hitTime));
         }
         anims.emplace_back(std::move(attackSeq));
-    }
-
-    if (action.type == ActionType::RETALIATE) {
-        unit->retaliated = true;
     }
 }
 
@@ -329,7 +322,8 @@ void doAction(Action &action)
 {
     action.damage = gs->computeDamage(action);
     logAction(action);
-    executeAction(action);
+    gs->execute(action);
+    animateAction(action);
     bf->clearHighlights();
     bf->deselectHex();
     actionTaken = true;
