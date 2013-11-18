@@ -13,6 +13,7 @@
 #ifndef ACTION_H
 #define ACTION_H
 
+#include <iosfwd>
 #include <vector>
 
 class Unit;
@@ -35,5 +36,7 @@ struct Action
     Action retaliate() const;
     bool isRetaliationAllowed() const;
 };
+
+std::ostream & operator<<(std::ostream &ostr, const Action &action);
 
 #endif

@@ -131,6 +131,19 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
     return enemies;
 }
 
+std::vector<Unit *> GameState::getAllEnemies(const Unit &unit)
+{
+    std::vector<Unit *> enemies;
+
+    for (auto &u : units_) {
+        if (u.isAlive() && unit.isEnemy(u)) {
+            enemies.push_back(&u);
+        }
+    }
+
+    return enemies;
+}
+
 std::pair<int, int> GameState::getScore() const
 {
     int score[] = {0, 0};
@@ -258,6 +271,37 @@ void GameState::execute(const Action &action)
     if (action.type == ActionType::RETALIATE) {
         action.attacker->retaliated = true;
     }
+}
+
+std::vector<Action> GameState::getPossibleActions()
+{
+/*
+ * TODO:
+ * getAllPossibleActions():
+ *      if ranged attack allowed from current hex:
+ *              possible: ranged attack each enemy (precludes melee attacks)
+ *      BFS to find all reachable hexes
+ *      - grid->aryNeighbors lists all adjacent hexes
+ *      - gs->getUnitAt will tell you if it's occupied
+ *      possible: move to each of those hexes
+ *      possible: melee attack each enemy from each hex
+ *      - gs->getAdjEnemies
+ *      possible: skip turn
+ */
+    auto unit = getActiveUnit();
+    if (!unit) return {};
+
+    std::vector<Action> actions;
+    bool ranged = isRangedAttackAllowed(*unit);
+
+    if (ranged) {
+        for (auto e : getAllEnemies(*unit)) {
+            actions.emplace_back(makeAttack(*unit, *e, -1));
+        }
+    }
+
+    actions.emplace_back(makeSkip(*unit));
+    return actions;
 }
 
 void GameState::nextRound()

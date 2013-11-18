@@ -168,20 +168,6 @@ Action getPossibleAction(int px, int py)
     return {};
 }
 
-/*
- * TODO:
- * getAllPossibleActions():
- *      if ranged attack allowed from current hex:
- *              possible: ranged attack each enemy (precludes melee attacks)
- *      BFS to find all reachable hexes
- *      - grid->aryNeighbors lists all adjacent hexes
- *      - gs->getUnitAt will tell you if it's occupied
- *      possible: move to each of those hexes
- *      possible: melee attack each enemy from each hex
- *      - gs->getAdjEnemies
- *      possible: skip turn
- */
-
 // Get direction to have a unit in the source hex face the target hex.
 Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
 {
@@ -561,7 +547,14 @@ void nextTurn()
     else {
         std::cout << "Game over";
     }
+
     std::cout << " (score: " << score.first << '-' << score.second << ")\n";
+
+    if (!gameOver) {
+        for (auto &action : gs->getPossibleActions()) {
+            std::cout << "    - " << action << '\n';
+        }
+    }
 }
 
 extern "C" int SDL_main(int argc, char *argv[])

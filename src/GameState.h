@@ -49,6 +49,8 @@ public:
     // NOTE: Normally you want non-const Units so you can attack them.  It's
     // not worth the effort to make const versions of these functions.
 
+    std::vector<Unit *> getAllEnemies(const Unit &unit);
+
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
     std::pair<int, int> getScore() const;
@@ -71,6 +73,9 @@ public:
 
     int computeDamage(const Action &action) const;
     void execute(const Action &action);
+
+    // Generate the set of all possible actions for the active unit.
+    std::vector<Action> getPossibleActions();
 
 private:
     void nextRound();
