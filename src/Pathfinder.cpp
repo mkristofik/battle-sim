@@ -13,9 +13,11 @@
 #include "Pathfinder.h"
 #include <algorithm>
 #include <memory>
+#include <queue>
 #include <unordered_map>
+#include <vector>
 
-struct PathNode
+struct AstarNode
 {
     int prev;
     int costSoFar;
@@ -23,14 +25,20 @@ struct PathNode
     bool visited;
 };
 
-typedef std::shared_ptr<PathNode> PathNodePtr;
+typedef std::shared_ptr<AstarNode> AstarNodePtr;
+
+struct BfsNode
+{
+    int id;
+    int costSoFar;
+};
 
 namespace {
-    PathNodePtr make_node(int prev, int costSoFar, int estTotalCost)
+    AstarNodePtr make_astar_node(int prev, int costSoFar, int estTotalCost)
     {
         bool visited = false;
-        return std::make_shared<PathNode>(PathNode{prev, costSoFar,
-                                                   estTotalCost, visited});
+        return std::make_shared<AstarNode>(AstarNode{prev, costSoFar,
+                                                     estTotalCost, visited});
     }
 }
 
@@ -72,11 +80,11 @@ std::vector<int> Pathfinder::getPathFrom(int start) const
     if (goal_(start)) return {start};
 
     // Record shortest path costs for every node we examine.
-    std::unordered_map<int, PathNodePtr> nodes;
+    std::unordered_map<int, AstarNodePtr> nodes;
     // Maintain a heap of nodes to consider.
     std::vector<int> open;
     int goalLoc = -1;
-    PathNodePtr goalNode;
+    AstarNodePtr goalNode;
 
     // The heap functions confusingly use operator< to build a heap with the
     // *largest* element on top.  We want to get the node with the *least* cost,
@@ -86,7 +94,7 @@ std::vector<int> Pathfinder::getPathFrom(int start) const
         return nodes[lhs]->estTotalCost > nodes[rhs]->estTotalCost;
     };
 
-    nodes.emplace(start, make_node(-1, 0, 0));
+    nodes.emplace(start, make_astar_node(-1, 0, 0));
     open.push_back(start);
 
     // A* algorithm.  Decays to Dijkstra's if estimate function is always 0.
@@ -123,7 +131,7 @@ std::vector<int> Pathfinder::getPathFrom(int start) const
             }
             else {
                 // We haven't seen this node before.  Add it to the open list.
-                nodes.emplace(n, make_node(loc, curNode->costSoFar + step, 
+                nodes.emplace(n, make_astar_node(loc, curNode->costSoFar + step, 
                     curNode->costSoFar + step + estimate_(n)));
                 open.push_back(n);
                 push_heap(std::begin(open), std::end(open), orderByCost);
@@ -144,4 +152,34 @@ std::vector<int> Pathfinder::getPathFrom(int start) const
     }
     reverse(std::begin(path), std::end(path));
     return path;
+}
+
+std::vector<int> Pathfinder::getReachableNodes(int start, int maxDist) const
+{
+    std::queue<BfsNode> nodeQ;
+    std::vector<int> reachable;
+
+    nodeQ.emplace(BfsNode{start, 0});
+
+    while (!nodeQ.empty()) {
+        const auto &node = nodeQ.front();
+        if (binary_search(std::begin(reachable), std::end(reachable), node.id)) {
+            nodeQ.pop();
+            continue;
+        }
+
+        reachable.push_back(node.id);
+        sort(std::begin(reachable), std::end(reachable));
+
+        for (auto nbr : neighbors_(node.id)) {
+            auto cost = node.costSoFar + stepCost_(node.id, nbr);
+            if (cost <= maxDist) {
+                nodeQ.emplace(BfsNode{nbr, cost});
+            }
+        }
+
+        nodeQ.pop();
+    }
+
+    return reachable;
 }

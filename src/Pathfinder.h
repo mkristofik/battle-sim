@@ -50,6 +50,10 @@ public:
     // empty list if the goal cannot be found.
     std::vector<int> getPathFrom(int start) const;
 
+    // Return the set of all reachable nodes from the starting node, up to a
+    // maximum distance.
+    std::vector<int> getReachableNodes(int start, int maxDist) const;
+
 private:
     std::function<std::vector<int> (int)> neighbors_;
     std::function<bool (int)> goal_;
