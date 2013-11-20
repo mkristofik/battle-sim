@@ -187,18 +187,8 @@ bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
-    auto emptyHexes = [&] (int aIndex) {
-        std::vector<int> nbrs;
-        for (auto n : grid_.aryNeighbors(aIndex)) {
-            if (!getUnitAt(n)) {
-                nbrs.push_back(n);
-            }
-        }
-        return nbrs;
-    };
-
     Pathfinder pf;
-    pf.setNeighbors(emptyHexes);
+    pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
     pf.setGoal(aTgt);
     return pf.getPathFrom(aSrc);
 }
@@ -291,12 +281,28 @@ std::vector<Action> GameState::getPossibleActions()
     auto unit = getActiveUnit();
     if (!unit) return {};
 
-    std::vector<Action> actions;
-    bool ranged = isRangedAttackAllowed(*unit);
+    Pathfinder pf;
+    pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
+    auto reachableHexes = pf.getReachableNodes(unit->aHex, unit->type->moves);
 
-    if (ranged) {
+    std::vector<Action> actions;
+
+    if (isRangedAttackAllowed(*unit)) {
         for (auto e : getAllEnemies(*unit)) {
             actions.emplace_back(makeAttack(*unit, *e, -1));
+        }
+    }
+    else {
+        for (auto aHex : reachableHexes) {
+            for (auto e : getAdjEnemies(*unit, aHex)) {
+                actions.emplace_back(makeAttack(*unit, *e, aHex));
+            }
+        }
+    }
+
+    for (auto aHex : reachableHexes) {
+        if (aHex != unit->aHex) {
+            actions.emplace_back(makeMove(*unit, aHex));
         }
     }
 
@@ -344,4 +350,15 @@ double GameState::getDamageMultiplier(const Action &action) const
     attackBonus = bound(attackBonus, 0.3, 3.0);
 
     return attackBonus;
+}
+
+std::vector<int> GameState::getOpenNeighbors(int aIndex) const
+{
+    std::vector<int> nbrs;
+    for (auto n : grid_.aryNeighbors(aIndex)) {
+        if (!getUnitAt(n)) {
+            nbrs.push_back(n);
+        }
+    }
+    return nbrs;
 }

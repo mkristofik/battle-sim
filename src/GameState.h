@@ -88,6 +88,9 @@ private:
     // commanders of both teams.
     double getDamageMultiplier(const Action &action) const;
 
+    // Get list of neighboring hexes that are free of units.
+    std::vector<int> getOpenNeighbors(int aIndex) const;
+
     const HexGrid &grid_;
     std::vector<Unit> units_;
     int activeUnit_;

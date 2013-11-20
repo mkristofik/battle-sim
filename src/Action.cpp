@@ -16,12 +16,6 @@
 #include <cassert>
 #include <ostream>
 
-namespace
-{
-    std::string desc[] = {"Skip turn", "Move to", "Melee Attack",
-        "Ranged Attack", ""};
-}
-
 Action::Action()
     : path{},
     damage{0},
@@ -59,17 +53,32 @@ bool Action::isRetaliationAllowed() const
 
 std::ostream & operator<<(std::ostream &ostr, const Action &action)
 {
-    ostr << desc[static_cast<int>(action.type)];
-
-    if (action.type == ActionType::MOVE) {
-        assert(!action.path.empty());
-        ostr << ' ' << action.path.back();
-    }
-    else if (action.type == ActionType::ATTACK ||
-             action.type == ActionType::RANGED)
-    {
-        assert(action.defender);
-        ostr << ' ' << action.defender->getName();
+    switch (action.type) {
+        case ActionType::NONE:
+            ostr << "Skip turn";
+            break;
+        case ActionType::MOVE:
+            assert(!action.path.empty());
+            ostr << "Move to " << action.path.back();
+            break;
+        case ActionType::ATTACK:
+        {
+            assert(!action.path.empty());
+            assert(action.attacker);
+            assert(action.defender);
+            auto moveTgt = action.path.back();
+            if (moveTgt != action.attacker->aHex) {
+                ostr << "Move to " << moveTgt << ' ';
+            }
+            ostr << "Melee attack " << action.defender->getName();
+            break;
+        }
+        case ActionType::RANGED:
+            assert(action.defender);
+            ostr << "Ranged attack " << action.defender->getName();
+            break;
+        default:
+            break;
     }
 
     return ostr;
