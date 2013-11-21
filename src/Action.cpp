@@ -25,15 +25,6 @@ Action::Action()
 {
 }
 
-void Action::computeDamage()
-{
-    if (!attacker || type == ActionType::NONE || type == ActionType::MOVE) {
-        return;
-    }
-
-    damage = attacker->num * attacker->randomDamage(type);
-}
-
 Action Action::retaliate() const
 {
     Action retaliation;
