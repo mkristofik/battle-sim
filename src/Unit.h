@@ -34,7 +34,9 @@ struct Unit
     bool retaliated;  // used retaliation this round
 
     Unit(const UnitType &t);
+
     int randomDamage(ActionType action) const;
+    int avgDamage(ActionType action) const;
 
     // Apply damage, return number of creatures killed.
     int takeDamage(int dmg);

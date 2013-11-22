@@ -47,6 +47,18 @@ int Unit::randomDamage(ActionType action) const
     return 0;
 }
 
+int Unit::avgDamage(ActionType action) const
+{
+    if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
+        return (type->minDmg + type->maxDmg) / 2;
+    }
+    else if (action == ActionType::RANGED) {
+        return (type->minDmgRanged + type->maxDmgRanged) / 2;
+    }
+
+    return 0;
+}
+
 int Unit::takeDamage(int dmg)
 {
     if (dmg < hpLeft) {
