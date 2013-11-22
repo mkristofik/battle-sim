@@ -144,14 +144,16 @@ std::vector<Unit *> GameState::getAllEnemies(const Unit &unit)
     return enemies;
 }
 
-std::pair<int, int> GameState::getScore() const
+std::array<int, 2> GameState::getScore() const
 {
-    int score[] = {0, 0};
+    std::array<int, 2> score;
+    score.fill(0);
+
     for (auto &u : units_) {
-        assert(u.team == 0 || u.team == 1);
+        assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
         score[u.team] += u.num * 100 / u.type->growth;
     }
-    return {score[0], score[1]};
+    return score;
 }
 
 void GameState::setCommander(Commander c, int team)
@@ -242,6 +244,13 @@ int GameState::computeDamage(const Action &action) const
         getDamageMultiplier(action);
 }
 
+int GameState::getSimulatedDamage(const Action &action) const
+{
+    if (!action.attacker || !action.defender) return 0;
+    return action.attacker->num * action.attacker->avgDamage(action.type) *
+        getDamageMultiplier(action);
+}
+
 void GameState::execute(const Action &action)
 {
     if (!action.attacker || action.type == ActionType::NONE) return;
@@ -265,19 +274,6 @@ void GameState::execute(const Action &action)
 
 std::vector<Action> GameState::getPossibleActions()
 {
-/*
- * TODO:
- * getAllPossibleActions():
- *      if ranged attack allowed from current hex:
- *              possible: ranged attack each enemy (precludes melee attacks)
- *      BFS to find all reachable hexes
- *      - grid->aryNeighbors lists all adjacent hexes
- *      - gs->getUnitAt will tell you if it's occupied
- *      possible: move to each of those hexes
- *      possible: melee attack each enemy from each hex
- *      - gs->getAdjEnemies
- *      possible: skip turn
- */
     auto unit = getActiveUnit();
     if (!unit) return {};
 

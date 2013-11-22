@@ -17,7 +17,7 @@
 #include "Unit.h"
 #include "sdl_helper.h"
 
-#include <utility>
+#include <array>
 #include <vector>
 
 class Action;
@@ -53,7 +53,7 @@ public:
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
-    std::pair<int, int> getScore() const;
+    std::array<int, 2> getScore() const;
 
     // Leaders of each army.
     void setCommander(Commander c, int team);
@@ -72,6 +72,7 @@ public:
     Action makeSkip(Unit &unit) const;
 
     int computeDamage(const Action &action) const;
+    int getSimulatedDamage(const Action &action) const;
     void execute(const Action &action);
 
     // Generate the set of all possible actions for the active unit.

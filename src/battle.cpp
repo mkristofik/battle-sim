@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -271,6 +272,10 @@ void animateAction(const Action &action)
 
 void logAction(const Action &action)
 {
+    if (action.type != ActionType::RETALIATE) {
+        std::cout << "    *** Action chosen: " << action << '\n';
+    }
+
     if (action.type == ActionType::MOVE) {
         return;
     }
@@ -534,10 +539,47 @@ bool checkWinner(int score1, int score2)
     return false;
 }
 
+// Simulate each action and choose the one that results in the best score.
+// TODO: this doesn't handle retaliation yet
+Action getBest1(std::vector<Action> actions)
+{
+    const Action *best = nullptr;
+    int bestScore = std::numeric_limits<int>::min();
+
+    for (const auto &a : actions) {
+        assert(a.attacker);
+
+        // TODO: this doesn't work because the unit pointers in the actions
+        // don't point at the units in the copied game state
+        GameState gsCopy{*gs};
+        Action simulatedAction{a};
+        simulatedAction.damage = gsCopy.getSimulatedDamage(a);
+        gsCopy.execute(simulatedAction);
+
+        auto score = gsCopy.getScore();
+        int scoreDiff = 0;
+
+        if (a.attacker->team == 0) {
+            scoreDiff = score[0] - score[1];
+        }
+        else {
+            scoreDiff = score[1] - score[0];
+        }
+
+        if (scoreDiff > bestScore) {
+            bestScore = scoreDiff;
+            best = &a;
+        }
+    }
+
+    if (!best) return {};
+    return *best;
+}
+
 void nextTurn()
 {
     auto score = gs->getScore();
-    gameOver = checkWinner(score.first, score.second);
+    gameOver = checkWinner(score[0], score[1]);
 
     if (!gameOver) {
         gs->nextTurn();
@@ -548,12 +590,14 @@ void nextTurn()
         std::cout << "Game over";
     }
 
-    std::cout << " (score: " << score.first << '-' << score.second << ")\n";
+    std::cout << " (score: " << score[0] << '-' << score[1] << ")\n";
 
     if (!gameOver) {
-        for (auto &action : gs->getPossibleActions()) {
+        auto possibles = gs->getPossibleActions();
+        for (auto &action : possibles) {
             std::cout << "    - " << action << '\n';
         }
+        //std::cout << "    * Most damage: " << getBest1(possibles) << '\n';
     }
 }
 
