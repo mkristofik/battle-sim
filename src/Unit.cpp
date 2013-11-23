@@ -19,6 +19,19 @@
 #include <cstdlib>
 #include <random>
 
+Unit::Unit()
+    : entityId{-1},
+    num{0},
+    team{-1},
+    aHex{-1},
+    face{Facing::RIGHT},
+    type{nullptr},
+    labelId{-1},
+    hpLeft{0},
+    retaliated{false}
+{
+}
+
 Unit::Unit(const UnitType &t)
     : entityId{-1},
     num{0},
@@ -92,9 +105,14 @@ int Unit::simulateDamage(int dmg) const
     return Unit(*this).takeDamage(dmg);
 }
 
+bool Unit::isValid() const
+{
+    return entityId >= 0 && team >= 0 && type;
+}
+
 bool Unit::isAlive() const
 {
-    return num > 0;
+    return isValid() && num > 0;
 }
 
 std::string Unit::getName(int number) const

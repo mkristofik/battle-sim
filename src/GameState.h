@@ -93,9 +93,10 @@ private:
     std::vector<int> getOpenNeighbors(int aIndex) const;
 
     const HexGrid &grid_;
-    std::vector<Unit> units_;
-    int activeUnit_;
-    std::vector<int> unitIdxAtPos_;
+    std::vector<Unit> units_;  // indexed by entity id
+    std::vector<int> turnOrder_;
+    int curTurn_;
+    std::vector<int> unitAtPos_;
     std::vector<Commander> commanders_;
     int roundNum_;
 };

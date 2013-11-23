@@ -33,6 +33,7 @@ struct Unit
     int hpLeft;  // hp of top creature in the stack
     bool retaliated;  // used retaliation this round
 
+    Unit();
     Unit(const UnitType &t);
 
     int randomDamage(ActionType action) const;
@@ -42,6 +43,7 @@ struct Unit
     int takeDamage(int dmg);
     int simulateDamage(int dmg) const;
 
+    bool isValid() const;  // return false if default-constructed
     bool isAlive() const;
 
     // Example: getName(5) for archer unit returns "5 Archers".

@@ -24,8 +24,9 @@
 GameState::GameState(const HexGrid &bfGrid)
     : grid_(bfGrid),
     units_{},
-    activeUnit_{1},
-    unitIdxAtPos_(grid_.size(), -1),
+    turnOrder_{},
+    curTurn_{-1},
+    unitAtPos_(grid_.size(), -1),
     commanders_(2),
     roundNum_{0}
 {
@@ -35,21 +36,20 @@ void GameState::nextTurn()
 {
     if (roundNum_ == 0) {
         nextRound();
-        activeUnit_ = 0;
         return;
     }
 
-    std::vector<Unit>::iterator activeIter{&units_[activeUnit_ + 1]};
-    activeIter = find_if(activeIter, std::end(units_),
-                         std::mem_fn(&Unit::isAlive));
+    if (turnOrder_.empty()) return;
 
-    if (activeIter == std::end(units_)) {
-        nextRound();
-        activeIter = find_if(std::begin(units_), std::end(units_),
-                             std::mem_fn(&Unit::isAlive));
+    ++curTurn_;
+    int endOfRound = turnOrder_.size();
+    while (curTurn_ < endOfRound && !units_[turnOrder_[curTurn_]].isAlive()) {
+        ++curTurn_;
     }
 
-    activeUnit_ = distance(std::begin(units_), activeIter);
+    if (curTurn_ == endOfRound) {
+        nextRound();
+    }
 }
 
 int GameState::getRound() const
@@ -59,17 +59,20 @@ int GameState::getRound() const
 
 void GameState::addUnit(Unit u)
 {
-    assert(unitIdxAtPos_[u.aHex] == -1);
+    assert(unitAtPos_[u.aHex] == -1);
 
-    units_.emplace_back(std::move(u));
-    // note: this invalidates the active unit
-    unitIdxAtPos_[units_.back().aHex] = units_.size() - 1;
+    int id = u.entityId;
+    if (id >= static_cast<int>(units_.size())) {
+        units_.resize(id + 1);
+    }
+    unitAtPos_[u.aHex] = id;
+    units_[id] = std::move(u);
 }
 
 Unit * GameState::getActiveUnit()
 {
-    if (activeUnit_ == static_cast<int>(units_.size())) return nullptr;
-    return &units_[activeUnit_];
+    if (curTurn_ == -1) return nullptr;
+    return &units_[turnOrder_[curTurn_]];
 }
 
 Unit * GameState::getUnitAt(int aIndex)
@@ -79,12 +82,12 @@ Unit * GameState::getUnitAt(int aIndex)
 
 const Unit * GameState::getUnitAt(int aIndex) const
 {
-    assert(aIndex >= 0 && aIndex < static_cast<int>(unitIdxAtPos_.size()));
+    assert(aIndex >= 0 && aIndex < static_cast<int>(unitAtPos_.size()));
 
-    auto unitIndex = unitIdxAtPos_[aIndex];
-    if (unitIndex == -1) return nullptr;
+    auto id = unitAtPos_[aIndex];
+    if (id == -1) return nullptr;
 
-    auto &unit = units_[unitIndex];
+    auto &unit = units_[id];
     assert(unit.aHex == aIndex);
     if (unit.isAlive()) {
         return &unit;
@@ -95,12 +98,10 @@ const Unit * GameState::getUnitAt(int aIndex) const
 
 void GameState::moveUnit(Unit &u, int aDest)
 {
-    assert(unitIdxAtPos_[aDest] == -1);
+    assert(unitAtPos_[aDest] == -1);
 
-    int curHex = u.aHex;
-    int unitIdx = unitIdxAtPos_[curHex];
-    unitIdxAtPos_[curHex] = -1;
-    unitIdxAtPos_[aDest] = unitIdx;
+    unitAtPos_[u.aHex] = -1;
+    unitAtPos_[aDest] = u.entityId;
     u.aHex = aDest;
 }
 
@@ -108,7 +109,7 @@ void GameState::assignDamage(Unit &u, int damage)
 {
     u.takeDamage(damage);
     if (!u.isAlive()) {
-        unitIdxAtPos_[u.aHex] = -1;
+        unitAtPos_[u.aHex] = -1;
     }
 }
 
@@ -150,8 +151,10 @@ std::array<int, 2> GameState::getScore() const
     score.fill(0);
 
     for (auto &u : units_) {
-        assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
-        score[u.team] += u.num * 100 / u.type->growth;
+        if (u.isValid()) {
+            assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
+            score[u.team] += u.num * 100 / u.type->growth;
+        }
     }
     return score;
 }
@@ -308,24 +311,33 @@ std::vector<Action> GameState::getPossibleActions()
 
 void GameState::nextRound()
 {
-    auto lastAlive = stable_partition(std::begin(units_), std::end(units_),
-                                      std::mem_fn(&Unit::isAlive));
-    stable_sort(std::begin(units_), lastAlive, sortByInitiative);
-    for_each(std::begin(units_), lastAlive,
-             [] (Unit &unit) {unit.retaliated = false;});
+    turnOrder_.clear();
+    for (const auto &u : units_) {
+        if (u.isAlive()) {
+            turnOrder_.push_back(u.entityId);
+        }
+    }
+
+    auto sortByInitiative = [this] (int lhs, int rhs) {
+        return units_[lhs].type->initiative > units_[rhs].type->initiative;
+    };
+    stable_sort(std::begin(turnOrder_), std::end(turnOrder_), sortByInitiative);
+    curTurn_ = (turnOrder_.empty() ? -1 : 0);
+
+    for_each(std::begin(turnOrder_), std::end(turnOrder_),
+             [this] (int id) {units_[id].retaliated = false;});
+
     remapUnitPos();
     ++roundNum_;
 }
 
 void GameState::remapUnitPos()
 {
-    fill(std::begin(unitIdxAtPos_), std::end(unitIdxAtPos_), -1);
+    fill(std::begin(unitAtPos_), std::end(unitAtPos_), -1);
 
-    int size = units_.size();
-    for (int i = 0; i < size; ++i) {
-        const auto &unit = units_[i];
+    for (const auto &unit : units_) {
         if (unit.isAlive()) {
-            unitIdxAtPos_[unit.aHex] = i;
+            unitAtPos_[unit.aHex] = unit.entityId;
         }
     }
 }
