@@ -21,6 +21,11 @@
 #include <algorithm>
 #include <cassert>
 
+namespace
+{
+    Unit nullUnit;
+}
+
 GameState::GameState(const HexGrid &bfGrid)
     : grid_(bfGrid),
     units_{},
@@ -69,10 +74,22 @@ void GameState::addUnit(Unit u)
     units_[id] = std::move(u);
 }
 
-Unit * GameState::getActiveUnit()
+Unit & GameState::getUnit(int id)
 {
-    if (curTurn_ == -1) return nullptr;
-    return &units_[turnOrder_[curTurn_]];
+    return const_cast<Unit &>(static_cast<const GameState *>(this)->getUnit(id));
+ }
+
+const Unit & GameState::getUnit(int id) const
+{
+    assert(id >= 0 && id < static_cast<int>(units_.size()));
+    if (!units_[id].isAlive()) return nullUnit;
+    return units_[id];
+}
+
+Unit & GameState::getActiveUnit()
+{
+    if (curTurn_ == -1) return nullUnit;
+    return units_[turnOrder_[curTurn_]];
 }
 
 Unit * GameState::getUnitAt(int aIndex)
@@ -190,6 +207,14 @@ bool GameState::isRangedAttackAllowed(const Unit &attacker) const
     return true;
 }
 
+bool GameState::isRetaliationAllowed(const Action &action) const
+{
+    return action.type == ActionType::ATTACK &&
+           action.attacker && action.attacker->isAlive() &&
+           action.defender && action.defender->isAlive() &&
+           !action.defender->retaliated;
+}
+
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
     Pathfinder pf;
@@ -277,35 +302,35 @@ void GameState::execute(const Action &action)
 
 std::vector<Action> GameState::getPossibleActions()
 {
-    auto unit = getActiveUnit();
-    if (!unit) return {};
+    auto &unit = getActiveUnit();
+    if (!unit.isAlive()) return {};
 
     Pathfinder pf;
     pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
-    auto reachableHexes = pf.getReachableNodes(unit->aHex, unit->type->moves);
+    auto reachableHexes = pf.getReachableNodes(unit.aHex, unit.type->moves);
 
     std::vector<Action> actions;
 
-    if (isRangedAttackAllowed(*unit)) {
-        for (auto e : getAllEnemies(*unit)) {
-            actions.emplace_back(makeAttack(*unit, *e, -1));
+    if (isRangedAttackAllowed(unit)) {
+        for (auto e : getAllEnemies(unit)) {
+            actions.emplace_back(makeAttack(unit, *e, -1));
         }
     }
     else {
         for (auto aHex : reachableHexes) {
-            for (auto e : getAdjEnemies(*unit, aHex)) {
-                actions.emplace_back(makeAttack(*unit, *e, aHex));
+            for (auto e : getAdjEnemies(unit, aHex)) {
+                actions.emplace_back(makeAttack(unit, *e, aHex));
             }
         }
     }
 
     for (auto aHex : reachableHexes) {
-        if (aHex != unit->aHex) {
-            actions.emplace_back(makeMove(*unit, aHex));
+        if (aHex != unit.aHex) {
+            actions.emplace_back(makeMove(unit, aHex));
         }
     }
 
-    actions.emplace_back(makeSkip(*unit));
+    actions.emplace_back(makeSkip(unit));
     return actions;
 }
 

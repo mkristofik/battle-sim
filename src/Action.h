@@ -33,7 +33,6 @@ struct Action
 
     // Build an action with opposite attacker and defender.
     Action retaliate() const;
-    bool isRetaliationAllowed() const;
 };
 
 std::ostream & operator<<(std::ostream &ostr, const Action &action);

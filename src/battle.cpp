@@ -149,7 +149,7 @@ Action getPossibleAction(int px, int py)
     }
     auto hTgt = grid->hexFromAry(aTgt);
 
-    auto attacker = gs->getActiveUnit();
+    auto attacker = &gs->getActiveUnit();
     if (!attacker) {
         return {};
     }
@@ -349,7 +349,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             if (action.type == ActionType::NONE) return;
 
             doAction(action);
-            if (action.isRetaliationAllowed()) {
+            if (gs->isRetaliationAllowed(action)) {
                 auto retaliation = action.retaliate();
                 doAction(retaliation);
             }
@@ -361,10 +361,10 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s || logHasFocus) return;
 
-    auto unit = gs->getActiveUnit();
-    if (!unit) return;
+    auto &unit = gs->getActiveUnit();
+    if (!unit.isAlive()) return;
 
-    auto skipAction = gs->makeSkip(*unit);
+    auto skipAction = gs->makeSkip(unit);
     doAction(skipAction);
 }
 
@@ -583,8 +583,7 @@ void nextTurn()
 
     if (!gameOver) {
         gs->nextTurn();
-        auto unit = gs->getActiveUnit();
-        std::cout << unit->getName();
+        std::cout << gs->getActiveUnit().getName();
     }
     else {
         std::cout << "Game over";
@@ -637,7 +636,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     CommanderView cView2{gs->getCommander(1), 1, font, cmdrWindow2};
 
     nextTurn();
-    bf->selectHex(gs->getActiveUnit()->aHex);
+    bf->selectHex(gs->getActiveUnit().aHex);
     bf->draw();
     logv->add("Round 1 begins.");
     logv->draw();
@@ -691,7 +690,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             nextTurn();
             if (!gameOver) {
                 checkNewRound();
-                bf->selectHex(gs->getActiveUnit()->aHex);
+                bf->selectHex(gs->getActiveUnit().aHex);
             }
             else {
                 bf->clearHighlights();

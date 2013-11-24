@@ -34,14 +34,6 @@ Action Action::retaliate() const
     return retaliation;
 }
 
-bool Action::isRetaliationAllowed() const
-{
-    return type == ActionType::ATTACK &&
-           attacker && attacker->isAlive() &&
-           defender && defender->isAlive() &&
-           !defender->retaliated;
-}
-
 std::ostream & operator<<(std::ostream &ostr, const Action &action)
 {
     switch (action.type) {

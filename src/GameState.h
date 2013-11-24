@@ -31,11 +31,12 @@ public:
     void nextTurn();
     int getRound() const;
 
+    // Units are owned by their GameState instance.
     void addUnit(Unit u);
+    Unit & getUnit(int id);
+    const Unit & getUnit(int id) const;
+    Unit & getActiveUnit();
 
-    // Unit handles might change over time.  Best to not hold on to them for
-    // longer than the current round.
-    Unit * getActiveUnit();
     Unit * getUnitAt(int aIndex);
     const Unit * getUnitAt(int aIndex) const;
 
@@ -60,9 +61,8 @@ public:
     Commander & getCommander(int team);
     const Commander & getCommander(int team) const;
 
-    // Return true if the given unit has a ranged attack and there are no
-    // enemies adjacent to it.
     bool isRangedAttackAllowed(const Unit &attacker) const;
+    bool isRetaliationAllowed(const Action &action) const;
 
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
