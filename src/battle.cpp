@@ -149,21 +149,21 @@ Action getPossibleAction(int px, int py)
     }
     auto hTgt = grid->hexFromAry(aTgt);
 
-    auto attacker = &gs->getActiveUnit();
-    if (!attacker) {
+    auto &attacker = gs->getActiveUnit();
+    if (!attacker.isAlive()) {
         return {};
     }
     auto defender = gs->getUnitAt(aTgt);
 
-    if (defender && attacker->isEnemy(*defender)) {
+    if (defender && attacker.isEnemy(*defender)) {
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        return gs->makeAttack(*attacker, *defender, aMoveTo);
+        return gs->makeAttack(attacker, *defender, aMoveTo);
     }
     else if (!defender) {
-        return gs->makeMove(*attacker, aTgt);
+        return gs->makeMove(attacker, aTgt);
     }
 
     return {};
@@ -198,49 +198,50 @@ void animateAction(const Action &action)
         return;
     }
 
-    auto unit = action.attacker;
-    if (!unit) {
+    auto &unit = gs->getUnit(action.attacker);
+    if (!unit.isAlive()) {
         return;
     }
 
     // All other actions might involve moving.
     if (action.path.size() > 1) {
-        auto facing = unit->face;
+        auto facing = unit.face;
         for (auto i = 1u; i < action.path.size(); ++i) {
             auto hSrc = grid->hexFromAry(action.path[i - 1]);
             auto hDest = grid->hexFromAry(action.path[i]);
             auto prevFacing = facing;
             facing = getFacing(hSrc, hDest, prevFacing);
 
-            anims.emplace_back(make_unique<AnimMove>(*unit, hDest, facing));
+            anims.emplace_back(make_unique<AnimMove>(unit, hDest, facing));
         }
-        unit->face = facing;
+        unit.face = facing;
     }
 
     // These animations happen after the attacker is done moving.
     if (action.type == ActionType::RANGED) {
         auto rangedSeq = make_unique<AnimParallel>();
-        auto defender = action.defender;
+        auto &defender = gs->getUnit(action.defender);
+        assert(defender.isValid());
 
-        auto hSrc = grid->hexFromAry(unit->aHex);
-        auto hTgt = grid->hexFromAry(defender->aHex);
+        auto hSrc = grid->hexFromAry(unit.aHex);
+        auto hTgt = grid->hexFromAry(defender.aHex);
 
-        unit->face = getFacing(hSrc, hTgt, unit->face);
-        auto animShooter = make_unique<AnimRanged>(*unit, hTgt);
+        unit.face = getFacing(hSrc, hTgt, unit.face);
+        auto animShooter = make_unique<AnimRanged>(unit, hTgt);
 
-        auto animShot = make_unique<AnimProjectile>(unit->type->projectile,
+        auto animShot = make_unique<AnimProjectile>(unit.type->projectile,
              hSrc, hTgt, animShooter->getShotTime());
 
-        defender->face = getFacing(hTgt, hSrc, defender->face);
+        defender.face = getFacing(hTgt, hSrc, defender.face);
         auto hitTime = animShooter->getShotTime() + animShot->getFlightTime();
 
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
-        if (defender->isAlive()) {
-            rangedSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        if (defender.isAlive()) {
+            rangedSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
         }
         else {
-            rangedSeq->add(make_unique<AnimDie>(*defender, hitTime));
+            rangedSeq->add(make_unique<AnimDie>(defender, hitTime));
         }
         anims.emplace_back(std::move(rangedSeq));
     }
@@ -248,23 +249,24 @@ void animateAction(const Action &action)
              action.type == ActionType::RETALIATE)
     {
         auto attackSeq = make_unique<AnimParallel>();
-        auto defender = action.defender;
+        auto &defender = gs->getUnit(action.defender);
+        assert(defender.isValid());
 
-        auto hSrc = grid->hexFromAry(unit->aHex);
-        auto hTgt = grid->hexFromAry(defender->aHex);
+        auto hSrc = grid->hexFromAry(unit.aHex);
+        auto hTgt = grid->hexFromAry(defender.aHex);
 
-        unit->face = getFacing(hSrc, hTgt, unit->face);
-        auto anim1 = make_unique<AnimAttack>(*unit, hTgt);
+        unit.face = getFacing(hSrc, hTgt, unit.face);
+        auto anim1 = make_unique<AnimAttack>(unit, hTgt);
         auto hitTime = anim1->getHitTime();
 
-        defender->face = getFacing(hTgt, hSrc, defender->face);
+        defender.face = getFacing(hTgt, hSrc, defender.face);
 
         attackSeq->add(std::move(anim1));
-        if (defender->isAlive()) {
-            attackSeq->add(make_unique<AnimDefend>(*defender, hSrc, hitTime));
+        if (defender.isAlive()) {
+            attackSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
         }
         else {
-            attackSeq->add(make_unique<AnimDie>(*defender, hitTime));
+            attackSeq->add(make_unique<AnimDie>(defender, hitTime));
         }
         anims.emplace_back(std::move(attackSeq));
     }
@@ -280,28 +282,28 @@ void logAction(const Action &action)
         return;
     }
 
-    assert(action.attacker);
+    const auto &attacker = gs->getUnit(action.attacker);
+    assert(attacker.isValid());
     std::ostringstream ostr("- ", std::ios::ate);
-    ostr << action.attacker->getName();
+    ostr << attacker.getName();
     if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {
-        assert(action.defender);
-        ostr << (action.attacker->num == 1 ? " attacks " : " attack ");
-        ostr << action.defender->getName();
+        ostr << (attacker.num == 1 ? " attacks " : " attack ");
+        ostr << gs->getUnit(action.defender).getName();
     }
     else if (action.type == ActionType::RETALIATE) {
-        assert(action.defender);
-        ostr << (action.attacker->num == 1 ? " retaliates" : " retaliate");
+        ostr << (attacker.num == 1 ? " retaliates" : " retaliate");
     }
     else if (action.type == ActionType::NONE) {
-        ostr << (action.attacker->num == 1 ? " skips its " : " skip their ");
+        ostr << (attacker.num == 1 ? " skips its " : " skip their ");
         ostr << "turn.";
     }
 
     if (action.type != ActionType::NONE) {
         ostr << " for " << action.damage << " damage.";
-        int numKilled = action.defender->simulateDamage(action.damage);
+        const auto &defender = gs->getUnit(action.defender);
+        int numKilled = defender.simulateDamage(action.damage);
         if (numKilled > 0) {
-            ostr << "  " << action.defender->getName(numKilled);
+            ostr << "  " << defender.getName(numKilled);
             ostr << (numKilled > 1 ? " perish." : " perishes.");
         }
     }
@@ -350,7 +352,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
 
             doAction(action);
             if (gs->isRetaliationAllowed(action)) {
-                auto retaliation = action.retaliate();
+                auto retaliation = gs->makeRetaliation(action);
                 doAction(retaliation);
             }
         }
@@ -547,8 +549,6 @@ Action getBest1(std::vector<Action> actions)
     int bestScore = std::numeric_limits<int>::min();
 
     for (const auto &a : actions) {
-        assert(a.attacker);
-
         // TODO: this doesn't work because the unit pointers in the actions
         // don't point at the units in the copied game state
         GameState gsCopy{*gs};
@@ -559,7 +559,7 @@ Action getBest1(std::vector<Action> actions)
         auto score = gsCopy.getScore();
         int scoreDiff = 0;
 
-        if (a.attacker->team == 0) {
+        if (gsCopy.getUnit(a.attacker).team == 0) {
             scoreDiff = score[0] - score[1];
         }
         else {

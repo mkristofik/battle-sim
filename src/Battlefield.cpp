@@ -115,12 +115,11 @@ void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
     if (action.type == ActionType::ATTACK) {
         auto aMoveTo = action.path.back();
         showMouseover(aMoveTo);
-        showAttackArrow(aMoveTo, action.defender->aHex);
+        showAttackArrow(aMoveTo, action.aTgt);
     }
     else if (action.type == ActionType::RANGED) {
-        auto aTgt = action.defender->aHex;
-        showMouseover(aTgt);
-        setRangedTarget(aTgt);
+        showMouseover(action.aTgt);
+        setRangedTarget(action.aTgt);
     }
     else if (action.type == ActionType::MOVE) {
         auto aMoveTo = action.path.back();

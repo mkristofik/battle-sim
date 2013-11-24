@@ -26,13 +26,11 @@ struct Action
     std::vector<int> path;
     int damage;
     ActionType type;
-    Unit *attacker;
-    Unit *defender;
+    int attacker;
+    int defender;
+    int aTgt;  // hex the defender is standing in
 
     Action();
-
-    // Build an action with opposite attacker and defender.
-    Action retaliate() const;
 };
 
 std::ostream & operator<<(std::ostream &ostr, const Action &action);

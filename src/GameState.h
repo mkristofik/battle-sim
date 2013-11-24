@@ -67,9 +67,11 @@ public:
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
 
+    // TODO: take entity ids instead of Unit refs
     Action makeMove(Unit &unit, int aTgt) const;
     Action makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const;
     Action makeSkip(Unit &unit) const;
+    Action makeRetaliation(const Action &action) const;
 
     int computeDamage(const Action &action) const;
     int getSimulatedDamage(const Action &action) const;

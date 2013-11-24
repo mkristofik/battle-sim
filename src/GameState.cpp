@@ -81,8 +81,9 @@ Unit & GameState::getUnit(int id)
 
 const Unit & GameState::getUnit(int id) const
 {
-    assert(id >= 0 && id < static_cast<int>(units_.size()));
-    if (!units_[id].isAlive()) return nullUnit;
+    if (id < 0 || id >= static_cast<int>(units_.size())) return nullUnit;
+    if (!units_[id].isValid()) return nullUnit;
+
     return units_[id];
 }
 
@@ -209,10 +210,12 @@ bool GameState::isRangedAttackAllowed(const Unit &attacker) const
 
 bool GameState::isRetaliationAllowed(const Action &action) const
 {
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
     return action.type == ActionType::ATTACK &&
-           action.attacker && action.attacker->isAlive() &&
-           action.defender && action.defender->isAlive() &&
-           !action.defender->retaliated;
+           att.isAlive() &&
+           def.isAlive() &&
+           !def.retaliated;
 }
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
@@ -232,7 +235,7 @@ Action GameState::makeMove(Unit &unit, int aTgt) const
 
     Action action;
     action.type = ActionType::MOVE;
-    action.attacker = &unit;
+    action.attacker = unit.entityId;
     action.path = path;
     return action;
 }
@@ -240,8 +243,9 @@ Action GameState::makeMove(Unit &unit, int aTgt) const
 Action GameState::makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const
 {
     Action action;
-    action.attacker = &attacker;
-    action.defender = &defender;
+    action.attacker = attacker.entityId;
+    action.defender = defender.entityId;
+    action.aTgt = defender.aHex;
 
     if (isRangedAttackAllowed(attacker)) {
         action.type = ActionType::RANGED;
@@ -261,42 +265,57 @@ Action GameState::makeSkip(Unit &unit) const
 {
     Action action;
     action.type = ActionType::NONE;
-    action.attacker = &unit;
+    action.attacker = unit.entityId;
     return action;
+}
+
+Action GameState::makeRetaliation(const Action &action) const
+{
+    Action retaliation;
+    retaliation.attacker = action.defender;
+    retaliation.defender = action.attacker;
+    retaliation.type = ActionType::RETALIATE;
+    retaliation.aTgt = getUnit(retaliation.defender).aHex;
+    return retaliation;
 }
 
 int GameState::computeDamage(const Action &action) const
 {
-    if (!action.attacker || !action.defender) return 0;
-    return action.attacker->num * action.attacker->randomDamage(action.type) *
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+    if (!att.isAlive() || !def.isAlive()) return 0;
+    return att.num * att.randomDamage(action.type) *
         getDamageMultiplier(action);
 }
 
 int GameState::getSimulatedDamage(const Action &action) const
 {
-    if (!action.attacker || !action.defender) return 0;
-    return action.attacker->num * action.attacker->avgDamage(action.type) *
-        getDamageMultiplier(action);
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+    if (!att.isAlive() || !def.isAlive()) return 0;
+    return att.num * att.avgDamage(action.type) * getDamageMultiplier(action);
 }
 
 void GameState::execute(const Action &action)
 {
-    if (!action.attacker || action.type == ActionType::NONE) return;
+    auto &att = getUnit(action.attacker);
+    auto &def = getUnit(action.defender);
+    if (!att.isAlive() || action.type == ActionType::NONE) return;
 
     if (action.path.size() > 1) {
-        moveUnit(*action.attacker, action.path.back());
+        moveUnit(att, action.path.back());
     }
 
     if (action.type == ActionType::ATTACK ||
         action.type == ActionType::RANGED ||
         action.type == ActionType::RETALIATE)
     {
-        assert(action.defender);
-        assignDamage(*action.defender, action.damage);
+        assert(def.isAlive());
+        assignDamage(def, action.damage);
     }
 
     if (action.type == ActionType::RETALIATE) {
-        action.attacker->retaliated = true;
+        att.retaliated = true;
     }
 }
 
@@ -369,11 +388,13 @@ void GameState::remapUnitPos()
 
 double GameState::getDamageMultiplier(const Action &action) const
 {
-    if (!action.attacker || !action.defender) return 0;
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+    if (!att.isAlive() || !def.isAlive()) return 0;
 
     double attackBonus = 1.0;
-    int attackDiff = getCommander(action.attacker->team).attack -
-        getCommander(action.defender->team).defense;
+    int attackDiff = getCommander(att.team).attack -
+        getCommander(def.team).defense;
     if (attackDiff > 0) {
         attackBonus += attackDiff * 0.1;
     }

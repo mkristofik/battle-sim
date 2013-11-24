@@ -20,22 +20,15 @@ Action::Action()
     : path{},
     damage{0},
     type{ActionType::NONE},
-    attacker{nullptr},
-    defender{nullptr}
+    attacker{-1},
+    defender{-1},
+    aTgt{-1}
 {
-}
-
-Action Action::retaliate() const
-{
-    Action retaliation;
-    retaliation.attacker = defender;
-    retaliation.defender = attacker;
-    retaliation.type = ActionType::RETALIATE;
-    return retaliation;
 }
 
 std::ostream & operator<<(std::ostream &ostr, const Action &action)
 {
+    /* TODO: fix this
     switch (action.type) {
         case ActionType::NONE:
             ostr << "Skip turn";
@@ -63,6 +56,7 @@ std::ostream & operator<<(std::ostream &ostr, const Action &action)
         default:
             break;
     }
+    */
 
     return ostr;
 }
