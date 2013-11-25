@@ -153,16 +153,16 @@ Action getPossibleAction(int px, int py)
     if (!attacker.isAlive()) {
         return {};
     }
-    auto defender = gs->getUnitAt(aTgt);
+    auto &defender = gs->getUnitAt(aTgt);
 
-    if (defender && attacker.isEnemy(*defender)) {
+    if (defender.isAlive() && attacker.isEnemy(defender)) {
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        return gs->makeAttack(attacker, *defender, aMoveTo);
+        return gs->makeAttack(attacker, defender, aMoveTo);
     }
-    else if (!defender) {
+    else if (!defender.isAlive()) {
         return gs->makeMove(attacker, aTgt);
     }
 

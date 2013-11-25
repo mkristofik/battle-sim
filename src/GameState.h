@@ -32,13 +32,13 @@ public:
     int getRound() const;
 
     // Units are owned by their GameState instance.
+    // TODO: only const refs should be public
     void addUnit(Unit u);
     Unit & getUnit(int id);
     const Unit & getUnit(int id) const;
     Unit & getActiveUnit();
-
-    Unit * getUnitAt(int aIndex);
-    const Unit * getUnitAt(int aIndex) const;
+    Unit & getUnitAt(int aIndex);
+    const Unit & getUnitAt(int aIndex) const;
 
     void moveUnit(Unit &u, int aDest);
     void assignDamage(Unit &u, int damage);

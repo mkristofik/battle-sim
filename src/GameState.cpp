@@ -93,25 +93,25 @@ Unit & GameState::getActiveUnit()
     return units_[turnOrder_[curTurn_]];
 }
 
-Unit * GameState::getUnitAt(int aIndex)
+Unit & GameState::getUnitAt(int aIndex)
 {
-    return const_cast<Unit *>(static_cast<const GameState *>(this)->getUnitAt(aIndex));
+    return const_cast<Unit &>(static_cast<const GameState *>(this)->getUnitAt(aIndex));
 }
 
-const Unit * GameState::getUnitAt(int aIndex) const
+const Unit & GameState::getUnitAt(int aIndex) const
 {
     assert(aIndex >= 0 && aIndex < static_cast<int>(unitAtPos_.size()));
 
     auto id = unitAtPos_[aIndex];
-    if (id == -1) return nullptr;
+    if (id == -1) return nullUnit;
 
     auto &unit = units_[id];
     assert(unit.aHex == aIndex);
     if (unit.isAlive()) {
-        return &unit;
+        return unit;
     }
 
-    return nullptr;
+    return nullUnit;
 }
 
 void GameState::moveUnit(Unit &u, int aDest)
@@ -141,9 +141,9 @@ std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
     std::vector<Unit *> enemies;
 
     for (auto n : grid_.aryNeighbors(aIndex)) {
-        auto adjUnit = getUnitAt(n);
-        if (adjUnit && unit.isEnemy(*adjUnit)) {
-            enemies.push_back(adjUnit);
+        auto &adjUnit = getUnitAt(n);
+        if (adjUnit.isAlive() && unit.isEnemy(adjUnit)) {
+            enemies.push_back(&adjUnit);
         }
     }
 
@@ -200,8 +200,8 @@ bool GameState::isRangedAttackAllowed(const Unit &attacker) const
     if (!attacker.type->hasRangedAttack) return false;
 
     for (auto n : grid_.aryNeighbors(attacker.aHex)) {
-        const auto adjUnit = getUnitAt(n);
-        if (adjUnit && attacker.isEnemy(*adjUnit)) {
+        const auto &adjUnit = getUnitAt(n);
+        if (adjUnit.isAlive() && attacker.isEnemy(adjUnit)) {
             return false;
         }
     }
@@ -410,7 +410,7 @@ std::vector<int> GameState::getOpenNeighbors(int aIndex) const
 {
     std::vector<int> nbrs;
     for (auto n : grid_.aryNeighbors(aIndex)) {
-        if (!getUnitAt(n)) {
+        if (!getUnitAt(n).isAlive()) {
             nbrs.push_back(n);
         }
     }
