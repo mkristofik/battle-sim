@@ -13,12 +13,10 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include <iosfwd>
 #include <vector>
 
-class Unit;
-
-// Definition of a possible action a unit may take (where it can move, a target to attack, etc.).
+// Definition of a possible action a unit may take (where it can move, a target
+// to attack, etc.).
 enum class ActionType {NONE, MOVE, ATTACK, RANGED, RETALIATE};
 
 struct Action
@@ -32,7 +30,5 @@ struct Action
 
     Action();
 };
-
-std::ostream & operator<<(std::ostream &ostr, const Action &action);
 
 #endif

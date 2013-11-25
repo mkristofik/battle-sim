@@ -18,6 +18,7 @@
 #include "sdl_helper.h"
 
 #include <array>
+#include <iosfwd>
 #include <vector>
 
 class Action;
@@ -76,6 +77,8 @@ public:
 
     // Generate the set of all possible actions for the active unit.
     std::vector<Action> getPossibleActions();
+
+    void printAction(std::ostream &ostr, const Action &action) const;
 
 private:
     void nextRound();

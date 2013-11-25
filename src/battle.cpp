@@ -275,7 +275,9 @@ void animateAction(const Action &action)
 void logAction(const Action &action)
 {
     if (action.type != ActionType::RETALIATE) {
-        std::cout << "    *** Action chosen: " << action << '\n';
+        std::cout << "    *** Action chosen: ";
+        gs->printAction(std::cout, action);
+        std::cout << '\n';
     }
 
     if (action.type == ActionType::MOVE) {
@@ -594,7 +596,9 @@ void nextTurn()
     if (!gameOver) {
         auto possibles = gs->getPossibleActions();
         for (auto &action : possibles) {
-            std::cout << "    - " << action << '\n';
+            std::cout << "    - ";
+            gs->printAction(std::cout, action);
+            std::cout << '\n';
         }
         //std::cout << "    * Most damage: " << getBest1(possibles) << '\n';
     }

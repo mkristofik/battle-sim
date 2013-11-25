@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <ostream>
 
 namespace
 {
@@ -366,6 +367,44 @@ std::vector<Action> GameState::getPossibleActions()
 
     actions.emplace_back(makeSkip(unit.entityId));
     return actions;
+}
+
+void GameState::printAction(std::ostream &ostr, const Action &action) const
+{
+    switch (action.type) {
+        case ActionType::NONE:
+            ostr << "Skip turn";
+            break;
+        case ActionType::MOVE:
+            assert(!action.path.empty());
+            ostr << "Move to " << action.path.back();
+            break;
+        case ActionType::ATTACK:
+        {
+            assert(!action.path.empty());
+
+            const auto &att = getUnit(action.attacker);
+            const auto &def = getUnit(action.defender);
+            assert(att.isValid());
+            assert(def.isValid());
+
+            auto moveTgt = action.path.back();
+            if (moveTgt != att.aHex) {
+                ostr << "Move to " << moveTgt << ' ';
+            }
+            ostr << "Melee attack " << def.getName();
+            break;
+        }
+        case ActionType::RANGED:
+        {
+            const auto &def = getUnit(action.defender);
+            assert(def.isValid());
+            ostr << "Ranged attack " << def.getName();
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void GameState::nextRound()

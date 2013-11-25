@@ -12,10 +12,6 @@
 */
 #include "Action.h"
 
-#include "Unit.h"
-#include <cassert>
-#include <ostream>
-
 Action::Action()
     : path{},
     damage{0},
@@ -24,39 +20,4 @@ Action::Action()
     defender{-1},
     aTgt{-1}
 {
-}
-
-std::ostream & operator<<(std::ostream &ostr, const Action &action)
-{
-    /* TODO: fix this
-    switch (action.type) {
-        case ActionType::NONE:
-            ostr << "Skip turn";
-            break;
-        case ActionType::MOVE:
-            assert(!action.path.empty());
-            ostr << "Move to " << action.path.back();
-            break;
-        case ActionType::ATTACK:
-        {
-            assert(!action.path.empty());
-            assert(action.attacker);
-            assert(action.defender);
-            auto moveTgt = action.path.back();
-            if (moveTgt != action.attacker->aHex) {
-                ostr << "Move to " << moveTgt << ' ';
-            }
-            ostr << "Melee attack " << action.defender->getName();
-            break;
-        }
-        case ActionType::RANGED:
-            assert(action.defender);
-            ostr << "Ranged attack " << action.defender->getName();
-            break;
-        default:
-            break;
-    }
-    */
-
-    return ostr;
 }
