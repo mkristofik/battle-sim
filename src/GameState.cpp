@@ -114,49 +114,62 @@ const Unit & GameState::getUnitAt(int aIndex) const
     return nullUnit;
 }
 
-void GameState::moveUnit(Unit &u, int aDest)
+void GameState::moveUnit(int id, int aDest)
 {
     assert(unitAtPos_[aDest] == -1);
 
-    unitAtPos_[u.aHex] = -1;
-    unitAtPos_[aDest] = u.entityId;
-    u.aHex = aDest;
+    auto &unit = getUnit(id);
+    assert(unit.isValid());
+
+    unitAtPos_[unit.aHex] = -1;
+    unitAtPos_[aDest] = unit.entityId;
+    unit.aHex = aDest;
 }
 
-void GameState::assignDamage(Unit &u, int damage)
+void GameState::assignDamage(int id, int damage)
 {
-    u.takeDamage(damage);
-    if (!u.isAlive()) {
-        unitAtPos_[u.aHex] = -1;
+    auto &unit = getUnit(id);
+    assert(unit.isValid());
+
+    unit.takeDamage(damage);
+    if (!unit.isAlive()) {
+        unitAtPos_[unit.aHex] = -1;
     }
 }
 
-std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit)
+std::vector<int> GameState::getAdjEnemies(int id) const
 {
-    return getAdjEnemies(unit, unit.aHex);
+    const auto &unit = getUnit(id);
+    return getAdjEnemies(id, unit.aHex);
 }
 
-std::vector<Unit *> GameState::getAdjEnemies(const Unit &unit, int aIndex)
+std::vector<int> GameState::getAdjEnemies(int id, int aIndex) const
 {
-    std::vector<Unit *> enemies;
+    const auto &unit = getUnit(id);
+    if (!unit.isAlive()) return {};
+
+    std::vector<int> enemies;
 
     for (auto n : grid_.aryNeighbors(aIndex)) {
-        auto &adjUnit = getUnitAt(n);
+        const auto &adjUnit = getUnitAt(n);
         if (adjUnit.isAlive() && unit.isEnemy(adjUnit)) {
-            enemies.push_back(&adjUnit);
+            enemies.push_back(adjUnit.entityId);
         }
     }
 
     return enemies;
 }
 
-std::vector<Unit *> GameState::getAllEnemies(const Unit &unit)
+std::vector<int> GameState::getAllEnemies(int id) const
 {
-    std::vector<Unit *> enemies;
+    const auto &unit = getUnit(id);
+    if (!unit.isAlive()) return {};
 
-    for (auto &u : units_) {
+    std::vector<int> enemies;
+
+    for (const auto &u : units_) {
         if (u.isAlive() && unit.isEnemy(u)) {
-            enemies.push_back(&u);
+            enemies.push_back(u.entityId);
         }
     }
 
@@ -195,17 +208,12 @@ const Commander & GameState::getCommander(int team) const
     return commanders_[team];
 }
 
-bool GameState::isRangedAttackAllowed(const Unit &attacker) const
+bool GameState::isRangedAttackAllowed(int id) const
 {
-    if (!attacker.type->hasRangedAttack) return false;
+    const auto &attacker = getUnit(id);
+    if (!attacker.isAlive() || !attacker.type->hasRangedAttack) return false;
 
-    for (auto n : grid_.aryNeighbors(attacker.aHex)) {
-        const auto &adjUnit = getUnitAt(n);
-        if (adjUnit.isAlive() && attacker.isEnemy(adjUnit)) {
-            return false;
-        }
-    }
-    return true;
+    return getAdjEnemies(id).empty();
 }
 
 bool GameState::isRetaliationAllowed(const Action &action) const
@@ -226,8 +234,11 @@ std::vector<int> GameState::getPath(int aSrc, int aTgt) const
     return pf.getPathFrom(aSrc);
 }
 
-Action GameState::makeMove(Unit &unit, int aTgt) const
+Action GameState::makeMove(int id, int aTgt) const
 {
+    const auto &unit = getUnit(id);
+    if (!unit.isAlive()) return {};
+
     auto path = getPath(unit.aHex, aTgt);
     if (path.size() <= 1 || path.size() > unit.getMaxPathSize()) {
         return {};
@@ -235,19 +246,23 @@ Action GameState::makeMove(Unit &unit, int aTgt) const
 
     Action action;
     action.type = ActionType::MOVE;
-    action.attacker = unit.entityId;
+    action.attacker = id;
     action.path = path;
     return action;
 }
 
-Action GameState::makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const
+Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
 {
+    const auto &attacker = getUnit(attId);
+    const auto &defender = getUnit(defId);
+    if (!attacker.isAlive() || !defender.isAlive()) return {};
+
     Action action;
-    action.attacker = attacker.entityId;
-    action.defender = defender.entityId;
+    action.attacker = attId;
+    action.defender = defId;
     action.aTgt = defender.aHex;
 
-    if (isRangedAttackAllowed(attacker)) {
+    if (isRangedAttackAllowed(attId)) {
         action.type = ActionType::RANGED;
         return action;
     }
@@ -261,11 +276,11 @@ Action GameState::makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const
     return action;
 }
 
-Action GameState::makeSkip(Unit &unit) const
+Action GameState::makeSkip(int id) const
 {
     Action action;
     action.type = ActionType::NONE;
-    action.attacker = unit.entityId;
+    action.attacker = id;
     return action;
 }
 
@@ -303,7 +318,7 @@ void GameState::execute(const Action &action)
     if (!att.isAlive() || action.type == ActionType::NONE) return;
 
     if (action.path.size() > 1) {
-        moveUnit(att, action.path.back());
+        moveUnit(action.attacker, action.path.back());
     }
 
     if (action.type == ActionType::ATTACK ||
@@ -311,7 +326,7 @@ void GameState::execute(const Action &action)
         action.type == ActionType::RETALIATE)
     {
         assert(def.isAlive());
-        assignDamage(def, action.damage);
+        assignDamage(action.defender, action.damage);
     }
 
     if (action.type == ActionType::RETALIATE) {
@@ -330,26 +345,26 @@ std::vector<Action> GameState::getPossibleActions()
 
     std::vector<Action> actions;
 
-    if (isRangedAttackAllowed(unit)) {
-        for (auto e : getAllEnemies(unit)) {
-            actions.emplace_back(makeAttack(unit, *e, -1));
+    if (isRangedAttackAllowed(unit.entityId)) {
+        for (auto e : getAllEnemies(unit.entityId)) {
+            actions.emplace_back(makeAttack(unit.entityId, e, -1));
         }
     }
     else {
         for (auto aHex : reachableHexes) {
-            for (auto e : getAdjEnemies(unit, aHex)) {
-                actions.emplace_back(makeAttack(unit, *e, aHex));
+            for (auto e : getAdjEnemies(unit.entityId, aHex)) {
+                actions.emplace_back(makeAttack(unit.entityId, e, aHex));
             }
         }
     }
 
     for (auto aHex : reachableHexes) {
         if (aHex != unit.aHex) {
-            actions.emplace_back(makeMove(unit, aHex));
+            actions.emplace_back(makeMove(unit.entityId, aHex));
         }
     }
 
-    actions.emplace_back(makeSkip(unit));
+    actions.emplace_back(makeSkip(unit.entityId));
     return actions;
 }
 

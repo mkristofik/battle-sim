@@ -149,21 +149,21 @@ Action getPossibleAction(int px, int py)
     }
     auto hTgt = grid->hexFromAry(aTgt);
 
-    auto &attacker = gs->getActiveUnit();
+    const auto &attacker = gs->getActiveUnit();
     if (!attacker.isAlive()) {
         return {};
     }
-    auto &defender = gs->getUnitAt(aTgt);
+    const auto &defender = gs->getUnitAt(aTgt);
 
     if (defender.isAlive() && attacker.isEnemy(defender)) {
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        return gs->makeAttack(attacker, defender, aMoveTo);
+        return gs->makeAttack(attacker.entityId, defender.entityId, aMoveTo);
     }
     else if (!defender.isAlive()) {
-        return gs->makeMove(attacker, aTgt);
+        return gs->makeMove(attacker.entityId, aTgt);
     }
 
     return {};
@@ -366,7 +366,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
     auto &unit = gs->getActiveUnit();
     if (!unit.isAlive()) return;
 
-    auto skipAction = gs->makeSkip(unit);
+    auto skipAction = gs->makeSkip(unit.entityId);
     doAction(skipAction);
 }
 

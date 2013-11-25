@@ -40,17 +40,15 @@ public:
     Unit & getUnitAt(int aIndex);
     const Unit & getUnitAt(int aIndex) const;
 
-    void moveUnit(Unit &u, int aDest);
-    void assignDamage(Unit &u, int damage);
+    void moveUnit(int id, int aDest);
+    void assignDamage(int id, int damage);
 
     // Return the list of adjacent enemy units, possibly using a different hex
     // from the one the unit is standing in.
-    std::vector<Unit *> getAdjEnemies(const Unit &unit);
-    std::vector<Unit *> getAdjEnemies(const Unit &unit, int aIndex);
-    // NOTE: Normally you want non-const Units so you can attack them.  It's
-    // not worth the effort to make const versions of these functions.
+    std::vector<int> getAdjEnemies(int id) const;
+    std::vector<int> getAdjEnemies(int id, int aIndex) const;
 
-    std::vector<Unit *> getAllEnemies(const Unit &unit);
+    std::vector<int> getAllEnemies(int id) const;
 
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
@@ -61,16 +59,15 @@ public:
     Commander & getCommander(int team);
     const Commander & getCommander(int team) const;
 
-    bool isRangedAttackAllowed(const Unit &attacker) const;
+    bool isRangedAttackAllowed(int id) const;
     bool isRetaliationAllowed(const Action &action) const;
 
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
 
-    // TODO: take entity ids instead of Unit refs
-    Action makeMove(Unit &unit, int aTgt) const;
-    Action makeAttack(Unit &attacker, Unit &defender, int aMoveTgt) const;
-    Action makeSkip(Unit &unit) const;
+    Action makeMove(int id, int aTgt) const;
+    Action makeAttack(int attId, int defId, int aMoveTgt) const;
+    Action makeSkip(int id) const;
     Action makeRetaliation(const Action &action) const;
 
     int computeDamage(const Action &action) const;
