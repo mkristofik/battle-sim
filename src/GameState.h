@@ -37,8 +37,7 @@ public:
     void addUnit(Unit u);
     Unit & getUnit(int id);
     const Unit & getUnit(int id) const;
-    Unit & getActiveUnit();
-    Unit & getUnitAt(int aIndex);
+    const Unit & getActiveUnit() const;
     const Unit & getUnitAt(int aIndex) const;
 
     void moveUnit(int id, int aDest);
@@ -76,7 +75,7 @@ public:
     void execute(const Action &action);
 
     // Generate the set of all possible actions for the active unit.
-    std::vector<Action> getPossibleActions();
+    std::vector<Action> getPossibleActions() const;
 
     void printAction(std::ostream &ostr, const Action &action) const;
 

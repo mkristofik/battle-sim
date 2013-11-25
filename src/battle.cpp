@@ -365,7 +365,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s || logHasFocus) return;
 
-    auto &unit = gs->getActiveUnit();
+    const auto &unit = gs->getActiveUnit();
     if (!unit.isAlive()) return;
 
     auto skipAction = gs->makeSkip(unit.entityId);

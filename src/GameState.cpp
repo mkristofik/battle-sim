@@ -88,15 +88,10 @@ const Unit & GameState::getUnit(int id) const
     return units_[id];
 }
 
-Unit & GameState::getActiveUnit()
+const Unit & GameState::getActiveUnit() const
 {
     if (curTurn_ == -1) return nullUnit;
     return units_[turnOrder_[curTurn_]];
-}
-
-Unit & GameState::getUnitAt(int aIndex)
-{
-    return const_cast<Unit &>(static_cast<const GameState *>(this)->getUnitAt(aIndex));
 }
 
 const Unit & GameState::getUnitAt(int aIndex) const
@@ -314,8 +309,8 @@ int GameState::getSimulatedDamage(const Action &action) const
 
 void GameState::execute(const Action &action)
 {
-    auto &att = getUnit(action.attacker);
-    auto &def = getUnit(action.defender);
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
     if (!att.isAlive() || action.type == ActionType::NONE) return;
 
     if (action.path.size() > 1) {
@@ -335,9 +330,9 @@ void GameState::execute(const Action &action)
     }
 }
 
-std::vector<Action> GameState::getPossibleActions()
+std::vector<Action> GameState::getPossibleActions() const
 {
-    auto &unit = getActiveUnit();
+    const auto &unit = getActiveUnit();
     if (!unit.isAlive()) return {};
 
     Pathfinder pf;
