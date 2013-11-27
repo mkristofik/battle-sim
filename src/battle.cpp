@@ -551,8 +551,6 @@ Action getBest1(std::vector<Action> actions)
     int bestScore = std::numeric_limits<int>::min();
 
     for (const auto &a : actions) {
-        // TODO: this doesn't work because the unit pointers in the actions
-        // don't point at the units in the copied game state
         GameState gsCopy{*gs};
         Action simulatedAction{a};
         simulatedAction.damage = gsCopy.getSimulatedDamage(a);
@@ -600,7 +598,10 @@ void nextTurn()
             gs->printAction(std::cout, action);
             std::cout << '\n';
         }
-        //std::cout << "    * Most damage: " << getBest1(possibles) << '\n';
+        std::cout << "    * Most damage: ";
+        auto mostDamage = getBest1(possibles);
+        gs->printAction(std::cout, mostDamage);
+        std::cout << '\n';
     }
 }
 

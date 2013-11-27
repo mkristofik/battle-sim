@@ -309,8 +309,8 @@ int GameState::getSimulatedDamage(const Action &action) const
 
 void GameState::execute(const Action &action)
 {
-    const auto &att = getUnit(action.attacker);
-    const auto &def = getUnit(action.defender);
+    auto &att = getUnit(action.attacker);
+    auto &def = getUnit(action.defender);
     if (!att.isAlive() || action.type == ActionType::NONE) return;
 
     if (action.path.size() > 1) {
