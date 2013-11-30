@@ -16,8 +16,7 @@
 class Action;
 class GameState;
 
-// Simulate all possible actions, choose the one that most improves the score
-// for the active team.
-Action aiNaive(const GameState &state);
+Action aiNaive(const GameState &gs);
+Action aiBetter(const GameState &gs);
 
 #endif

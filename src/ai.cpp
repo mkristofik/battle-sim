@@ -57,43 +57,92 @@
  *  alphabeta(origin, depth, -inf, +inf, TRUE)
  */
 
-// Evaluate the game score from the given team's perspective.  Positive values
-// indicate that side is winning.
-int evalScore(const std::array<int, 2> &score, int team)
+// TODO: this duplicates the logic of how moves are executed
+void doAction(GameState &gs, const Action &action)
 {
-    if (team == 0) {
-        return score[0] - score[1];
+    gs.execute(action);
+    if (gs.isRetaliationAllowed(action)) {
+        auto retal = gs.makeRetaliation(action);
+        gs.execute(retal);
     }
-    return score[1] - score[0];
 }
 
-Action aiNaive(const GameState &state)
+// AI functions return the difference in final score (or score when the search
+// stops) of executing the best moves for both sides.  Positive values good for
+// team 0, negative values good for team 1.
+
+int noLookAhead(const GameState &gs)
 {
-    auto possibleActions = state.getPossibleActions();
+    auto score = gs.getScore();
+    return score[0] - score[1];
+}
+
+// source: http://en.wikipedia.org/wiki/Alpha-beta_pruning
+int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
+{
+    // If we've run out of search time or the game has ended, stop.
+    auto score = gs.getScore();
+    if (depth <= 0 || score[0] == 0 || score[1] == 0) {
+        return score[0] - score[1];
+    }
+
+    for (auto &action : gs.getPossibleActions()) {
+        GameState gsCopy{gs};
+        action.damage = gsCopy.getSimulatedDamage(action);
+        doAction(gsCopy, action);
+
+        int finalScore = alphaBeta(gsCopy, depth - 1, alpha, beta);
+        if (gs.getActiveTeam() == 0) {
+            alpha = std::max(alpha, finalScore);
+            if (beta <= alpha) break;
+        }
+        else {
+            beta = std::min(beta, finalScore);
+            if (beta <= alpha) break;
+        }
+    }
+
+    return (gs.getActiveTeam() == 0) ? alpha : beta;
+}
+
+template <typename F>
+Action bestAction(const GameState &gs, F aiFunc)
+{
+    auto possibleActions = gs.getPossibleActions();
     Action *best = nullptr;
     int bestScore = std::numeric_limits<int>::min();
 
-    for (auto &a : possibleActions) {
-        GameState gsCopy{state};
-        a.damage = gsCopy.getSimulatedDamage(a);
+    for (auto &action : possibleActions) {
+        GameState gsCopy{gs};
+        action.damage = gsCopy.getSimulatedDamage(action);
+        doAction(gsCopy, action);
 
-        // TODO: this duplicates the logic of how moves are executed
-        gsCopy.execute(a);
-        if (gsCopy.isRetaliationAllowed(a)) {
-            auto retal = gsCopy.makeRetaliation(a);
-            gsCopy.execute(retal);
-        }
-
-        // Note: use the main game state's active team, not the copy!
-        int scoreDiff = evalScore(gsCopy.getScore(), state.getActiveTeam());
+        int scoreDiff = aiFunc(gsCopy);
+        if (gs.getActiveTeam() != 0) scoreDiff = -scoreDiff;
 
         if (scoreDiff > bestScore) {
             bestScore = scoreDiff;
-            best = &a;
+            best = &action;
         }
     }
 
     if (!best) return {};
     best->damage = 0;  // clear simulated damage
     return *best;
+}
+
+Action aiNaive(const GameState &gs)
+{
+    return bestAction(gs, noLookAhead);
+}
+
+Action aiBetter(const GameState &gs)
+{
+    auto abSearch = [] (const GameState &gs) {
+        return alphaBeta(gs,
+                         5,
+                         std::numeric_limits<int>::min(),
+                         std::numeric_limits<int>::max());
+    };
+    return bestAction(gs, abSearch);
 }
