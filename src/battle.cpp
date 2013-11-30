@@ -19,6 +19,7 @@
 #include "LogView.h"
 #include "Unit.h"
 #include "UnitType.h"
+#include "ai.h"
 #include "algo.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
@@ -35,7 +36,6 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
-#include <limits>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -543,39 +543,6 @@ bool checkWinner(int score1, int score2)
     return false;
 }
 
-// Simulate each action and choose the one that results in the best score.
-// TODO: this doesn't handle retaliation yet
-Action getBest1(std::vector<Action> actions)
-{
-    const Action *best = nullptr;
-    int bestScore = std::numeric_limits<int>::min();
-
-    for (const auto &a : actions) {
-        GameState gsCopy{*gs};
-        Action simulatedAction{a};
-        simulatedAction.damage = gsCopy.getSimulatedDamage(a);
-        gsCopy.execute(simulatedAction);
-
-        auto score = gsCopy.getScore();
-        int scoreDiff = 0;
-
-        if (gsCopy.getUnit(a.attacker).team == 0) {
-            scoreDiff = score[0] - score[1];
-        }
-        else {
-            scoreDiff = score[1] - score[0];
-        }
-
-        if (scoreDiff > bestScore) {
-            bestScore = scoreDiff;
-            best = &a;
-        }
-    }
-
-    if (!best) return {};
-    return *best;
-}
-
 void nextTurn()
 {
     auto score = gs->getScore();
@@ -599,7 +566,7 @@ void nextTurn()
             std::cout << '\n';
         }
         std::cout << "    * Most damage: ";
-        auto mostDamage = getBest1(possibles);
+        auto mostDamage = aiNaive(*gs);
         gs->printAction(std::cout, mostDamage);
         std::cout << '\n';
     }

@@ -63,6 +63,13 @@ int GameState::getRound() const
     return roundNum_;
 }
 
+int GameState::getActiveTeam() const
+{
+    const Unit &unit = getActiveUnit();
+    if (!unit.isAlive()) return -1;
+    return unit.team;
+}
+
 void GameState::addUnit(Unit u)
 {
     assert(unitAtPos_[u.aHex] == -1);

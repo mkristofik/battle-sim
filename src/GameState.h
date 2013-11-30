@@ -31,6 +31,7 @@ public:
 
     void nextTurn();
     int getRound() const;
+    int getActiveTeam() const;
 
     // Units are owned by their GameState instance.
     // TODO: only const refs should be public
