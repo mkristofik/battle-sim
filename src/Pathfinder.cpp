@@ -181,5 +181,12 @@ std::vector<int> Pathfinder::getReachableNodes(int start, int maxDist) const
         nodeQ.pop();
     }
 
+    // AI players use this function when computing possible moves.  All else
+    // equal, it looks better if the AI prefers to stand still and attack an
+    // adjacent unit rather than move and attack.  Thus, we ensure the unit's
+    // current hex is the first in the list of possible moves.
+    auto iter = lower_bound(std::begin(reachable), std::end(reachable), start);
+    rotate(std::begin(reachable), iter, std::end(reachable));
+
     return reachable;
 }

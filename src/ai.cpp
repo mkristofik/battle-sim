@@ -65,6 +65,7 @@ void doAction(GameState &gs, const Action &action)
         auto retal = gs.makeRetaliation(action);
         gs.execute(retal);
     }
+    gs.nextTurn();
 }
 
 // AI functions return the difference in final score (or score when the search

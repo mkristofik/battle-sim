@@ -568,6 +568,9 @@ void nextTurn()
         std::cout << "    * Most damage: ";
         auto mostDamage = aiNaive(*gs);
         gs->printAction(std::cout, mostDamage);
+        std::cout << "\n    * Best choice: ";
+        auto bestChoice = aiBetter(*gs);
+        gs->printAction(std::cout, bestChoice);
         std::cout << '\n';
     }
 }
