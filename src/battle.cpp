@@ -70,6 +70,7 @@ namespace
     int roundNum = 1;
     bool logHasFocus = false;  // battlefield has focus by default
     bool gameOver = false;  // only certain actions allowed after game ends
+    bool aiRunning = false;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -326,7 +327,7 @@ void doAction(Action &action)
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    if (insideRect(event.x, event.y, bfWindow) && !logHasFocus) {
+    if (insideRect(event.x, event.y, bfWindow) && !logHasFocus && !gameOver) {
         bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
     }
 }
@@ -363,7 +364,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
 
 void handleKeyPress(const SDL_KeyboardEvent &event)
 {
-    if (event.keysym.sym != SDLK_s || logHasFocus) return;
+    if (event.keysym.sym != SDLK_s || logHasFocus || gameOver) return;
 
     const auto &unit = gs->getActiveUnit();
     if (!unit.isAlive()) return;
@@ -543,6 +544,11 @@ bool checkWinner(int score1, int score2)
     return false;
 }
 
+bool isHumanTurn()
+{
+    return gs->getActiveTeam() == 0;
+}
+
 void nextTurn()
 {
     auto score = gs->getScore();
@@ -559,20 +565,33 @@ void nextTurn()
     std::cout << " (score: " << score[0] << '-' << score[1] << ")\n";
 
     if (!gameOver) {
-        auto possibles = gs->getPossibleActions();
-        for (auto &action : possibles) {
-            std::cout << "    - ";
-            gs->printAction(std::cout, action);
+        if (isHumanTurn()) {
+            // Offer AI suggestions to the human player.
+            std::cout << "    - Most damage: ";
+            auto mostDamage = aiNaive(*gs);
+            gs->printAction(std::cout, mostDamage);
+            std::cout << "\n    - Best choice: ";
+            auto bestChoice = aiBetter(*gs);
+            gs->printAction(std::cout, bestChoice);
             std::cout << '\n';
         }
-        std::cout << "    * Most damage: ";
-        auto mostDamage = aiNaive(*gs);
-        gs->printAction(std::cout, mostDamage);
-        std::cout << "\n    * Best choice: ";
-        auto bestChoice = aiBetter(*gs);
-        gs->printAction(std::cout, bestChoice);
-        std::cout << '\n';
+        else {
+            aiRunning = true;
+        }
     }
+}
+
+void runAiTurn()
+{
+    // TODO: this needs to not run on the GUI thread
+    auto action = aiBetter(*gs);
+    // TODO: this also duplicates how actions are executed.
+    doAction(action);
+    if (gs->isRetaliationAllowed(action)) {
+        auto retaliation = gs->makeRetaliation(action);
+        doAction(retaliation);
+    }
+    aiRunning = false;
 }
 
 extern "C" int SDL_main(int argc, char *argv[])
@@ -634,7 +653,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             // Ignore mouse events while animating.
             if (!anims.empty()) continue;
 
-            if (event.type == SDL_MOUSEMOTION && !gameOver) {
+            if (event.type == SDL_MOUSEMOTION) {
                 handleMouseMotion(event.motion);
                 needRedraw = true;
             }
@@ -647,6 +666,10 @@ extern "C" int SDL_main(int argc, char *argv[])
             else if (event.type == SDL_KEYUP) {
                 handleKeyPress(event.key);
             }
+        }
+
+        if (aiRunning) {
+            runAiTurn();
         }
 
         // Run the current animation.
