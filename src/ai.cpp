@@ -18,24 +18,6 @@
 #include <array>
 #include <limits>
 
-/* Negamax algorithm
- * need a top-level function to control depth and pick an action to execute
- * have an _impl function that recurses and just returns score
- * maybe just combine these two
- * need a way to determine if one score is better than another
- * - evaluate the score array for the active team
- * - winning is good, winning with more units left is better
- * - losing is bad, losing while doing as much damage as possible is ok
- *
- * Algorithm goes like this:
- * - check the score.  If somebody just lost, return.
- * - for each possible action:
- *     + make a copy of the game state
- *     + execute it
- *     + recurse, get the ultimate score
- *     + best action is the one that ultimately gives the best score
- *     + if more than one action yields the same score, pick at random
- */
 /*
  * source: http://en.wikipedia.org/wiki/Alpha-beta_pruning
  * function alphabeta(node, depth, a, ß, maximizingPlayer)
@@ -132,6 +114,17 @@ Action bestAction(const GameState &gs, F aiFunc)
     return *best;
 }
 
+Action minimax(const GameState &gs, int searchDepth)
+{
+    auto abSearch = [&] (const GameState &gs) {
+        return alphaBeta(gs,
+                         searchDepth,
+                         std::numeric_limits<int>::min(),
+                         std::numeric_limits<int>::max());
+    };
+    return bestAction(gs, abSearch);
+}
+
 Action aiNaive(const GameState &gs)
 {
     return bestAction(gs, noLookAhead);
@@ -139,11 +132,10 @@ Action aiNaive(const GameState &gs)
 
 Action aiBetter(const GameState &gs)
 {
-    auto abSearch = [] (const GameState &gs) {
-        return alphaBeta(gs,
-                         5,
-                         std::numeric_limits<int>::min(),
-                         std::numeric_limits<int>::max());
-    };
-    return bestAction(gs, abSearch);
+    return minimax(gs, 3);
+}
+
+Action aiBest(const GameState &gs)
+{
+    return minimax(gs, 7);
 }

@@ -18,5 +18,6 @@ class GameState;
 
 Action aiNaive(const GameState &gs);
 Action aiBetter(const GameState &gs);
+Action aiBest(const GameState &gs);
 
 #endif
