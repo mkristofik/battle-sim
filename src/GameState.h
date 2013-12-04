@@ -57,8 +57,7 @@ public:
     std::array<int, 2> getScore() const;
 
     // Leaders of each army.
-    void setCommander(Commander c, int team);
-    Commander & getCommander(int team);
+    void setCommander(const Commander &c, int team);
     const Commander & getCommander(int team) const;
 
     bool isRangedAttackAllowed(int id) const;
@@ -109,7 +108,7 @@ private:
     std::vector<int> turnOrder_;
     int curTurn_;
     std::vector<int> unitAtPos_;
-    std::vector<Commander> commanders_;
+    std::vector<std::shared_ptr<Commander>> commanders_;
     int roundNum_;
 };
 

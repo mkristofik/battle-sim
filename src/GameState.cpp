@@ -193,22 +193,16 @@ std::array<int, 2> GameState::getScore() const
     return score;
 }
 
-void GameState::setCommander(Commander c, int team)
+void GameState::setCommander(const Commander &c, int team)
 {
     assert(team == 0 || team == 1);
-    commanders_[team] = std::move(c);
-}
-
-Commander & GameState::getCommander(int team)
-{
-    assert(team == 0 || team == 1);
-    return commanders_[team];
+    commanders_[team] = std::make_shared<Commander>(c);
 }
 
 const Commander & GameState::getCommander(int team) const
 {
     assert(team == 0 || team == 1);
-    return commanders_[team];
+    return *commanders_[team];
 }
 
 bool GameState::isRangedAttackAllowed(int id) const
