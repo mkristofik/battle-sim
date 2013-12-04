@@ -10,8 +10,9 @@ include_directories("c:/MyLibs/SDL-1.2.15/include/SDL"
     "c:/MyLibs/SDL_mixer-1.2.12/include"
     "c:/MyLibs/SDL_ttf-2.0.11/include"
     "c:/MyLibs/SDL_gfx-2.0.24"
-    "c:/MyLibs/boost_1_52_0"
     "c:/MyLibs/rapidjson-0.11/include")
+
+include_directories(SYSTEM "c:/MyLibs/boost_1_52_0")
 
 # Must appear before the add_executable line.
 link_directories("c:/MyLibs/SDL-1.2.15/lib"
