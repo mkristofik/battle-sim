@@ -18,6 +18,7 @@
 #include "sdl_helper.h"
 
 #include <array>
+#include <functional>
 #include <iosfwd>
 #include <vector>
 
@@ -79,6 +80,15 @@ public:
     std::vector<Action> getPossibleActions() const;
 
     void printAction(std::ostream &ostr, const Action &action) const;
+
+    // Encapsulate running an action and any retaliations or other special
+    // abilities.  Calls 'execFunc' for the given action and every other action
+    // generated.
+    void runActionSeq(Action &action, std::function<void (Action &)> execFunc);
+
+    // AI version of the above function.  Uses simulated damage and the default
+    // action execute function.
+    void simActionSeq(Action &action);
 
 private:
     void nextRound();

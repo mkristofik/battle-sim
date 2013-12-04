@@ -409,6 +409,26 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
     }
 }
 
+void GameState::runActionSeq(Action &action,
+                             std::function<void (Action &)> execFunc)
+{
+    execFunc(action);
+    if (isRetaliationAllowed(action)) {
+        auto retal = makeRetaliation(action);
+        execFunc(action);
+    }
+}
+
+void GameState::simActionSeq(Action &action)
+{
+    auto simulate = [this] (Action &action) {
+        action.damage = getSimulatedDamage(action);
+        execute(action);
+    };
+
+    runActionSeq(action, simulate);
+}
+
 void GameState::nextRound()
 {
     turnOrder_.clear();
