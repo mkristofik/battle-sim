@@ -40,11 +40,13 @@
  */
 
 // TODO: this duplicates the logic of how moves are executed
-void doAction(GameState &gs, const Action &action)
+void doAction(GameState &gs, Action &action)
 {
+    action.damage = gs.getSimulatedDamage(action);
     gs.execute(action);
     if (gs.isRetaliationAllowed(action)) {
         auto retal = gs.makeRetaliation(action);
+        retal.damage = gs.getSimulatedDamage(retal);
         gs.execute(retal);
     }
     gs.nextTurn();
@@ -71,7 +73,6 @@ int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
 
     for (auto &action : gs.getPossibleActions()) {
         GameState gsCopy{gs};
-        action.damage = gsCopy.getSimulatedDamage(action);
         doAction(gsCopy, action);
 
         int finalScore = alphaBeta(gsCopy, depth - 1, alpha, beta);
@@ -97,7 +98,6 @@ Action bestAction(const GameState &gs, F aiFunc)
 
     for (auto &action : possibleActions) {
         GameState gsCopy{gs};
-        action.damage = gsCopy.getSimulatedDamage(action);
         doAction(gsCopy, action);
 
         int scoreDiff = aiFunc(gsCopy);
