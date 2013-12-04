@@ -39,19 +39,6 @@
  *  alphabeta(origin, depth, -inf, +inf, TRUE)
  */
 
-// TODO: this duplicates the logic of how moves are executed
-void doAction(GameState &gs, Action &action)
-{
-    action.damage = gs.getSimulatedDamage(action);
-    gs.execute(action);
-    if (gs.isRetaliationAllowed(action)) {
-        auto retal = gs.makeRetaliation(action);
-        retal.damage = gs.getSimulatedDamage(retal);
-        gs.execute(retal);
-    }
-    gs.nextTurn();
-}
-
 // AI functions return the difference in final score (or score when the search
 // stops) of executing the best moves for both sides.  Positive values good for
 // team 0, negative values good for team 1.
@@ -73,7 +60,8 @@ int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
 
     for (auto &action : gs.getPossibleActions()) {
         GameState gsCopy{gs};
-        doAction(gsCopy, action);
+        gsCopy.simActionSeq(action);
+        gsCopy.nextTurn();
 
         int finalScore = alphaBeta(gsCopy, depth - 1, alpha, beta);
         if (gs.getActiveTeam() == 0) {
@@ -98,7 +86,8 @@ Action bestAction(const GameState &gs, F aiFunc)
 
     for (auto &action : possibleActions) {
         GameState gsCopy{gs};
-        doAction(gsCopy, action);
+        gsCopy.simActionSeq(action);
+        gsCopy.nextTurn();
 
         int scoreDiff = aiFunc(gsCopy);
         if (gs.getActiveTeam() != 0) scoreDiff = -scoreDiff;

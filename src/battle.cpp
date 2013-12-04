@@ -314,7 +314,7 @@ void logAction(const Action &action)
     logv->add(ostr.str());
 }
 
-void doAction(Action &action)
+void execAnimate(Action &action)
 {
     action.damage = gs->computeDamage(action);
     logAction(action);
@@ -352,12 +352,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type == ActionType::NONE) return;
-
-            doAction(action);
-            if (gs->isRetaliationAllowed(action)) {
-                auto retaliation = gs->makeRetaliation(action);
-                doAction(retaliation);
-            }
+            gs->runActionSeq(action, execAnimate);
         }
     }
 }
@@ -370,7 +365,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
     if (!unit.isAlive()) return;
 
     auto skipAction = gs->makeSkip(unit.entityId);
-    doAction(skipAction);
+    gs->runActionSeq(skipAction, execAnimate);
 }
 
 bool parseUnits(const rapidjson::Document &doc)
@@ -570,8 +565,11 @@ void nextTurn()
             std::cout << "    - Most damage: ";
             auto mostDamage = aiNaive(*gs);
             gs->printAction(std::cout, mostDamage);
+            std::cout << "\n    - Improved choice: ";
+            auto betterChoice = aiBetter(*gs);
+            gs->printAction(std::cout, betterChoice);
             std::cout << "\n    - Best choice: ";
-            auto bestChoice = aiBetter(*gs);
+            auto bestChoice = aiBest(*gs);
             gs->printAction(std::cout, bestChoice);
             std::cout << '\n';
         }
@@ -584,13 +582,14 @@ void nextTurn()
 void runAiTurn()
 {
     // TODO: this needs to not run on the GUI thread
-    auto action = aiBetter(*gs);
-    // TODO: this also duplicates how actions are executed.
-    doAction(action);
-    if (gs->isRetaliationAllowed(action)) {
-        auto retaliation = gs->makeRetaliation(action);
-        doAction(retaliation);
+    Action action;
+    if (gs->getActiveTeam() == 0) {
+        action = aiNaive(*gs);
     }
+    else {
+        action = aiBest(*gs);
+    }
+    gs->runActionSeq(action, execAnimate);
     aiRunning = false;
 }
 

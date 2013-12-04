@@ -415,7 +415,7 @@ void GameState::runActionSeq(Action &action,
     execFunc(action);
     if (isRetaliationAllowed(action)) {
         auto retal = makeRetaliation(action);
-        execFunc(action);
+        execFunc(retal);
     }
 }
 
