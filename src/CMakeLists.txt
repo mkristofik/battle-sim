@@ -28,4 +28,6 @@ add_executable(${EXENAME} ${SRC})
 
 # Must appear after add_executable line.
 target_link_libraries(${EXENAME} mingw32 SDLmain SDL SDL_image SDL_ttf
-    SDL_mixer boost_filesystem-mgw47-s-1_52 boost_system-mgw47-s-1_52)
+    SDL_mixer boost_thread-mgw47-mt-s-1_52 boost_filesystem-mgw47-s-1_52
+    boost_system-mgw47-s-1_52 boost_chrono-mgw47-mt-s-1_52
+    boost_date_time-mgw47-mt-s-1_52)

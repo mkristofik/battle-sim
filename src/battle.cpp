@@ -28,6 +28,10 @@
 #define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
+#define BOOST_THREAD_PROVIDES_FUTURE
+#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
+#define BOOST_THREAD_USE_LIB
+#include "boost/thread/future.hpp"
 
 #include "rapidjson/document.h"
 #include "rapidjson/filestream.h"
@@ -70,7 +74,10 @@ namespace
     int roundNum = 1;
     bool logHasFocus = false;  // battlefield has focus by default
     bool gameOver = false;  // only certain actions allowed after game ends
-    bool aiRunning = false;
+
+    enum class AiState {IDLE, RUNNING, COMPLETE};
+    AiState aiState = AiState::IDLE;
+    boost::future<Action> aiAction;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -325,9 +332,18 @@ void execAnimate(Action &action)
     actionTaken = true;
 }
 
+bool isHumanTurn()
+{
+    return gs->getActiveTeam() == 0;
+}
+
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    if (insideRect(event.x, event.y, bfWindow) && !logHasFocus && !gameOver) {
+    if (insideRect(event.x, event.y, bfWindow) &&
+        !logHasFocus &&
+        !gameOver &&
+        isHumanTurn())
+    {
         bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
     }
 }
@@ -349,7 +365,10 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             logv->handleMouseUp(event);
             logHasFocus = false;
         }
-        else if (insideRect(event.x, event.y, bfWindow) && !gameOver) {
+        else if (insideRect(event.x, event.y, bfWindow) &&
+                 !gameOver &&
+                 isHumanTurn())
+        {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type == ActionType::NONE) return;
             gs->runActionSeq(action, execAnimate);
@@ -359,7 +378,13 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
 
 void handleKeyPress(const SDL_KeyboardEvent &event)
 {
-    if (event.keysym.sym != SDLK_s || logHasFocus || gameOver) return;
+    if (event.keysym.sym != SDLK_s ||
+        logHasFocus ||
+        gameOver ||
+        !isHumanTurn())
+    {
+        return;
+    }
 
     const auto &unit = gs->getActiveUnit();
     if (!unit.isAlive()) return;
@@ -539,13 +564,9 @@ bool checkWinner(int score1, int score2)
     return false;
 }
 
-bool isHumanTurn()
-{
-    return gs->getActiveTeam() == 0;
-}
-
 void nextTurn()
 {
+    aiState = AiState::IDLE;
     auto score = gs->getScore();
     gameOver = checkWinner(score[0], score[1]);
 
@@ -559,38 +580,48 @@ void nextTurn()
 
     std::cout << " (score: " << score[0] << '-' << score[1] << ")\n";
 
-    if (!gameOver) {
-        if (isHumanTurn()) {
-            // Offer AI suggestions to the human player.
-            std::cout << "    - Most damage: ";
-            auto mostDamage = aiNaive(*gs);
-            gs->printAction(std::cout, mostDamage);
-            std::cout << "\n    - Improved choice: ";
-            auto betterChoice = aiBetter(*gs);
-            gs->printAction(std::cout, betterChoice);
-            std::cout << "\n    - Best choice: ";
-            auto bestChoice = aiBest(*gs);
-            gs->printAction(std::cout, bestChoice);
-            std::cout << '\n';
-        }
-        else {
-            aiRunning = true;
-        }
+    if (!gameOver && isHumanTurn()) {
+        // Offer AI suggestions to the human player.
+        std::cout << "    - Most damage: ";
+        auto mostDamage = aiNaive(*gs);
+        gs->printAction(std::cout, mostDamage);
+        std::cout << "\n    - Improved choice: ";
+        auto betterChoice = aiBetter(*gs);
+        gs->printAction(std::cout, betterChoice);
+        std::cout << "\n    - Best choice: ";
+        auto bestChoice = aiBest(*gs);
+        gs->printAction(std::cout, bestChoice);
+        std::cout << '\n';
     }
+}
+
+Action callNaiveAI()
+{
+    return aiNaive(*gs);
+}
+
+Action callBestAI()
+{
+    return aiBest(*gs);
 }
 
 void runAiTurn()
 {
-    // TODO: this needs to not run on the GUI thread
-    Action action;
-    if (gs->getActiveTeam() == 0) {
-        action = aiNaive(*gs);
+    if (aiState == AiState::IDLE) {
+        if (gs->getActiveTeam() == 0) {
+            aiAction = boost::async(callNaiveAI);
+        }
+        else {
+            aiAction = boost::async(callBestAI);
+        }
+        aiState = AiState::RUNNING;
     }
-    else {
-        action = aiBest(*gs);
+
+    if (aiState == AiState::RUNNING && aiAction.is_ready()) {
+        Action a = aiAction.get();
+        gs->runActionSeq(a, execAnimate);
+        aiState = AiState::COMPLETE;
     }
-    gs->runActionSeq(action, execAnimate);
-    aiRunning = false;
 }
 
 extern "C" int SDL_main(int argc, char *argv[])
@@ -667,7 +698,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             }
         }
 
-        if (aiRunning) {
+        if (!gameOver && !isHumanTurn()) {
             runAiTurn();
         }
 
