@@ -16,8 +16,6 @@
 
 #include "SDL_rotozoom.h"
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/tokenizer.hpp"

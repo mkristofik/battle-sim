@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.4)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Werror -D_GNU_SOURCE=1 -Dmain=SDL_main -O2 -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Werror -D_GNU_SOURCE=1 -Dmain=SDL_main -O2 -g -DBOOST_FILESYSTEM_NO_DEPRECATED -DBOOST_SYSTEM_NO_DEPRECATED -DBOOST_THREAD_PROVIDES_FUTURE -DBOOST_THREAD_USE_LIB")
 
 set(EXENAME battle)
 
@@ -29,5 +29,4 @@ add_executable(${EXENAME} ${SRC})
 # Must appear after add_executable line.
 target_link_libraries(${EXENAME} mingw32 SDLmain SDL SDL_image SDL_ttf
     SDL_mixer boost_thread-mgw47-mt-s-1_52 boost_filesystem-mgw47-s-1_52
-    boost_system-mgw47-s-1_52 boost_chrono-mgw47-mt-s-1_52
-    boost_date_time-mgw47-mt-s-1_52)
+    boost_system-mgw47-s-1_52)

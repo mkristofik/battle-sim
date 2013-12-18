@@ -24,13 +24,8 @@
 #include "hex_utils.h"
 #include "sdl_helper.h"
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#define BOOST_SYSTEM_NO_DEPRECATED
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
-#define BOOST_THREAD_PROVIDES_FUTURE
-#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
-#define BOOST_THREAD_USE_LIB
 #include "boost/thread/future.hpp"
 
 #include "rapidjson/document.h"
