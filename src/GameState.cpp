@@ -36,6 +36,8 @@ GameState::GameState(const HexGrid &bfGrid)
     commanders_(2),
     roundNum_{0}
 {
+    commanders_[0] = std::make_shared<Commander>();
+    commanders_[1] = std::make_shared<Commander>();
 }
 
 void GameState::nextTurn()
@@ -90,7 +92,10 @@ Unit & GameState::getUnit(int id)
 const Unit & GameState::getUnit(int id) const
 {
     if (id < 0 || id >= static_cast<int>(units_.size())) return nullUnit;
-    if (!units_[id].isValid()) return nullUnit;
+    if (!units_[id].isValid()) {
+        std::cerr << "WARNING: returning null unit, entity id " << id << " is not valid." << std::endl;
+        return nullUnit;
+    }
 
     return units_[id];
 }

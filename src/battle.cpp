@@ -288,7 +288,7 @@ void logAction(const Action &action)
     }
 
     const auto &attacker = gs->getUnit(action.attacker);
-    assert(attacker.isValid());
+    //assert(attacker.isValid());
     std::ostringstream ostr("- ", std::ios::ate);
     ostr << attacker.getName();
     if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {
@@ -330,6 +330,7 @@ void execAnimate(Action &action)
 bool isHumanTurn()
 {
     return gs->getActiveTeam() == 0;
+    //return false;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -574,20 +575,6 @@ void nextTurn()
     }
 
     std::cout << " (score: " << score[0] << '-' << score[1] << ")\n";
-
-    if (!gameOver && isHumanTurn()) {
-        // Offer AI suggestions to the human player.
-        std::cout << "    - Most damage: ";
-        auto mostDamage = aiNaive(*gs);
-        gs->printAction(std::cout, mostDamage);
-        std::cout << "\n    - Improved choice: ";
-        auto betterChoice = aiBetter(*gs);
-        gs->printAction(std::cout, betterChoice);
-        std::cout << "\n    - Best choice: ";
-        auto bestChoice = aiBest(*gs);
-        gs->printAction(std::cout, bestChoice);
-        std::cout << '\n';
-    }
 }
 
 Action callNaiveAI()

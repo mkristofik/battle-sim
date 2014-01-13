@@ -138,6 +138,11 @@ unsigned Unit::getMaxPathSize() const
     return static_cast<unsigned>(type->moves) + 1;
 }
 
+bool Unit::hasTrait(Trait t) const
+{
+    return contains(type->traits, t);
+}
+
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
     return lhs.type->initiative > rhs.type->initiative;

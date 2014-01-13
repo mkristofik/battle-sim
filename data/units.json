@@ -52,6 +52,7 @@
         "hp": 15,
         "damage": [3, 4],
         "growth": 5,
+        "traits": ["first_strike"],
         "img": "pikeman.png",
         "anim-attack": "pikeman-attack-melee.png",
         "attack-frames": [100, 350, 425],

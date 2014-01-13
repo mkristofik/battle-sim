@@ -62,6 +62,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     minDmgRanged{0},
     maxDmgRanged{0},
     growth{1},
+    traits{},
     baseImg{},
     reverseImg{},
     animAttack{},
@@ -130,5 +131,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     if (json.HasMember("anim-die") && json.HasMember("die-frames")) {
         loadAnimation(json, "anim-die", animDie, reverseAnimDie, "die-frames",
                       dieFrames);
+    }
+    if (json.HasMember("traits")) {
+        traits = parseTraits(json["traits"]);
     }
 }

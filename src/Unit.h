@@ -14,6 +14,7 @@
 #define UNIT_H
 
 #include "Action.h"
+#include "Traits.h"
 #include <string>
 
 class UnitType;
@@ -55,6 +56,8 @@ struct Unit
     // Maximum distance this unit can move in one turn.  Note that Pathfinder
     // includes the hex the unit is standing in when building paths.
     unsigned getMaxPathSize() const;
+
+    bool hasTrait(Trait t) const;
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);
