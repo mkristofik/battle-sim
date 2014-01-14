@@ -54,7 +54,7 @@ in the top-level directory)
 
 ## License
 
-Copyright 2013 by Michael Kristofik  
+Copyright 2013-2014 by Michael Kristofik  
 The license for code, art, and sound assets is described in the file
 COPYING.txt.
 
