@@ -288,7 +288,7 @@ void logAction(const Action &action)
     }
 
     const auto &attacker = gs->getUnit(action.attacker);
-    //assert(attacker.isValid());
+    assert(attacker.isValid());
     std::ostringstream ostr("- ", std::ios::ate);
     ostr << attacker.getName();
     if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {

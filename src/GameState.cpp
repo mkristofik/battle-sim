@@ -15,6 +15,7 @@
 #include "Action.h"
 #include "HexGrid.h"
 #include "Pathfinder.h"
+#include "Traits.h"
 #include "UnitType.h"
 #include "algo.h"
 
@@ -228,6 +229,16 @@ bool GameState::isRetaliationAllowed(const Action &action) const
            !def.retaliated;
 }
 
+bool GameState::isDoubleStrikeAllowed(const Action &action) const
+{
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+    return att.hasTrait(Trait::DOUBLE_STRIKE) &&
+           action.type == ActionType::ATTACK &&
+           att.isAlive() &&
+           def.isAlive();
+}
+
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
     Pathfinder pf;
@@ -411,10 +422,29 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
 void GameState::runActionSeq(Action &action,
                              std::function<void (Action &)> execFunc)
 {
+    // TODO: need a new animation sequence for this.  The attacker has to move
+    // to its final location before first strike can happen.  Maybe break up
+    // moving and attacking?
+    /*
+    if (isRetaliationAllowed(action)) {
+        const auto &defender = getUnit(action.defender);
+        if (defender.hasTrait(Trait::FIRST_STRIKE)) {
+            auto firstStrike = makeRetaliation(action);
+            execFunc(firstStrike);
+        }
+    }
+    */
+
     execFunc(action);
+
     if (isRetaliationAllowed(action)) {
         auto retal = makeRetaliation(action);
         execFunc(retal);
+    }
+    if (isDoubleStrikeAllowed(action)) {
+        const auto &att = getUnit(action.attacker);
+        auto secondStrike = makeAttack(att.entityId, action.defender, att.aHex);
+        execFunc(secondStrike);
     }
 }
 

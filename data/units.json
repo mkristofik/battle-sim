@@ -142,6 +142,7 @@
         "hp": 20,
         "damage": [3, 5],
         "growth": 5,
+        "traits": ["double_strike"],
         "img": "wolf.png",
         "anim-attack": "wolf-attack-melee.png",
         "attack-frames": [100, 300, 550],

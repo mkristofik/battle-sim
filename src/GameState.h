@@ -62,6 +62,7 @@ public:
 
     bool isRangedAttackAllowed(int id) const;
     bool isRetaliationAllowed(const Action &action) const;
+    bool isDoubleStrikeAllowed(const Action &action) const;
 
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
