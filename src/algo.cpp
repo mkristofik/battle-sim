@@ -1,6 +1,6 @@
 /*
-    Copyright (C) 2012-2013 by Michael Kristofik <kristo605@gmail.com>
-    Part of the libsdl-demos project.
+    Copyright (C) 2012-2014 by Michael Kristofik <kristo605@gmail.com>
+    Part of the battle-sim project.
  
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
