@@ -202,9 +202,7 @@ void animateAction(const Action &action)
     }
 
     auto &unit = gs->getUnit(action.attacker);
-    if (!unit.isAlive()) {
-        return;
-    }
+    assert(unit.isValid());
 
     // All other actions might involve moving.
     if (action.path.size() > 1) {
