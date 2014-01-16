@@ -69,7 +69,7 @@ int GameState::getRound() const
 int GameState::getActiveTeam() const
 {
     const Unit &unit = getActiveUnit();
-    if (!unit.isAlive()) return -1;
+    assert(unit.isValid());
     return unit.team;
 }
 
