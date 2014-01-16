@@ -229,6 +229,15 @@ bool GameState::isRetaliationAllowed(const Action &action) const
            !def.retaliated;
 }
 
+bool GameState::isFirstStrikeAllowed(const Action &action) const
+{
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+    return isRetaliationAllowed(action) &&
+           !att.hasTrait(Trait::FIRST_STRIKE) &&
+           def.hasTrait(Trait::FIRST_STRIKE);
+}
+
 bool GameState::isDoubleStrikeAllowed(const Action &action) const
 {
     const auto &att = getUnit(action.attacker);
@@ -422,18 +431,23 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
 void GameState::runActionSeq(Action &action,
                              std::function<void (Action &)> execFunc)
 {
-    // TODO: need a new animation sequence for this.  The attacker has to move
-    // to its final location before first strike can happen.  Maybe break up
-    // moving and attacking?
-    /*
-    if (isRetaliationAllowed(action)) {
-        const auto &defender = getUnit(action.defender);
-        if (defender.hasTrait(Trait::FIRST_STRIKE)) {
-            auto firstStrike = makeRetaliation(action);
-            execFunc(firstStrike);
+    // The First Strike ability lets the defender get its retaliation in prior
+    // to the actual attack.  We must therefore split the attack into two
+    // separate actions, a move and (if the attacker is still alive) an attack.
+    if (isFirstStrikeAllowed(action)) {
+        auto moveAction = makeMove(action.attacker, action.path.back());
+        execFunc(moveAction);
+        auto firstStrike = makeRetaliation(action);
+        execFunc(firstStrike);
+
+        const auto &att = getUnit(action.attacker);
+        if (att.isAlive()) {
+            action = makeAttack(action.attacker, action.defender, att.aHex);
+        }
+        else {
+            return;
         }
     }
-    */
 
     execFunc(action);
 
