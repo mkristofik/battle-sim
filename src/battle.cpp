@@ -241,7 +241,8 @@ void animateAction(const Action &action)
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
         if (defender.isAlive()) {
-            rangedSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
+            rangedSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime,
+                                                   defender.num));
         }
         else {
             rangedSeq->add(make_unique<AnimDie>(defender, hitTime));
@@ -266,7 +267,8 @@ void animateAction(const Action &action)
 
         attackSeq->add(std::move(anim1));
         if (defender.isAlive()) {
-            attackSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
+            attackSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime,
+                                                   defender.num));
         }
         else {
             attackSeq->add(make_unique<AnimDie>(defender, hitTime));

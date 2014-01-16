@@ -90,7 +90,11 @@ private:
 class AnimDefend : public Anim
 {
 public:
-    AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt);
+    // Note: we provide the new defender unit size so that double-strike looks
+    // correct.  By the time the animation runs, both strikes have already
+    // executed in the game state.  Thus, we wouldn't have the correct unit
+    // size following the first strike.
+    AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize);
 
 private:
     void run(Uint32 elapsed) override;
@@ -100,6 +104,7 @@ private:
     Point hAttacker_;
     bool faceLeft_;
     Uint32 hitTime_;
+    int newSize_;
 };
 
 

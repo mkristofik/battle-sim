@@ -24,6 +24,7 @@
         "hp": 50,
         "damage": [10, 20],
         "growth": 2,
+        "traits": ["double_strike"],
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],

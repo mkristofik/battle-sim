@@ -235,12 +235,13 @@ void AnimAttack::setFrame(Uint32 elapsed)
 }
 
 
-AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt)
+AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize)
     : Anim(),
     unit_(unit),
     hAttacker_{std::move(hSrc)},
     faceLeft_{unit.face == Facing::LEFT},
-    hitTime_{hitsAt}
+    hitTime_{hitsAt},
+    newSize_{newSize}
 {
     runTime_ = hitTime_ + 250;
 }
@@ -273,7 +274,7 @@ void AnimDefend::stop()
     // Update the label with the new size.
     auto &label = bf_->getEntity(unit_.labelId);
     assert(label.font);
-    label.img = sdlPreRender(label.font, unit_.num, getLabelColor(unit_.team));
+    label.img = sdlPreRender(label.font, newSize_, getLabelColor(unit_.team));
     label.alignBottomCenter();
 }
 
