@@ -359,7 +359,7 @@ void GameState::execute(const Action &action)
 std::vector<Action> GameState::getPossibleActions() const
 {
     const auto &unit = getActiveUnit();
-    if (!unit.isAlive()) return {};
+    assert(unit.isAlive());
 
     Pathfinder pf;
     pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
@@ -435,8 +435,10 @@ void GameState::runActionSeq(Action &action,
     // to the actual attack.  We must therefore split the attack into two
     // separate actions, a move and (if the attacker is still alive) an attack.
     if (isFirstStrikeAllowed(action)) {
-        auto moveAction = makeMove(action.attacker, action.path.back());
-        execFunc(moveAction);
+        if (action.path.size() > 1) {
+            auto moveAction = makeMove(action.attacker, action.path.back());
+            execFunc(moveAction);
+        }
         auto firstStrike = makeRetaliation(action);
         execFunc(firstStrike);
 

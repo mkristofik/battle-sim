@@ -278,9 +278,9 @@ void animateAction(const Action &action)
 void logAction(const Action &action)
 {
     if (action.type != ActionType::RETALIATE) {
-        std::cout << "    *** Action chosen: ";
+        std::cout << "    ";
         gs->printAction(std::cout, action);
-        std::cout << '\n';
+        std::cout << std::endl;
     }
 
     if (action.type == ActionType::MOVE) {
@@ -574,7 +574,7 @@ void nextTurn()
         std::cout << "Game over";
     }
 
-    std::cout << " (score: " << score[0] << '-' << score[1] << ")\n";
+    std::cout << " (score: " << score[0] << '-' << score[1] << ')' << std::endl;
 }
 
 Action callNaiveAI()
@@ -600,6 +600,7 @@ void runAiTurn()
     }
 
     if (aiState == AiState::RUNNING && aiAction.is_ready()) {
+        assert(aiAction.has_value());
         Action a = aiAction.get();
         gs->runActionSeq(a, execAnimate);
         aiState = AiState::COMPLETE;
@@ -713,6 +714,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             logv->draw();
             SDL_UpdateRect(screen, 0, 0, 0, 0);
         }
+
         SDL_Delay(1);
     }
 
