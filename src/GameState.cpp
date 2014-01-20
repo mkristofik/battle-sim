@@ -436,7 +436,8 @@ void GameState::runActionSeq(Action &action,
     // separate actions, a move and (if the attacker is still alive) an attack.
     if (isFirstStrikeAllowed(action)) {
         if (action.path.size() > 1) {
-            auto moveAction = makeMove(action.attacker, action.path.back());
+            auto moveAction = action;
+            moveAction.type = ActionType::MOVE;
             execFunc(moveAction);
         }
         auto firstStrike = makeRetaliation(action);
