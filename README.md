@@ -2,23 +2,23 @@
 
 This game was inspired by the turn-based combat of the Heroes of Might and Magic and Disciples fantasy strategy games.  It is a sandbox to experiment with various battle mechanics to learn what's fun, and what isn't.  I've deliberately limited the options at each turn to help a computer player understand them.  If the existing Heroes combat is like chess, this project is like checkers.
 
-## Features
-
-- Mouseover highlights indicating move and attack targets.
-- Attack and defend animations.
-- Labels indicating unit size.
-- Random damage rolls, separate values for melee and ranged attacks.
-- Units have hit points, animate and fade out when killed.
-- Initiative stat determines the order in which units get to act.
-- Scrolling battle log to record every attack action.
-- Report a winner when one side is defeated.
-- Commanders have influence over the strength of their units.
-- Units can retaliate against melee attacks once per round.
-- Pressing the 'S' key will skip a unit's turn.
+## Screenshot
 
 ![screenshot](https://raw.github.com/mkristofik/battle-sim/master/screenshot.jpg)
 
-There's a [demo video](http://youtu.be/2TbIJfgpM-o) too.
+## Gameplay Videos
+
+[Two-player hotseat battle](https://www.youtube.com/watch?v=2TbIJfgpM-o)  
+[Naive AI vs. Smarter AI](https://www.youtube.com/watch?v=H4_xgKOuAAY)  
+[New unit abilities](https://www.youtube.com/watch?v=UO2qukIEbEM)
+
+## Rules
+
+- Random damage rolls, separate values for melee and ranged attacks.
+- Initiative stat determines the order in which units get to act.
+- Commanders have influence over the strength of their units.
+- Units can retaliate against melee attacks once per round.
+- Pressing the 'S' key will skip a unit's turn.
 
 ## Core Principles
 
