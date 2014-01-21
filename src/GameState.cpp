@@ -243,7 +243,8 @@ bool GameState::isDoubleStrikeAllowed(const Action &action) const
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
     return att.hasTrait(Trait::DOUBLE_STRIKE) &&
-           action.type == ActionType::ATTACK &&
+           (action.type == ActionType::ATTACK ||
+            action.type == ActionType::RANGED) &&
            att.isAlive() &&
            def.isAlive();
 }
