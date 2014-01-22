@@ -316,13 +316,12 @@ void logAction(const Action &action)
     logv->add(ostr.str());
 }
 
-void execAnimate(const Action &action)
+void execAnimate(Action action)
 {
-    auto actionToUse = action;
-    actionToUse.damage = gs->computeDamage(action);
-    logAction(actionToUse);
-    gs->execute(actionToUse);
-    animateAction(actionToUse);
+    action.damage = gs->computeDamage(action);
+    logAction(action);
+    gs->execute(action);
+    animateAction(action);
     bf->clearHighlights();
     bf->deselectHex();
 }
