@@ -85,11 +85,12 @@ public:
     // Encapsulate running an action and any retaliations or other special
     // abilities.  Calls 'execFunc' for the given action and every other action
     // generated.
-    void runActionSeq(Action &action, std::function<void (Action &)> execFunc);
+    void runActionSeq(const Action &action,
+                      std::function<void (Action &)> execFunc);
 
     // AI version of the above function.  Uses simulated damage and the default
     // action execute function.
-    void simActionSeq(Action &action);
+    void simActionSeq(const Action &action);
 
 private:
     void nextRound();

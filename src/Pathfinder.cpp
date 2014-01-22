@@ -11,7 +11,9 @@
     See the COPYING.txt file for more details.
 */
 #include "Pathfinder.h"
+#include "algo.h"
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <queue>
 #include <unordered_map>
@@ -151,6 +153,7 @@ std::vector<int> Pathfinder::getPathFrom(int start) const
         n = nodes[n->prev];
     }
     reverse(std::begin(path), std::end(path));
+    assert(contains(path, start));
     return path;
 }
 

@@ -429,9 +429,11 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
     }
 }
 
-void GameState::runActionSeq(Action &action,
+void GameState::runActionSeq(const Action &action,
                              std::function<void (Action &)> execFunc)
 {
+    auto actionToUse = action;
+
     // The First Strike ability lets the defender get its retaliation in prior
     // to the actual attack.  We must therefore split the attack into two
     // separate actions, a move and (if the attacker is still alive) an attack.
@@ -446,31 +448,33 @@ void GameState::runActionSeq(Action &action,
 
         const auto &att = getUnit(action.attacker);
         if (att.isAlive()) {
-            action = makeAttack(action.attacker, action.defender, att.aHex);
+            actionToUse = makeAttack(action.attacker, action.defender, att.aHex);
         }
         else {
             return;
         }
     }
 
-    execFunc(action);
+    execFunc(actionToUse);
 
-    if (isRetaliationAllowed(action)) {
-        auto retal = makeRetaliation(action);
+    if (isRetaliationAllowed(actionToUse)) {
+        auto retal = makeRetaliation(actionToUse);
         execFunc(retal);
     }
-    if (isDoubleStrikeAllowed(action)) {
-        const auto &att = getUnit(action.attacker);
-        auto secondStrike = makeAttack(att.entityId, action.defender, att.aHex);
+    if (isDoubleStrikeAllowed(actionToUse)) {
+        const auto &att = getUnit(actionToUse.attacker);
+        auto secondStrike = makeAttack(att.entityId, actionToUse.defender,
+                                       att.aHex);
         execFunc(secondStrike);
     }
 }
 
-void GameState::simActionSeq(Action &action)
+void GameState::simActionSeq(const Action &action)
 {
-    auto simulate = [this] (Action &action) {
-        action.damage = getSimulatedDamage(action);
-        execute(action);
+    auto simulate = [this] (const Action &action) {
+        auto actionToUse = action;
+        actionToUse.damage = getSimulatedDamage(action);
+        execute(actionToUse);
     };
 
     runActionSeq(action, simulate);

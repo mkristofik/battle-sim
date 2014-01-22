@@ -316,21 +316,21 @@ void logAction(const Action &action)
     logv->add(ostr.str());
 }
 
-void execAnimate(Action &action)
+void execAnimate(const Action &action)
 {
-    action.damage = gs->computeDamage(action);
-    logAction(action);
-    gs->execute(action);
-    animateAction(action);
+    auto actionToUse = action;
+    actionToUse.damage = gs->computeDamage(action);
+    logAction(actionToUse);
+    gs->execute(actionToUse);
+    animateAction(actionToUse);
     bf->clearHighlights();
     bf->deselectHex();
-    actionTaken = true;
 }
 
 bool isHumanTurn()
 {
     return gs->getActiveTeam() == 0;
-    //return false;
+    //return true;
 }
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
@@ -368,6 +368,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             auto action = getPossibleAction(event.x, event.y);
             if (action.type == ActionType::NONE) return;
             gs->runActionSeq(action, execAnimate);
+            actionTaken = true;
         }
     }
 }
@@ -387,6 +388,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 
     auto skipAction = gs->makeSkip(unit.entityId);
     gs->runActionSeq(skipAction, execAnimate);
+    actionTaken = true;
 }
 
 bool parseUnits(const rapidjson::Document &doc)
@@ -603,6 +605,7 @@ void runAiTurn()
         assert(aiAction.has_value());
         Action a = aiAction.get();
         gs->runActionSeq(a, execAnimate);
+        actionTaken = true;
         aiState = AiState::COMPLETE;
     }
 }
