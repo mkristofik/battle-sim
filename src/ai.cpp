@@ -60,7 +60,7 @@ int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
 
     for (auto &action : gs.getPossibleActions()) {
         GameState gsCopy{gs};
-        gsCopy.simActionSeq(action);
+        gsCopy.runActionSeq(action);
         gsCopy.nextTurn();
 
         int finalScore = alphaBeta(gsCopy, depth - 1, alpha, beta);
@@ -86,7 +86,7 @@ Action bestAction(const GameState &gs, F aiFunc)
 
     for (auto &action : possibleActions) {
         GameState gsCopy{gs};
-        gsCopy.simActionSeq(action);
+        gsCopy.runActionSeq(action);
         gsCopy.nextTurn();
 
         int scoreDiff = aiFunc(gsCopy);
@@ -114,17 +114,20 @@ Action minimax(const GameState &gs, int searchDepth)
     return bestAction(gs, abSearch);
 }
 
-Action aiNaive(const GameState &gs)
+Action aiNaive(GameState gs)
 {
+    gs.setSimMode();
     return bestAction(gs, noLookAhead);
 }
 
-Action aiBetter(const GameState &gs)
+Action aiBetter(GameState gs)
 {
+    gs.setSimMode();
     return minimax(gs, 3);
 }
 
-Action aiBest(const GameState &gs)
+Action aiBest(GameState gs)
 {
+    gs.setSimMode();
     return minimax(gs, 7);
 }

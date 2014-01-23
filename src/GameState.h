@@ -82,14 +82,18 @@ public:
 
     void printAction(std::ostream &ostr, const Action &action) const;
 
-    // Encapsulate running an action and any retaliations or other special
-    // abilities.  Calls 'execFunc' for the given action and every other action
-    // generated.
-    void runActionSeq(Action action, std::function<void (Action)> execFunc);
+    // Set the action execution function.  This callback allows us to run
+    // animations separate from the game state context.
+    void setExecFunc(std::function<void (Action)> f);
 
-    // AI version of the above function.  Uses simulated damage and the default
-    // action execute function.
-    void simActionSeq(Action action);
+    // Use simulated damage for all actions.  Execute actions internally only.
+    // Do not use the callback function.
+    void setSimMode();
+
+    // Encapsulate running an action and any retaliations or other special
+    // abilities.  Runs the action callback for the given action and every
+    // other action generated.
+    void runActionSeq(Action action);
 
 private:
     void nextRound();
@@ -105,6 +109,11 @@ private:
     // Get list of neighboring hexes that are free of units.
     std::vector<int> getOpenNeighbors(int aIndex) const;
 
+    // Use simulated damage when executing actions.
+    void simulate(Action action);
+
+    void actionCallback(Action action);
+
     const HexGrid &grid_;
     std::vector<Unit> units_;  // indexed by entity id
     std::vector<int> turnOrder_;
@@ -112,6 +121,8 @@ private:
     std::vector<int> unitAtPos_;
     std::vector<std::shared_ptr<Commander>> commanders_;
     int roundNum_;
+    std::function<void (Action)> execFunc_;
+    bool simMode_;
 };
 
 #endif

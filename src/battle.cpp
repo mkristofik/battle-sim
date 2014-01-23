@@ -366,7 +366,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
         {
             auto action = getPossibleAction(event.x, event.y);
             if (action.type == ActionType::NONE) return;
-            gs->runActionSeq(action, execAnimate);
+            gs->runActionSeq(action);
             actionTaken = true;
         }
     }
@@ -386,7 +386,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
     if (!unit.isAlive()) return;
 
     auto skipAction = gs->makeSkip(unit.entityId);
-    gs->runActionSeq(skipAction, execAnimate);
+    gs->runActionSeq(skipAction);
     actionTaken = true;
 }
 
@@ -603,7 +603,7 @@ void runAiTurn()
     if (aiState == AiState::RUNNING && aiAction.is_ready()) {
         assert(aiAction.has_value());
         Action a = aiAction.get();
-        gs->runActionSeq(a, execAnimate);
+        gs->runActionSeq(a);
         actionTaken = true;
         aiState = AiState::COMPLETE;
     }
@@ -617,8 +617,10 @@ extern "C" int SDL_main(int argc, char *argv[])
 
     initBattleGrid();
     bf = make_unique<Battlefield>(bfWindow, *grid);
-    gs = make_unique<GameState>(*grid);
     Anim::setBattlefield(*bf);
+
+    gs = make_unique<GameState>(*grid);
+    gs->setExecFunc(execAnimate);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
     labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);

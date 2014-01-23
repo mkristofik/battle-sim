@@ -26,6 +26,11 @@
 namespace
 {
     Unit nullUnit;
+
+    void nullExecFunc(Action)
+    {
+        assert(false);
+    }
 }
 
 GameState::GameState(const HexGrid &bfGrid)
@@ -35,7 +40,9 @@ GameState::GameState(const HexGrid &bfGrid)
     curTurn_{-1},
     unitAtPos_(grid_.size(), -1),
     commanders_(2),
-    roundNum_{0}
+    roundNum_{0},
+    execFunc_{nullExecFunc},
+    simMode_{false}
 {
     commanders_[0] = std::make_shared<Commander>();
     commanders_[1] = std::make_shared<Commander>();
@@ -429,8 +436,17 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
     }
 }
 
-void GameState::runActionSeq(Action action,
-                             std::function<void (Action)> execFunc)
+void GameState::setExecFunc(std::function<void (Action)> f)
+{
+    execFunc_ = std::move(f);
+}
+
+void GameState::setSimMode()
+{
+    simMode_ = true;
+}
+
+void GameState::runActionSeq(Action action)
 {
     // The First Strike ability lets the defender get its retaliation in prior
     // to the actual attack.  We must therefore split the attack into two
@@ -439,10 +455,10 @@ void GameState::runActionSeq(Action action,
         if (action.path.size() > 1) {
             auto moveAction = action;
             moveAction.type = ActionType::MOVE;
-            execFunc(moveAction);
+            actionCallback(moveAction);
         }
         auto firstStrike = makeRetaliation(action);
-        execFunc(firstStrike);
+        actionCallback(firstStrike);
 
         const auto &att = getUnit(action.attacker);
         if (att.isAlive()) {
@@ -453,27 +469,17 @@ void GameState::runActionSeq(Action action,
         }
     }
 
-    execFunc(action);
+    actionCallback(action);
 
     if (isRetaliationAllowed(action)) {
         auto retal = makeRetaliation(action);
-        execFunc(retal);
+        actionCallback(retal);
     }
     if (isDoubleStrikeAllowed(action)) {
         const auto &att = getUnit(action.attacker);
         auto secondStrike = makeAttack(att.entityId, action.defender, att.aHex);
-        execFunc(secondStrike);
+        actionCallback(secondStrike);
     }
-}
-
-void GameState::simActionSeq(Action action)
-{
-    auto simulate = [this] (Action action) {
-        action.damage = getSimulatedDamage(action);
-        execute(action);
-    };
-
-    runActionSeq(action, simulate);
 }
 
 void GameState::nextRound()
@@ -538,4 +544,23 @@ std::vector<int> GameState::getOpenNeighbors(int aIndex) const
         }
     }
     return nbrs;
+}
+
+void GameState::simulate(Action action)
+{
+    action.damage = getSimulatedDamage(action);
+    execute(action);
+}
+
+void GameState::actionCallback(Action action)
+{
+    if (simMode_) {
+        simulate(action);
+    }
+    else {
+        execFunc_(action);
+        // Note: this requires that execFunc_ refer to the same GameState as
+        // 'this'.  If that becomes a problem, we can break this into
+        // pre-callback, execute, post-callback.
+    }
 }
