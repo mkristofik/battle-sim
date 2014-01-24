@@ -17,7 +17,14 @@
 
 // Definition of a possible action a unit may take (where it can move, a target
 // to attack, etc.).
-enum class ActionType {NONE, MOVE, ATTACK, RANGED, RETALIATE};
+enum class ActionType {
+    NONE,
+    MOVE,
+    ATTACK,
+    RANGED,
+    RETALIATE,
+    REGENERATE
+};
 
 struct Action
 {

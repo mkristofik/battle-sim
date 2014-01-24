@@ -53,6 +53,9 @@ int noLookAhead(const GameState &gs)
 int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
 {
     // If we've run out of search time or the game has ended, stop.
+    // TODO: there are situations where the game won't ever end (e.g.,
+    // Cavaliers vs. any unit w/ only 1 move, anything weak vs. Trolls).  We
+    // need to declare a draw within a few turns of no units being killed.
     auto score = gs.getScore();
     if (depth <= 0 || score[0] == 0 || score[1] == 0) {
         return score[0] - score[1];

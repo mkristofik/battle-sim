@@ -277,7 +277,9 @@ void animateAction(const Action &action)
 
 void logAction(const Action &action)
 {
-    if (action.type != ActionType::RETALIATE) {
+    if (action.type != ActionType::RETALIATE &&
+        action.type != ActionType::REGENERATE)
+    {
         std::cout << "    ";
         gs->printAction(std::cout, action);
         std::cout << std::endl;
@@ -302,8 +304,13 @@ void logAction(const Action &action)
         ostr << (attacker.num == 1 ? " skips its " : " skip their ");
         ostr << "turn.";
     }
+    else if (action.type == ActionType::REGENERATE) {
+        ostr << (attacker.num == 1 ? " regenerates." : " regenerate.");
+    }
 
-    if (action.type != ActionType::NONE) {
+    if (action.type != ActionType::NONE &&
+        action.type != ActionType::REGENERATE)
+    {
         ostr << " for " << action.damage << " damage.";
         const auto &defender = gs->getUnit(action.defender);
         int numKilled = defender.simulateDamage(action.damage);

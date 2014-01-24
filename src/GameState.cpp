@@ -66,6 +66,8 @@ void GameState::nextTurn()
     if (curTurn_ == endOfRound) {
         nextRound();
     }
+
+    onStartTurn();
 }
 
 int GameState::getRound() const
@@ -324,6 +326,14 @@ Action GameState::makeRetaliation(const Action &action) const
     return retaliation;
 }
 
+Action GameState::makeRegeneration(int id) const
+{
+    Action regen;
+    regen.attacker = id;
+    regen.type = ActionType::REGENERATE;
+    return regen;
+}
+
 int GameState::computeDamage(const Action &action) const
 {
     const auto &att = getUnit(action.attacker);
@@ -361,6 +371,10 @@ void GameState::execute(const Action &action)
 
     if (action.type == ActionType::RETALIATE) {
         att.retaliated = true;
+    }
+
+    if (action.type == ActionType::REGENERATE) {
+        att.hpLeft = att.type->hp;
     }
 }
 
@@ -562,5 +576,16 @@ void GameState::actionCallback(Action action)
         // Note: this requires that execFunc_ refer to the same GameState as
         // 'this'.  If that becomes a problem, we can break this into
         // pre-callback, execute, post-callback.
+    }
+}
+
+void GameState::onStartTurn()
+{
+    const auto &unit = getActiveUnit();
+    assert(unit.isAlive());
+
+    if (unit.hasTrait(Trait::REGENERATE) && unit.hpLeft < unit.type->hp) {
+        auto regen = makeRegeneration(unit.entityId);
+        runActionSeq(regen);
     }
 }

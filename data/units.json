@@ -172,6 +172,7 @@
         "damage": [1, 1],
         "damage-ranged": [5, 7],
         "growth": 3,
+        "traits": ["regenerate"],
         "img": "troll.png",
         "anim-attack": "troll-attack-melee.png",
         "attack-frames": [50, 300, 400],

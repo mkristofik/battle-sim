@@ -19,7 +19,8 @@
 #define UNIT_TRAITS \
     X(FIRST_STRIKE) \
     X(DOUBLE_STRIKE) \
-    X(FLYING)
+    X(FLYING) \
+    X(REGENERATE)
 
 #define X(str) str,
 enum class Trait {UNIT_TRAITS};

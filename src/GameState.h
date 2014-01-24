@@ -72,6 +72,7 @@ public:
     Action makeAttack(int attId, int defId, int aMoveTgt) const;
     Action makeSkip(int id) const;
     Action makeRetaliation(const Action &action) const;
+    Action makeRegeneration(int id) const;
 
     int computeDamage(const Action &action) const;
     int getSimulatedDamage(const Action &action) const;
@@ -113,6 +114,7 @@ private:
     void simulate(Action action);
 
     void actionCallback(Action action);
+    void onStartTurn();
 
     const HexGrid &grid_;
     std::vector<Unit> units_;  // indexed by entity id
