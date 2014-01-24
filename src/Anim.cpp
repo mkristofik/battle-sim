@@ -12,7 +12,6 @@
 */
 #include "Anim.h"
 #include "Battlefield.h"
-#include "UnitType.h"
 
 #include <algorithm>
 #include <cassert>
@@ -52,6 +51,8 @@ namespace
 }
 
 Battlefield *Anim::bf_ = nullptr;
+SdlSurface AnimRegenerate::overlay_;
+FrameList AnimRegenerate::timings_;
 
 void Anim::setBattlefield(Battlefield &b)
 {
@@ -485,4 +486,35 @@ void AnimParallel::stop()
     for (auto &anim : animList_) {
         anim->execute();
     }
+}
+
+
+AnimRegenerate::AnimRegenerate(Point hex)
+    : id_{-1},
+    hex_{std::move(hex)}
+{
+    if (!overlay_) {
+        overlay_ = sdlLoadImage("regeneration.png");
+        timings_ = {75, 150, 225, 300, 375, 450, 525, 600};
+    }
+    runTime_ = timings_.back();
+}
+
+void AnimRegenerate::start()
+{
+    id_ = bf_->addEntity(hex_, overlay_, ZOrder::ANIMATING);
+    auto &entity = bf_->getEntity(id_);
+    entity.frame = 0;
+}
+
+void AnimRegenerate::run(Uint32 elapsed)
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.frame = getFrame(timings_, elapsed);
+}
+
+void AnimRegenerate::stop()
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.visible = false;
 }

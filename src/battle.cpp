@@ -273,6 +273,10 @@ void animateAction(const Action &action)
         }
         anims.emplace_back(std::move(attackSeq));
     }
+    else if (action.type == ActionType::REGENERATE) {
+        auto hex = grid->hexFromAry(unit.aHex);
+        anims.emplace_back(make_unique<AnimRegenerate>(hex));
+    }
 }
 
 void logAction(const Action &action)

@@ -14,6 +14,7 @@
 #define ANIM_H
 
 #include "Unit.h"
+#include "UnitType.h"
 #include "hex_utils.h"
 #include "sdl_helper.h"
 #include <memory>
@@ -176,6 +177,23 @@ private:
     void stop() override;
 
     std::vector<std::unique_ptr<Anim>> animList_;
+};
+
+
+class AnimRegenerate : public Anim
+{
+public:
+    AnimRegenerate(Point hex);
+
+private:
+    void start() override;
+    void run(Uint32 elapsed) override;
+    void stop() override;
+
+    static FrameList timings_;
+    static SdlSurface overlay_;
+    int id_;
+    Point hex_;
 };
 
 #endif
