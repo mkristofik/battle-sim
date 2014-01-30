@@ -180,5 +180,37 @@
         "ranged-frames": [300, 500, 600],
         "img-defend": "troll-defend.png",
         "projectile": "stone-large.png"
+    },
+    "sprite1": {
+        "name": "Sprite",
+        "plural": "Sprites",
+        "moves": 1,
+        "initiative": 4,
+        "hp": 2,
+        "damage": [1, 2],
+        "growth": 8,
+        "traits": ["flying"],
+        "img": "sprite.png",
+        "anim-attack": "sprite-attack-melee.png",
+        "attack-frames": [300, 500, 800],
+        "img-defend": "sprite-defend.png"
+    },
+    "elf1": {
+        "name": "Elf",
+        "plural": "Elves",
+        "moves": 1,
+        "initiative": 4,
+        "traits": ["double_strike"],
+        "hp": 15,
+        "damage": [1, 1],
+        "damage-ranged": [2, 3],
+        "growth": 4,
+        "img": "elf.png",
+        "anim-ranged": "elf-attack-ranged.png",
+        "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "img-defend": "elf-defend.png",
+        "anim-die": "elf-die.png",
+        "die-frames": [200, 400, 600, 800],
+        "projectile": "missile.png"
     }
 }
