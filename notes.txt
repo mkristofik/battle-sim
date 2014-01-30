@@ -1,0 +1,55 @@
+Knight
+------
+Peasant - 12 (+2, +8), 1/1, 1-1, 1 hp
+Archer - 8, 5/3, 2-3, 10 hp
+Pikeman - 5, 5/9, 3-4, 15 hp
+Swordsman - 4, 7/9, 4-6, 25 hp
+Cavalry - 3, 10/9, 5-10, 30 hp
+Paladin - 2, 11/12, 10-20, 50 hp
+
+Barbarian
+---------
+Goblin - 10 (+2, +8), 3/1, 1-2, 3 hp
+Orc - 8, 3/4, 2-3, 10 hp
+Wolf - 5, 6/2, 3-5, 20 hp
+Ogre - 4, 9/5, 4-6, 40 hp
+Troll - 3, 10/5, 5-7, 40 hp, regenerate
+Cyclops - 2, 12/9, 12-24, 80 hp, 2-hex attack
+
+Sorceress
+---------
+Sprite - 6 (+2, +8), 4/2, 1-2, 2 hp, flying
+Dwarf - 6, 6/5, 2-4, 20 hp, magic resist
+Elf - 4, 4/3, 2-3, 15 hp, two shots
+Druid - 3, 7/5, 5-8, 25 hp
+Unicorn - 2, 10/9, 7-14, 40 hp, blind
+Phoenix - 1, 12/10, 20-40, 100 hp, flying
+
+Necromancer
+-----------
+Skeleton - 8 (+2, +8), 4/4, 2-3, 4 hp
+Zombie - 6, 5/2, 2-3, 15 hp
+Mummy - 4, 6/6, 3-4, 25 hp, curse
+Vampire - 3, 8/6, 5-7, 30 hp, flying, no retaliate
+Lich - 2, 7/12, 8-10, 25 hp, area attack
+Bone Dragon - 1, 11/9, 25-45, 150 hp, flying
+
+Traits
+------
+First-strike
+Double-strike
+Flying
+Regeneration - see healing anims in C:\Program Files (x86)\Battle for Wesnoth 1.10.3\data\core\units\elves\Druid.cfg and Shaman.cfg
+Trample
+Deathtouch
+Lifelink
+
+Champion skills
+---------------
+Wisdom (maybe this is a primary skill)
+Air/Earth/Fire/Water Magic
+Tactics
+Leadership (not sure what to have this do yet)
+Pathfinding
+Logistics (maybe this is a primary skill too)
+idea: each champion has a unqiue skill lineup
