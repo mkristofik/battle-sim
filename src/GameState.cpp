@@ -235,7 +235,8 @@ bool GameState::isRetaliationAllowed(const Action &action) const
     return action.type == ActionType::ATTACK &&
            att.isAlive() &&
            def.isAlive() &&
-           !def.retaliated;
+           !def.retaliated &&
+           (!att.hasTrait(Trait::FLYING) || def.hasTrait(Trait::FLYING));
 }
 
 bool GameState::isFirstStrikeAllowed(const Action &action) const
@@ -271,6 +272,7 @@ Action GameState::makeMove(int id, int aTgt) const
     const auto &unit = getUnit(id);
     if (!unit.isAlive()) return {};
 
+    // TODO: if unit has flying, then the path is {unit.aHex, aTgt}.
     auto path = getPath(unit.aHex, aTgt);
     if (path.size() <= 1 || path.size() > unit.getMaxPathSize()) {
         return {};
