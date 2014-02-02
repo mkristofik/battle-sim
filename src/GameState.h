@@ -42,6 +42,9 @@ public:
     const Unit & getActiveUnit() const;
     const Unit & getUnitAt(int aIndex) const;
 
+    // Return true if there's no unit in the given hex.
+    bool isHexOpen(int aIndex) const;
+
     void moveUnit(int id, int aDest);
     void assignDamage(int id, int damage);
 
@@ -60,6 +63,7 @@ public:
     void setCommander(const Commander &c, int team);
     const Commander & getCommander(int team) const;
 
+    bool isMeleeAttackAllowed(int id) const;
     bool isRangedAttackAllowed(int id) const;
     bool isRetaliationAllowed(const Action &action) const;
     bool isFirstStrikeAllowed(const Action &action) const;
@@ -67,6 +71,7 @@ public:
 
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
+    std::vector<int> getPath(const Unit &unit, int aTgt) const;
 
     Action makeMove(int id, int aTgt) const;
     Action makeAttack(int attId, int defId, int aMoveTgt) const;
@@ -109,6 +114,9 @@ private:
 
     // Get list of neighboring hexes that are free of units.
     std::vector<int> getOpenNeighbors(int aIndex) const;
+
+    // Get list of all hexes the given unit can reach that are free of units.
+    std::vector<int> getReachableHexes(const Unit &unit) const;
 
     // Use simulated damage when executing actions.
     void simulate(Action action);

@@ -132,6 +132,12 @@ const Unit & GameState::getUnitAt(int aIndex) const
     return nullUnit;
 }
 
+bool GameState::isHexOpen(int aIndex) const
+{
+    if (grid_.offGrid(aIndex)) return false;
+    return !getUnitAt(aIndex).isAlive();
+}
+
 void GameState::moveUnit(int id, int aDest)
 {
     assert(unitAtPos_[aDest] == -1);
@@ -220,6 +226,12 @@ const Commander & GameState::getCommander(int team) const
     return *commanders_[team];
 }
 
+bool GameState::isMeleeAttackAllowed(int id) const
+{
+    const auto &attacker = getUnit(id);
+    return attacker.isAlive() && !attacker.type->hasRangedAttack;
+}
+
 bool GameState::isRangedAttackAllowed(int id) const
 {
     const auto &attacker = getUnit(id);
@@ -235,6 +247,7 @@ bool GameState::isRetaliationAllowed(const Action &action) const
     return action.type == ActionType::ATTACK &&
            att.isAlive() &&
            def.isAlive() &&
+           isMeleeAttackAllowed(action.defender) &&
            !def.retaliated &&
            (!att.hasTrait(Trait::FLYING) || def.hasTrait(Trait::FLYING));
 }
@@ -252,19 +265,44 @@ bool GameState::isDoubleStrikeAllowed(const Action &action) const
 {
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
-    return att.hasTrait(Trait::DOUBLE_STRIKE) &&
-           (action.type == ActionType::ATTACK ||
-            action.type == ActionType::RANGED) &&
-           att.isAlive() &&
-           def.isAlive();
+
+    if (!att.isAlive() || !def.isAlive()) return false;
+    if (!att.hasTrait(Trait::DOUBLE_STRIKE)) return false;
+
+    if (action.type == ActionType::RANGED) {
+        return true;
+    }
+    if (action.type == ActionType::ATTACK &&
+        isMeleeAttackAllowed(action.attacker))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
+    if (grid_.offGrid(aSrc) || grid_.offGrid(aTgt)) return {};
+
     Pathfinder pf;
     pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
     pf.setGoal(aTgt);
     return pf.getPathFrom(aSrc);
+}
+
+std::vector<int> GameState::getPath(const Unit &unit, int aTgt) const
+{
+    if (grid_.offGrid(aTgt)) return {};
+
+    if (unit.hasTrait(Trait::FLYING) && isHexOpen(aTgt)) {
+        std::vector<int> path;
+        path.push_back(unit.aHex);
+        path.push_back(aTgt);
+        return path;
+    }
+
+    return getPath(unit.aHex, aTgt);
 }
 
 Action GameState::makeMove(int id, int aTgt) const
@@ -272,8 +310,7 @@ Action GameState::makeMove(int id, int aTgt) const
     const auto &unit = getUnit(id);
     if (!unit.isAlive()) return {};
 
-    // TODO: if unit has flying, then the path is {unit.aHex, aTgt}.
-    auto path = getPath(unit.aHex, aTgt);
+    auto path = getPath(unit, aTgt);
     if (path.size() <= 1 || path.size() > unit.getMaxPathSize()) {
         return {};
     }
@@ -300,8 +337,11 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
         action.type = ActionType::RANGED;
         return action;
     }
+    if (!isMeleeAttackAllowed(attId)) {
+        return {};
+    }
 
-    auto path = getPath(attacker.aHex, aMoveTgt);
+    auto path = getPath(attacker, aMoveTgt);
     if (path.empty() || path.size() > attacker.getMaxPathSize()) {
         return {};
     }
@@ -385,10 +425,7 @@ std::vector<Action> GameState::getPossibleActions() const
     const auto &unit = getActiveUnit();
     assert(unit.isAlive());
 
-    Pathfinder pf;
-    pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
-    auto reachableHexes = pf.getReachableNodes(unit.aHex, unit.type->moves);
-
+    auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
     if (isRangedAttackAllowed(unit.entityId)) {
@@ -396,7 +433,7 @@ std::vector<Action> GameState::getPossibleActions() const
             actions.emplace_back(makeAttack(unit.entityId, e, -1));
         }
     }
-    else {
+    else if (isMeleeAttackAllowed(unit.entityId)) {
         for (auto aHex : reachableHexes) {
             for (auto e : getAdjEnemies(unit.entityId, aHex)) {
                 actions.emplace_back(makeAttack(unit.entityId, e, aHex));
@@ -555,11 +592,31 @@ std::vector<int> GameState::getOpenNeighbors(int aIndex) const
 {
     std::vector<int> nbrs;
     for (auto n : grid_.aryNeighbors(aIndex)) {
-        if (!getUnitAt(n).isAlive()) {
+        if (isHexOpen(n)) {
             nbrs.push_back(n);
         }
     }
     return nbrs;
+}
+
+std::vector<int> GameState::getReachableHexes(const Unit &unit) const
+{
+    std::vector<int> reachable;
+
+    if (unit.hasTrait(Trait::FLYING)) {  // flying units can reach any hex
+        for (int i = 0; i < grid_.size(); ++i) {
+            if (isHexOpen(i)) {
+                reachable.push_back(i);
+            }
+        }
+    }
+    else {
+        Pathfinder pf;
+        pf.setNeighbors([&] (int aIndex) {return getOpenNeighbors(aIndex);});
+        reachable = pf.getReachableNodes(unit.aHex, unit.type->moves);
+    }
+
+    return reachable;
 }
 
 void GameState::simulate(Action action)
