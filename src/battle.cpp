@@ -213,7 +213,7 @@ void animateAction(const Action &action)
             auto prevFacing = facing;
             facing = getFacing(hSrc, hDest, prevFacing);
 
-            anims.emplace_back(make_unique<AnimMove>(unit, hDest, facing));
+            anims.emplace_back(make_unique<AnimMove>(unit, hSrc, hDest, facing));
         }
         unit.face = facing;
     }

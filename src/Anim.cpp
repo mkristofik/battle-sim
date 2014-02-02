@@ -108,13 +108,13 @@ void Anim::stop()
 }
 
 
-AnimMove::AnimMove(const Unit &unit, Point hDest, Facing f)
+AnimMove::AnimMove(const Unit &unit, const Point &hSrc, Point hDest, Facing f)
     : Anim(),
     unit_(unit),
     destHex_{std::move(hDest)},
     faceLeft_{f == Facing::LEFT}
 {
-    runTime_ = 300;
+    runTime_ = 300 * hexDist(hSrc, destHex_);
     // Note: we can't use the unit's internal facing in here because that holds
     // the end state after all moves are done.  We need the facing for this
     // step only.

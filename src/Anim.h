@@ -53,7 +53,7 @@ private:
 class AnimMove : public Anim
 {
 public:
-    AnimMove(const Unit &unit, Point hDest, Facing f);
+    AnimMove(const Unit &unit, const Point &hSrc, Point hDest, Facing f);
 
 private:
     void start() override;
