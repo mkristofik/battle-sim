@@ -210,7 +210,7 @@
         "ranged-frames": [65, 140, 215, 315, 445, 510],
         "img-defend": "elf-defend.png",
         "anim-die": "elf-die.png",
-        "die-frames": [200, 400, 600, 800],
+        "die-frames": [120, 240, 360, 480],
         "projectile": "missile.png"
     }
 }
