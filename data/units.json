@@ -1,5 +1,5 @@
 {
-    "human1": {
+    "archer": {
         "name": "Archer",
         "plural": "Archers",
         "moves": 1,
@@ -16,7 +16,7 @@
         "img-defend": "bowman-defend-ranged.png",
         "projectile": "missile.png"
     },
-    "human2": {
+    "paladin": {
         "name": "Paladin",
         "plural": "Paladins",
         "moves": 1,
@@ -32,7 +32,7 @@
         "anim-die": "marshal-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 875, 1000]
     },
-    "human3": {
+    "peasant": {
         "name": "Peasant",
         "plural": "Peasants",
         "moves": 1,
@@ -45,7 +45,7 @@
         "attack-frames": [50, 300, 400, 450],
         "img-defend": "peasant-defend.png"
     },
-    "human4": {
+    "pikeman": {
         "name": "Pikeman",
         "plural": "Pikemen",
         "moves": 1,
@@ -61,7 +61,7 @@
         "anim-die": "pikeman-die.png",
         "die-frames": [80, 160, 240, 320, 400]
     },
-    "human5": {
+    "cavalier": {
         "name": "Cavalier",
         "plural": "Cavaliers",
         "moves": 3,
@@ -75,7 +75,7 @@
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
-    "human6": {
+    "swordsman": {
         "name": "Swordsman",
         "plural": "Swordsmen",
         "moves": 1,
@@ -122,7 +122,7 @@
         "img-defend": "orc-archer-defend.png",
         "projectile": "missile.png"
     },
-    "goblin1": {
+    "goblin": {
         "name": "Goblin",
         "plural": "Goblins",
         "moves": 1,
@@ -135,7 +135,7 @@
         "attack-frames": [50, 150, 350, 450],
         "img-defend": "goblin-defend.png"
     },
-    "wolf1": {
+    "wolf": {
         "name": "Wolf",
         "plural": "Wolves",
         "moves": 2,
@@ -150,7 +150,7 @@
         "img-defend": "wolf-defend.png",
         "img-move": "wolf-move.png"
     },
-    "ogre1": {
+    "ogre": {
         "name": "Ogre",
         "plural": "Ogres",
         "moves": 1,
@@ -163,7 +163,7 @@
         "attack-frames": [75, 175, 250, 425, 525],
         "img-defend": "ogre-defend.png"
     },
-    "troll1": {
+    "troll": {
         "name": "Troll",
         "plural": "Trolls",
         "moves": 1,
@@ -181,7 +181,7 @@
         "img-defend": "troll-defend.png",
         "projectile": "stone-large.png"
     },
-    "sprite1": {
+    "sprite": {
         "name": "Sprite",
         "plural": "Sprites",
         "moves": 1,
@@ -195,7 +195,7 @@
         "attack-frames": [300, 500, 800],
         "img-defend": "sprite-defend.png"
     },
-    "elf1": {
+    "elf": {
         "name": "Elf",
         "plural": "Elves",
         "moves": 1,

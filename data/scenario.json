@@ -7,27 +7,27 @@
         "defense": 2
     },
     "t1p1": {
-        "id": "human2",
+        "id": "paladin",
         "num": 2
     },
     "t1p2": {
-        "id": "human5",
+        "id": "cavalier",
         "num": 3
     },
     "t1p3": {
-        "id": "human6",
+        "id": "swordsman",
         "num": 4
     },
     "t1p4": {
-        "id": "human4",
+        "id": "pikeman",
         "num": 5
     },
     "t1p5": {
-        "id": "human1",
+        "id": "archer",
         "num": 8
     },
     "t1p6": {
-        "id": "human3",
+        "id": "peasant",
         "num": 22
     },
     "c2": {
@@ -38,11 +38,11 @@
         "defense": 1
     },
     "t2p1": {
-        "id": "ogre1",
+        "id": "ogre",
         "num": 4
     },
     "t2p2": {
-        "id": "goblin1",
+        "id": "goblin",
         "num": 12
     },
     "t2p3": {
@@ -50,11 +50,11 @@
         "num": 4
     },
     "t2p4": {
-        "id": "wolf1",
+        "id": "wolf",
         "num": 5
     },
     "t2p6": {
-        "id": "troll1",
+        "id": "troll",
         "num": 3
     },
     "t2p7": {

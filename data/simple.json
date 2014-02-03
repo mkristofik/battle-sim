@@ -1,10 +1,10 @@
 {
     "t1p2": {
-        "id": "human2",
-        "num": 3
+        "id": "sprite",
+        "num": 30
     },
     "t2p5": {
-        "id": "troll1",
-        "num": 10
+        "id": "elf",
+        "num": 4
     }
 }

@@ -126,7 +126,6 @@ UnitType::UnitType(const rapidjson::Value &json)
     if (json.HasMember("growth")) {
         growth = json["growth"].GetInt();
     }
-    // TODO: warn if the unit has a ranged attack but no projectile.
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());
     }
