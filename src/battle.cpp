@@ -442,10 +442,10 @@ void parseScenario(const rapidjson::Document &doc)
         std::string posStr = i->name.GetString();
         auto posIter = mapUnitPos.find(posStr);
         if (posIter == std::end(mapUnitPos)) {
-            if (posStr == "c1") {
+            if (posStr == "cmdr1") {
                 gs->setCommander(Commander(i->value), 0);
             }
-            else if (posStr == "c2") {
+            else if (posStr == "cmdr2") {
                 gs->setCommander(Commander(i->value), 1);
             }
             else {

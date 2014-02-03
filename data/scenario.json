@@ -1,5 +1,5 @@
 {
-    "c1": {
+    "cmdr1": {
         "name": "Lord Kilburn",
         "alignment": "Knight",
         "portrait": "portrait-knight.png",
@@ -30,7 +30,7 @@
         "id": "peasant",
         "num": 22
     },
-    "c2": {
+    "cmdr2": {
         "name": "Crag Hack",
         "alignment": "Barbarian",
         "portrait": "portrait-barbarian.png",
