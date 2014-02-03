@@ -12,6 +12,7 @@
 */
 #include "UnitType.h"
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 
 namespace
@@ -135,5 +136,10 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("traits")) {
         traits = parseTraits(json["traits"]);
+    }
+
+    if (hasRangedAttack && !projectile) {
+        std::cerr << "WARNING: ranged attack projectile not specified\n";
+        projectile = sdlLoadImage("missile.png");
     }
 }
