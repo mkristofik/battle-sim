@@ -30,6 +30,19 @@
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
+    "dwarf": {
+        "name": "Dwarf",
+        "plural": "Dwarves",
+        "moves": 1,
+        "initiative": 2,
+        "hp": 20,
+        "damage": [2, 4],
+        "growth": 6,
+        "img": "dwarf.png",
+        "anim-attack": "dwarf-attack-melee.png",
+        "attack-frames": [40, 100, 160, 220, 280, 340, 400, 460, 520, 540],
+        "img-defend": "dwarf-defend.png"
+    },
     "elf": {
         "name": "Elf",
         "plural": "Elves",
@@ -47,6 +60,22 @@
         "anim-die": "elf-die.png",
         "die-frames": [120, 240, 360, 480],
         "projectile": "missile.png"
+    },
+    "fire": {
+        "name": "Fire Elemental",
+        "plural": "Fire Elementals",
+        "moves": 1,
+        "initiative": 4,
+        "traits": ["flying"],
+        "hp": 30,
+        "damage": [5, 7],
+        "growth": 3,
+        "img": "fire-elemental.png",
+        "anim-attack": "fire-elemental-attack-melee.png",
+        "attack-frames": [250, 500, 600],
+        "img-defend": "fire-elemental-defend.png",
+        "anim-die": "fire-elemental-die.png",
+        "die-frames": [50, 150, 250, 350, 450, 550, 650]
     },
     "goblin": {
         "name": "Goblin",
