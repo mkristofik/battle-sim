@@ -34,6 +34,30 @@ Vampire - 3, 8/6, 5-7, 30 hp, flying, no retaliate
 Lich - 2, 7/12, 8-10, 25 hp, area attack
 Bone Dragon - 1, 11/9, 25-45, 150 hp, flying
 
+Warlock
+-------
+Centaur - 8 (+2, +8), 3/1, 1-2, 5 hp
+Gargoyle - 6, 4/7, 2-3, 15 hp, flying
+Griffin - 4, 6/6, 3-5, 25 hp, flying, unlimited retaliation
+Minotaur - 3, 9/8, 5-10, 35 hp
+Hydra - 2, 8/9, 6-12, 75 hp, no retaliation, attack all sides
+Green Dragon - 1, 12/12, 25-50, 200 hp, flying, immune to magic
+
+Wizard
+------
+Halfling - 8 (+2, +8), 2/1, 1-3, 3 hp
+Boar - 6, 5/4, 2-3, 15 hp
+Iron Golem - 4, 5/10, 4-5, 30 hp, magic resist
+Roc - 3, 7/7, 4-8, 40 hp, flying
+Mage - 2, 11/7, 7-9, 30 hp
+Giant - 1, 13/10, 20-30, 150 hp, immune to mind spells
+
+Possible Images
+---------------
+Druid - human-magi/elder mage
+Dendroid - woses/wose
+
+
 Traits
 ------
 First-strike
