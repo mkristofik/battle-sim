@@ -216,6 +216,7 @@ SdlSurface sdlFlipH(const SdlSurface &src)
 SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
 {
     assert(src->w % numFrames == 0);  // verify each frame is the same size
+    // TODO: throwing an exception here might be better.
 
     auto surf = sdlDeepCopy(src);
     if (!surf) {

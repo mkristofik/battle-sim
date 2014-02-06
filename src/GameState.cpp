@@ -409,6 +409,10 @@ void GameState::execute(const Action &action)
     {
         assert(def.isAlive());
         assignDamage(action.defender, action.damage);
+
+        if (att.hasTrait(Trait::LIFE_DRAIN)) {
+            att.hpLeft = std::min(att.hpLeft + action.damage, att.type->hp);
+        }
     }
 
     if (action.type == ActionType::RETALIATE) {

@@ -227,6 +227,20 @@
         "img-defend": "troll-defend.png",
         "projectile": "stone-large.png"
     },
+    "vampire": {
+        "name": "Vampire Bat",
+        "plural": "Vampire Bats",
+        "moves": 1,
+        "initiative": 6,
+        "hp": 15,
+        "damage": [2, 3],
+        "growth": 6,
+        "traits": ["flying", "life_drain"],
+        "img": "vampire-bat.png",
+        "anim-attack": "vampire-bat-attack-melee.png",
+        "attack-frames": [30, 60, 90, 120, 150, 220, 270, 320, 360],
+        "img-defend": "vampire-bat-defend.png"
+    },
     "wolf": {
         "name": "Wolf",
         "plural": "Wolves",
