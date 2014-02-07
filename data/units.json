@@ -30,6 +30,20 @@
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
+    "drake": {
+        "name": "Drake",
+        "plural": "Drakes",
+        "moves": 2,
+        "initiative": 4,
+        "traits": ["trample"],
+        "hp": 100,
+        "damage": [20, 40],
+        "growth": 1,
+        "img": "drake.png",
+        "anim-attack": "drake-attack-melee.png",
+        "attack-frames": [100, 200, 300, 400, 500, 600],
+        "img-defend": "drake-defend.png"
+    },
     "dwarf": {
         "name": "Dwarf",
         "plural": "Dwarves",

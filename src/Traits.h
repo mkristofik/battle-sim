@@ -17,11 +17,12 @@
 #include <vector>
 
 #define UNIT_TRAITS \
-    X(FIRST_STRIKE) \
     X(DOUBLE_STRIKE) \
+    X(FIRST_STRIKE) \
     X(FLYING) \
+    X(LIFE_DRAIN) \
     X(REGENERATE) \
-    X(LIFE_DRAIN)
+    X(TRAMPLE)
 
 #define X(str) str,
 enum class Trait {UNIT_TRAITS};

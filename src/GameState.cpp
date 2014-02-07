@@ -281,6 +281,17 @@ bool GameState::isDoubleStrikeAllowed(const Action &action) const
     return false;
 }
 
+bool GameState::isTrampleAllowed(const Action &action) const
+{
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+
+    if (!att.hasTrait(Trait::TRAMPLE)) return false;
+    if (action.type != ActionType::ATTACK) return false;
+
+    return att.isAlive() && !def.isAlive();
+}
+
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
 {
     if (grid_.offGrid(aSrc) || grid_.offGrid(aTgt)) return {};
@@ -536,6 +547,11 @@ void GameState::runActionSeq(Action action)
         const auto &att = getUnit(action.attacker);
         auto secondStrike = makeAttack(att.entityId, action.defender, att.aHex);
         actionCallback(secondStrike);
+    }
+    if (isTrampleAllowed(action)) {
+        const auto &def = getUnit(action.defender);
+        auto trample = makeMove(action.attacker, def.aHex);
+        actionCallback(trample);
     }
 }
 
