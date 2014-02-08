@@ -35,7 +35,7 @@
         "plural": "Drakes",
         "moves": 2,
         "initiative": 4,
-        "traits": ["trample"],
+        "traits": ["flying"],
         "hp": 100,
         "damage": [20, 40],
         "growth": 1,
@@ -103,6 +103,19 @@
         "anim-attack": "goblin-attack-melee.png",
         "attack-frames": [50, 150, 350, 450],
         "img-defend": "goblin-defend.png"
+    },
+    "lich": {
+        "name": "Lich",
+        "plural": "Liches",
+        "moves": 1,
+        "initiative": 5,
+        "hp": 25,
+        "damage-ranged": [8, 10],
+        "growth": 2,
+        "img": "lich.png",
+        "anim-ranged": "lich-attack-ranged.png",
+        "ranged-frames": [100, 200, 300, 400],
+        "img-defend": "lich-defend.png"
     },
     "ogre": {
         "name": "Ogre",
@@ -194,6 +207,21 @@
         "anim-die": "pikeman-die.png",
         "die-frames": [80, 160, 240, 320, 400]
     },
+    "revenant": {
+        "name": "Revenant",
+        "plural": "Revenants",
+        "moves": 1,
+        "initiative": 4,
+        "hp": 25,
+        "damage": [3, 4],
+        "growth": 4,
+        "img": "revenant.png",
+        "anim-attack": "revenant-attack-melee.png",
+        "attack-frames": [50, 100, 150, 200, 250, 325, 400, 475, 550, 600],
+        "img-defend": "revenant-defend.png",
+        "anim-die": "revenant-die.png",
+        "die-frames": [100, 200, 300, 400, 500, 600, 700]
+    },
     "sprite": {
         "name": "Sprite",
         "plural": "Sprites",
@@ -207,6 +235,19 @@
         "anim-attack": "sprite-attack-melee.png",
         "attack-frames": [300, 500, 800],
         "img-defend": "sprite-defend.png"
+    },
+    "steel": {
+        "name": "Steel Golem",
+        "plural": "Steel Golems",
+        "moves": 1,
+        "initiative": 2,
+        "hp": 30,
+        "damage": [4, 5],
+        "growth": 4,
+        "img": "steel-golem.png",
+        "anim-attack": "steel-golem-attack-melee.png",
+        "attack-frames": [85, 185, 310, 360, 410, 460],
+        "img-defend": "steel-golem-defend.png"
     },
     "swordsman": {
         "name": "Swordsman",
