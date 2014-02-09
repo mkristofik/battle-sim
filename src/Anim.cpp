@@ -332,6 +332,7 @@ AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
                                Uint32 shotTime)
     : Anim(),
     id_{bf_->addHiddenEntity(std::move(img), ZOrder::PROJECTILE)},
+    pStart_{},
     hTarget_{std::move(hTgt)},
     shotTime_{shotTime},
     flightTime_{hexDist(hSrc, hTarget_) * timePerHex_}
@@ -342,6 +343,7 @@ AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
     entity.hex = std::move(hSrc);
     entity.img = sdlRotate(entity.img, hexAngle_rad(entity.hex, hTarget_));
     entity.alignCenter();
+    pStart_ = entity.pOffset;
 }
 
 Uint32 AnimProjectile::getFlightTime() const
@@ -361,7 +363,7 @@ void AnimProjectile::run(Uint32 elapsed)
     auto pSrc = pixelFromHex(entity.hex);
     auto pTgt = pixelFromHex(hTarget_);
     auto frac = static_cast<double>(elapsed - shotTime_) / flightTime_;
-    entity.pOffset = (pTgt - pSrc) * frac * 0.9;
+    entity.pOffset = pStart_ + (pTgt - pSrc) * frac * 0.9;
     // Projectiles are drawn with their trailing edge at the center of the hex.
     // Instead of doing all the work to figure out where their leading edge
     // needs to hit, we just shorten the flight distance by a little bit.

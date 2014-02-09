@@ -138,7 +138,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
 
     if (hasRangedAttack && !projectile) {
-        std::cerr << "WARNING: ranged attack projectile not specified\n";
+        std::cerr << "WARNING: ranged attack projectile not specified for " <<
+            name << '\n';
         projectile = sdlLoadImage("missile.png");
     }
 }

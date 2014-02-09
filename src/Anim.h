@@ -138,6 +138,7 @@ private:
     void stop() override;
 
     int id_;
+    Point pStart_;
     Point hTarget_;
     Uint32 shotTime_;
     Uint32 flightTime_;
