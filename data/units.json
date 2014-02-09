@@ -115,7 +115,8 @@
         "img": "lich.png",
         "anim-ranged": "lich-attack-ranged.png",
         "ranged-frames": [100, 200, 300, 400],
-        "img-defend": "lich-defend.png"
+        "img-defend": "lich-defend.png",
+        "projectile": "missile-dark.png"
     },
     "ogre": {
         "name": "Ogre",
