@@ -48,6 +48,13 @@ namespace
 
         return size - 1;
     }
+
+    void updateSize(Drawable &label, const Unit &unit, int size)
+    {
+        assert(label.font);
+        label.img = sdlPreRender(label.font, size, getLabelColor(unit.team));
+        label.alignBottomCenter();
+    }
 }
 
 Battlefield *Anim::bf_ = nullptr;
@@ -195,12 +202,8 @@ void AnimAttack::stop()
 {
     idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
 
-    // Update the label with the new size.
-    // TODO: refactor with AnimDefend?
-    auto &label = bf_->getEntity(unit_.labelId);
-    assert(label.font);
-    label.img = sdlPreRender(label.font, unit_.num, getLabelColor(unit_.team));
-    label.alignBottomCenter();
+    // Allow for attacks that can grow the number of units.
+    updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
 }
 
 void AnimAttack::setPosition(Uint32 elapsed)
@@ -249,7 +252,7 @@ AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize)
     hAttacker_{std::move(hSrc)},
     faceLeft_{unit.face == Facing::LEFT},
     hitTime_{hitsAt},
-    newSize_{newSize}  // TODO: this is just unit.num
+    newSize_{newSize}
 {
     runTime_ = hitTime_ + 250;
 }
@@ -278,12 +281,7 @@ void AnimDefend::run(Uint32 elapsed)
 void AnimDefend::stop()
 {
     idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
-
-    // Update the label with the new size.
-    auto &label = bf_->getEntity(unit_.labelId);
-    assert(label.font);
-    label.img = sdlPreRender(label.font, newSize_, getLabelColor(unit_.team));
-    label.alignBottomCenter();
+    updateSize(bf_->getEntity(unit_.labelId), unit_, newSize_);
 }
 
 
