@@ -419,10 +419,15 @@ void GameState::execute(const Action &action)
         action.type == ActionType::RETALIATE)
     {
         assert(def.isAlive());
+        int numDefBefore = def.num;
         assignDamage(action.defender, action.damage);
+        int numKilled = numDefBefore - def.num;
 
         if (att.hasTrait(Trait::LIFE_DRAIN)) {
             att.hpLeft = std::min(att.hpLeft + action.damage, att.type->hp);
+        }
+        if (att.hasTrait(Trait::ZOMBIFY)) {
+            att.num += numKilled;
         }
     }
 

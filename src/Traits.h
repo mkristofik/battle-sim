@@ -22,7 +22,8 @@
     X(FLYING) \
     X(LIFE_DRAIN) \
     X(REGENERATE) \
-    X(TRAMPLE)
+    X(TRAMPLE) \
+    X(ZOMBIFY)
 
 #define X(str) str,
 enum class Trait {UNIT_TRAITS};

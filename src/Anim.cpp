@@ -194,6 +194,13 @@ void AnimAttack::run(Uint32 elapsed)
 void AnimAttack::stop()
 {
     idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
+
+    // Update the label with the new size.
+    // TODO: refactor with AnimDefend?
+    auto &label = bf_->getEntity(unit_.labelId);
+    assert(label.font);
+    label.img = sdlPreRender(label.font, unit_.num, getLabelColor(unit_.team));
+    label.alignBottomCenter();
 }
 
 void AnimAttack::setPosition(Uint32 elapsed)
@@ -242,7 +249,7 @@ AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize)
     hAttacker_{std::move(hSrc)},
     faceLeft_{unit.face == Facing::LEFT},
     hitTime_{hitsAt},
-    newSize_{newSize}
+    newSize_{newSize}  // TODO: this is just unit.num
 {
     runTime_ = hitTime_ + 250;
 }

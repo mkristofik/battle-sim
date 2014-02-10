@@ -311,5 +311,21 @@
         "attack-frames": [100, 300, 550],
         "img-defend": "wolf-defend.png",
         "img-move": "wolf-move.png"
+    },
+    "zombie": {
+        "name": "Zombie",
+        "plural": "Zombies",
+        "moves": 1,
+        "initiative": 2,
+        "hp": 4,
+        "damage": [2, 3],
+        "growth": 10,
+        "traits": ["zombify"],
+        "img": "zombie.png",
+        "anim-attack": "zombie-attack.png",
+        "attack-frames": [400],
+        "img-defend": "zombie-defend.png",
+        "anim-die": "zombie-die.png",
+        "die-frames": [150, 300, 450, 600]
     }
 }
