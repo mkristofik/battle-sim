@@ -223,6 +223,19 @@
         "anim-die": "revenant-die.png",
         "die-frames": [100, 200, 300, 400, 500, 600, 700]
     },
+    "spider": {
+        "name": "Giant Spider",
+        "plural": "Giant Spiders",
+        "moves": 1,
+        "initiative": 4,
+        "hp": 25,
+        "damage": [3, 4],
+        "growth": 4,
+        "img": "giant-spider.png",
+        "anim-attack": "giant-spider-attack-melee.png",
+        "attack-frames": [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650],
+        "img-defend": "giant-spider-defend.png"
+    },
     "sprite": {
         "name": "Sprite",
         "plural": "Sprites",
