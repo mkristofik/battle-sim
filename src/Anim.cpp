@@ -12,6 +12,7 @@
 */
 #include "Anim.h"
 #include "Battlefield.h"
+#include "Traits.h"
 
 #include <algorithm>
 #include <cassert>
@@ -172,9 +173,9 @@ void AnimMove::stop()
 }
 
 
-AnimAttack::AnimAttack(const Unit &unit, Point hTgt)
+AnimAttack::AnimAttack(Unit unit, Point hTgt)
     : Anim(),
-    unit_(unit),
+    unit_{std::move(unit)},
     hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
 {
@@ -246,13 +247,12 @@ void AnimAttack::setFrame(Uint32 elapsed)
 }
 
 
-AnimDefend::AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize)
+AnimDefend::AnimDefend(Unit unit, Point hSrc, Uint32 hitsAt)
     : Anim(),
-    unit_(unit),
+    unit_{std::move(unit)},
     hAttacker_{std::move(hSrc)},
     faceLeft_{unit.face == Facing::LEFT},
-    hitTime_{hitsAt},
-    newSize_{newSize}
+    hitTime_{hitsAt}
 {
     runTime_ = hitTime_ + 250;
 }
@@ -281,7 +281,7 @@ void AnimDefend::run(Uint32 elapsed)
 void AnimDefend::stop()
 {
     idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
-    updateSize(bf_->getEntity(unit_.labelId), unit_, newSize_);
+    updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
 }
 
 

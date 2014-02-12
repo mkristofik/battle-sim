@@ -69,7 +69,11 @@ private:
 class AnimAttack : public Anim
 {
 public:
-    AnimAttack(const Unit &unit, Point hTgt);
+    // Note: we provide the attacker unit by value so that the zombie trait
+    // looks correct.  By the time the animation runs, both the attack and
+    // retaliation have already executed in the game state.  Thus, we wouldn't
+    // have the correct unit size following the initial attack.
+    AnimAttack(Unit unit, Point hTgt);
     Uint32 getHitTime() const;
 
 private:
@@ -82,7 +86,7 @@ private:
     void setPosition(Uint32 elapsed);
     void setFrame(Uint32 elapsed);
 
-    const Unit &unit_;
+    Unit unit_;
     Point hTarget_;
     bool faceLeft_;
 };
@@ -91,21 +95,20 @@ private:
 class AnimDefend : public Anim
 {
 public:
-    // Note: we provide the new defender unit size so that double-strike looks
+    // Note: we provide the defender unit by value so that double-strike looks
     // correct.  By the time the animation runs, both strikes have already
     // executed in the game state.  Thus, we wouldn't have the correct unit
     // size following the first strike.
-    AnimDefend(const Unit &unit, Point hSrc, Uint32 hitsAt, int newSize);
+    AnimDefend(Unit unit, Point hSrc, Uint32 hitsAt);
 
 private:
     void run(Uint32 elapsed) override;
     void stop() override;
 
-    const Unit &unit_;
+    Unit unit_;
     Point hAttacker_;
     bool faceLeft_;
     Uint32 hitTime_;
-    int newSize_;
 };
 
 
