@@ -46,7 +46,7 @@ public:
     bool isHexOpen(int aIndex) const;
 
     void moveUnit(int id, int aDest);
-    void assignDamage(int id, int damage);
+    int assignDamage(int id, int damage);
 
     // Return the list of adjacent enemy units, possibly using a different hex
     // from the one the unit is standing in.
@@ -60,7 +60,7 @@ public:
     std::array<int, 2> getScore() const;
 
     // Leaders of each army.
-    void setCommander(const Commander &c, int team);
+    void setCommander(Commander c, int team);
     const Commander & getCommander(int team) const;
 
     bool isMeleeAttackAllowed(int id) const;
@@ -130,10 +130,10 @@ private:
     std::vector<int> turnOrder_;
     int curTurn_;
     std::vector<int> unitAtPos_;
-    std::vector<std::shared_ptr<Commander>> commanders_;
     int roundNum_;
     std::function<void (Action)> execFunc_;
     bool simMode_;
+    static std::vector<Commander> commanders_;
 };
 
 #endif

@@ -33,19 +33,19 @@ namespace
     }
 }
 
+std::vector<Commander> GameState::commanders_;
+
 GameState::GameState(const HexGrid &bfGrid)
     : grid_(bfGrid),
     units_{},
     turnOrder_{},
     curTurn_{-1},
     unitAtPos_(grid_.size(), -1),
-    commanders_(2),
     roundNum_{0},
     execFunc_{nullExecFunc},
     simMode_{false}
 {
-    commanders_[0] = std::make_shared<Commander>();
-    commanders_[1] = std::make_shared<Commander>();
+    commanders_.resize(2);
 }
 
 void GameState::nextTurn()
@@ -150,15 +150,17 @@ void GameState::moveUnit(int id, int aDest)
     unit.aHex = aDest;
 }
 
-void GameState::assignDamage(int id, int damage)
+int GameState::assignDamage(int id, int damage)
 {
     auto &unit = getUnit(id);
     assert(unit.isValid());
 
-    unit.takeDamage(damage);
+    int numKilled = unit.takeDamage(damage);
     if (!unit.isAlive()) {
         unitAtPos_[unit.aHex] = -1;
     }
+
+    return numKilled;
 }
 
 std::vector<int> GameState::getAdjEnemies(int id) const
@@ -214,16 +216,16 @@ std::array<int, 2> GameState::getScore() const
     return score;
 }
 
-void GameState::setCommander(const Commander &c, int team)
+void GameState::setCommander(Commander c, int team)
 {
     assert(team == 0 || team == 1);
-    commanders_[team] = std::make_shared<Commander>(c);
+    commanders_[team] = std::move(c);
 }
 
 const Commander & GameState::getCommander(int team) const
 {
     assert(team == 0 || team == 1);
-    return *commanders_[team];
+    return commanders_[team];
 }
 
 bool GameState::isMeleeAttackAllowed(int id) const
@@ -419,9 +421,7 @@ void GameState::execute(const Action &action)
         action.type == ActionType::RETALIATE)
     {
         assert(def.isAlive());
-        int numDefBefore = def.num;
-        assignDamage(action.defender, action.damage);
-        int numKilled = numDefBefore - def.num;
+        auto numKilled = assignDamage(action.defender, action.damage);
 
         if (att.hasTrait(Trait::LIFE_DRAIN)) {
             att.hpLeft = std::min(att.hpLeft + action.damage, att.type->hp);
@@ -461,13 +461,16 @@ std::vector<Action> GameState::getPossibleActions() const
         }
     }
 
-    for (auto aHex : reachableHexes) {
-        if (aHex != unit.aHex) {
-            actions.emplace_back(makeMove(unit.entityId, aHex));
+    actions.emplace_back(makeSkip(unit.entityId));
+
+    if (!unit.hasTrait(Trait::FLYING)) {
+        for (auto aHex : reachableHexes) {
+            if (aHex != unit.aHex) {
+                actions.emplace_back(makeMove(unit.entityId, aHex));
+            }
         }
     }
 
-    actions.emplace_back(makeSkip(unit.entityId));
     return actions;
 }
 
