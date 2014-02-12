@@ -39,6 +39,8 @@ public:
     // Generate a random hex in the range [(0,0), (width-1,height-1)].
     Point hexRandom() const;
 
+    int aryDist(int aSrc, int aTgt) const;
+
     // Return the neighbor hex in a given direction from the source hex.
     // Return -1/invalid if the neighbor hex would be off the map.
     int aryGetNeighbor(int aSrc, Dir d) const;

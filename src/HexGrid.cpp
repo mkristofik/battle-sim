@@ -93,6 +93,11 @@ Point HexGrid::hexRandom() const
     return hexFromAry(aRand);
 }
 
+int HexGrid::aryDist(int aSrc, int aTgt) const
+{
+    return hexDist(hexFromAry(aSrc), hexFromAry(aTgt));
+}
+
 int HexGrid::aryGetNeighbor(int aSrc, Dir d) const
 {
     auto neighbor = adjacent(hexFromAry(aSrc), d);

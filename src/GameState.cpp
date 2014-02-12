@@ -138,6 +138,14 @@ bool GameState::isHexOpen(int aIndex) const
     return !getUnitAt(aIndex).isAlive();
 }
 
+bool GameState::isHexFlyable(const Unit &unit, int aIndex) const
+{
+    if (!unit.hasTrait(Trait::FLYING)) return false;
+
+    return isHexOpen(aIndex) &&
+        grid_.aryDist(unit.aHex, aIndex) <= unit.type->moves;
+}
+
 void GameState::moveUnit(int id, int aDest)
 {
     assert(unitAtPos_[aDest] == -1);
@@ -308,7 +316,7 @@ std::vector<int> GameState::getPath(const Unit &unit, int aTgt) const
 {
     if (grid_.offGrid(aTgt)) return {};
 
-    if (unit.hasTrait(Trait::FLYING) && isHexOpen(aTgt)) {
+    if (isHexFlyable(unit, aTgt)) {
         std::vector<int> path;
         path.push_back(unit.aHex);
         path.push_back(aTgt);
@@ -448,6 +456,8 @@ std::vector<Action> GameState::getPossibleActions() const
     auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
+    actions.emplace_back(makeSkip(unit.entityId));
+
     if (isRangedAttackAllowed(unit.entityId)) {
         for (auto e : getAllEnemies(unit.entityId)) {
             actions.emplace_back(makeAttack(unit.entityId, e, -1));
@@ -461,13 +471,9 @@ std::vector<Action> GameState::getPossibleActions() const
         }
     }
 
-    actions.emplace_back(makeSkip(unit.entityId));
-
-    if (!unit.hasTrait(Trait::FLYING)) {
-        for (auto aHex : reachableHexes) {
-            if (aHex != unit.aHex) {
-                actions.emplace_back(makeMove(unit.entityId, aHex));
-            }
+    for (auto aHex : reachableHexes) {
+        if (aHex != unit.aHex) {
+            actions.emplace_back(makeMove(unit.entityId, aHex));
         }
     }
 
@@ -631,9 +637,10 @@ std::vector<int> GameState::getReachableHexes(const Unit &unit) const
 {
     std::vector<int> reachable;
 
-    if (unit.hasTrait(Trait::FLYING)) {  // flying units can reach any hex
+    // Flying units don't need a clear path.
+    if (unit.hasTrait(Trait::FLYING)) {
         for (int i = 0; i < grid_.size(); ++i) {
-            if (isHexOpen(i)) {
+            if (isHexFlyable(unit, i)) {
                 reachable.push_back(i);
             }
         }

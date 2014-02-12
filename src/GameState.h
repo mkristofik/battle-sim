@@ -45,6 +45,9 @@ public:
     // Return true if there's no unit in the given hex.
     bool isHexOpen(int aIndex) const;
 
+    // Return true if the hex is open and a flying unit can reach it.
+    bool isHexFlyable(const Unit &unit, int aIndex) const;
+
     void moveUnit(int id, int aDest);
     int assignDamage(int id, int damage);
 
