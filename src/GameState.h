@@ -61,6 +61,7 @@ public:
     // Score the current battle state for each side.  Normalize each unit by
     // comparing size to growth rate.
     std::array<int, 2> getScore() const;
+    bool isGameOver() const;
 
     // Leaders of each army.
     void setCommander(Commander c, int team);
@@ -136,6 +137,7 @@ private:
     int roundNum_;
     std::function<void (Action)> execFunc_;
     bool simMode_;
+    int drawTimer_;  // stalemate if no units killed several rounds in a row
     static std::vector<Commander> commanders_;
 };
 

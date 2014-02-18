@@ -68,7 +68,6 @@ namespace
     bool actionTaken = false;
     int roundNum = 1;
     bool logHasFocus = false;  // battlefield has focus by default
-    bool gameOver = false;  // only certain actions allowed after game ends
 
     enum class AiState {IDLE, RUNNING, COMPLETE};
     AiState aiState = AiState::IDLE;
@@ -345,7 +344,7 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (insideRect(event.x, event.y, bfWindow) &&
         !logHasFocus &&
-        !gameOver &&
+        !gs->isGameOver() &&
         isHumanTurn())
     {
         bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
@@ -370,7 +369,7 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             logHasFocus = false;
         }
         else if (insideRect(event.x, event.y, bfWindow) &&
-                 !gameOver &&
+                 !gs->isGameOver() &&
                  isHumanTurn())
         {
             auto action = getPossibleAction(event.x, event.y);
@@ -385,7 +384,7 @@ void handleKeyPress(const SDL_KeyboardEvent &event)
 {
     if (event.keysym.sym != SDLK_s ||
         logHasFocus ||
-        gameOver ||
+        gs->isGameOver() ||
         !isHumanTurn())
     {
         return;
@@ -573,11 +572,11 @@ bool checkWinner(int score1, int score2)
 void nextTurn()
 {
     aiState = AiState::IDLE;
+    gs->nextTurn();
     auto score = gs->getScore();
-    gameOver = checkWinner(score[0], score[1]);
+    checkWinner(score[0], score[1]);
 
-    if (!gameOver) {
-        gs->nextTurn();
+    if (!gs->isGameOver()) {
         std::cout << gs->getActiveUnit().getName();
     }
     else {
@@ -694,7 +693,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             }
         }
 
-        if (!gameOver && !isHumanTurn()) {
+        if (!gs->isGameOver() && !isHumanTurn()) {
             runAiTurn();
         }
 
@@ -712,7 +711,7 @@ extern "C" int SDL_main(int argc, char *argv[])
         if (actionTaken && anims.empty()) {
             actionTaken = false;
             nextTurn();
-            if (!gameOver) {
+            if (!gs->isGameOver()) {
                 checkNewRound();
                 bf->selectHex(gs->getActiveUnit().aHex);
             }

@@ -26,6 +26,7 @@
 namespace
 {
     Unit nullUnit;
+    const int ROUNDS_TO_DRAW = 3;
 
     void nullExecFunc(Action)
     {
@@ -43,7 +44,8 @@ GameState::GameState(const HexGrid &bfGrid)
     unitAtPos_(grid_.size(), -1),
     roundNum_{0},
     execFunc_{nullExecFunc},
-    simMode_{false}
+    simMode_{false},
+    drawTimer_{ROUNDS_TO_DRAW}
 {
     commanders_.resize(2);
 }
@@ -55,6 +57,7 @@ void GameState::nextTurn()
         return;
     }
 
+    if (isGameOver()) return;
     if (turnOrder_.empty()) return;
 
     ++curTurn_;
@@ -173,6 +176,9 @@ int GameState::assignDamage(int id, int damage)
     if (!unit.isAlive()) {
         unitAtPos_[unit.aHex] = -1;
     }
+    if (numKilled > 0) {
+        drawTimer_ = ROUNDS_TO_DRAW;
+    }
 
     return numKilled;
 }
@@ -221,6 +227,8 @@ std::array<int, 2> GameState::getScore() const
     std::array<int, 2> score;
     score.fill(0);
 
+    if (drawTimer_ <= 0) return score;
+
     for (auto &u : units_) {
         if (!u.isAlive()) continue;
 
@@ -230,6 +238,12 @@ std::array<int, 2> GameState::getScore() const
         score[u.team] += std::max(unitScore, 1);
     }
     return score;
+}
+
+bool GameState::isGameOver() const
+{
+    auto score = getScore();
+    return score[0] <= 0 || score[1] <= 0;
 }
 
 void GameState::setCommander(Commander c, int team)
@@ -598,6 +612,9 @@ void GameState::nextRound()
              [this] (int id) {units_[id].retaliated = false;});
 
     remapUnitPos();
+    if (roundNum_ > 0) {
+        --drawTimer_;
+    }
     ++roundNum_;
 }
 

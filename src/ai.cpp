@@ -53,11 +53,11 @@ int noLookAhead(const GameState &gs)
 int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
 {
     // If we've run out of search time or the game has ended, stop.
-    // TODO: there are situations where the game won't ever end (e.g.,
-    // Cavaliers vs. any unit w/ only 1 move, anything weak vs. Trolls).  We
-    // need to declare a draw within a few turns of no units being killed.
     auto score = gs.getScore();
-    if (depth <= 0 || score[0] == 0 || score[1] == 0) {
+    if (score[0] == 0 || score[1] == 0) {
+        return (score[0] - score[1]) * 4;  // Place an emphasis on winning.
+    }
+    else if (depth <= 0) {
         return score[0] - score[1];
     }
 
@@ -101,7 +101,10 @@ Action bestAction(const GameState &gs, F aiFunc)
         }
     }
 
-    if (!best) return {};
+    if (!best) {
+        std::cout << "    No action is good, skipping turn.\n";
+        return {};
+    }
     best->damage = 0;  // clear simulated damage
     return *best;
 }
@@ -131,6 +134,9 @@ Action aiBetter(GameState gs)
 
 Action aiBest(GameState gs)
 {
+    // TODO: can we do this with iterative deepening?  Run successively longer
+    // search depths up to 10 seconds perhaps?  We might consider stopping if
+    // the first few runs all produce the same move.
     gs.setSimMode();
     return minimax(gs, 7);
 }
