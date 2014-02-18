@@ -18,16 +18,18 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Initiative stat determines the order in which units get to act.
 - Commanders have influence over the strength of their units.
 - Units can retaliate against melee attacks once per round.
+- Ranged units cannot retaliate.
+- A unit cannot retaliate against flying units unless it can fly too.
 - Pressing the 'S' key will skip a unit's turn.
 
 ## Core Principles
 
 - Be simple enough that an AI player can play well.
-- All units move 1 hex per turn by default.
+- All units move 1 hex per turn by default.  Moving more than that should be special.
 - All attacks must do at least *some* damage.  No abilities may cause an attack to miss entirely.
 - Most creatures should have a special ability.  Special attacks take the place of a normal (boring) attack.
 - Special abilities must be **special**.  Anything that reduces to a numerical increase in damage or hit points is not special.
-- Magic should be **magical**.  Direct-damage spells (e.g., Fireball, Lightning) are boring, and not very effective as stack sizes get larger.
+- Magic should be **magical**.  Direct-damage spells (e.g., Fireball, Lightning) are boring when cast by the commander, and not very effective as stack sizes get larger.
 - Good spells should have a large-scale effect.  Spells that affect the entire battlefield indiscriminantly are even better.
 
 ## Artwork Notes
