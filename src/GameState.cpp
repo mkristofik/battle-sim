@@ -141,9 +141,15 @@ bool GameState::isHexOpen(int aIndex) const
 bool GameState::isHexFlyable(const Unit &unit, int aIndex) const
 {
     if (!unit.hasTrait(Trait::FLYING)) return false;
+    if (unit.aHex == aIndex) return true;
 
-    return isHexOpen(aIndex) &&
-        grid_.aryDist(unit.aHex, aIndex) <= unit.type->moves;
+    if (isHexOpen(aIndex) &&
+        grid_.aryDist(unit.aHex, aIndex) <= unit.type->moves)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void GameState::moveUnit(int id, int aDest)
@@ -216,10 +222,12 @@ std::array<int, 2> GameState::getScore() const
     score.fill(0);
 
     for (auto &u : units_) {
-        if (u.isValid()) {
-            assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
-            score[u.team] += u.num * 100 / u.type->growth;
-        }
+        if (!u.isAlive()) continue;
+
+        assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
+        int unitScore = (u.num - 1) * 100 / u.type->growth;
+        unitScore += (100.0 * u.hpLeft / u.type->hp) / u.type->growth;
+        score[u.team] += std::max(unitScore, 1);
     }
     return score;
 }
@@ -319,7 +327,9 @@ std::vector<int> GameState::getPath(const Unit &unit, int aTgt) const
     if (isHexFlyable(unit, aTgt)) {
         std::vector<int> path;
         path.push_back(unit.aHex);
-        path.push_back(aTgt);
+        if (unit.aHex != aTgt) {
+            path.push_back(aTgt);
+        }
         return path;
     }
 
@@ -456,8 +466,6 @@ std::vector<Action> GameState::getPossibleActions() const
     auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
-    actions.emplace_back(makeSkip(unit.entityId));
-
     if (isRangedAttackAllowed(unit.entityId)) {
         for (auto e : getAllEnemies(unit.entityId)) {
             actions.emplace_back(makeAttack(unit.entityId, e, -1));
@@ -470,6 +478,8 @@ std::vector<Action> GameState::getPossibleActions() const
             }
         }
     }
+
+    actions.emplace_back(makeSkip(unit.entityId));
 
     for (auto aHex : reachableHexes) {
         if (aHex != unit.aHex) {

@@ -16,6 +16,7 @@
 #include "algo.h"
 
 #include "boost/lexical_cast.hpp"
+#include <cmath>
 #include <cstdlib>
 #include <random>
 
@@ -63,10 +64,10 @@ int Unit::randomDamage(ActionType action) const
 int Unit::avgDamage(ActionType action) const
 {
     if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
-        return (type->minDmg + type->maxDmg) / 2;
+        return nearbyint((type->minDmg + type->maxDmg) / 2);
     }
     else if (action == ActionType::RANGED) {
-        return (type->minDmgRanged + type->maxDmgRanged) / 2;
+        return nearbyint((type->minDmgRanged + type->maxDmgRanged) / 2);
     }
 
     return 0;
