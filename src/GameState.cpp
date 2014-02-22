@@ -32,6 +32,30 @@ namespace
     {
         assert(false);
     }
+
+    // In-place selection sort to alternate units from each team.
+    template <typename Iter, typename Cont>
+    void alternateTeams(Iter turnOrderBegin, Iter turnOrderEnd,
+                        const Cont &units)
+    {
+        auto isTeam1 = [&] (int id) { return units[id].team == 0; };
+        auto isTeam2 = [&] (int id) { return units[id].team == 1; };
+
+        bool team1sTurn = true;
+        for (auto ptr = turnOrderBegin; ptr != turnOrderEnd; ++ptr) {
+            Iter nextUnit = turnOrderEnd;
+            if (team1sTurn) {
+                nextUnit = std::find_if(ptr, turnOrderEnd, isTeam1);
+            }
+            else {
+                nextUnit = std::find_if(ptr, turnOrderEnd, isTeam2);
+            }
+            if (nextUnit == turnOrderEnd) break;
+
+            std::rotate(ptr, nextUnit, std::next(nextUnit));
+            team1sTurn = !team1sTurn;
+        }
+    }
 }
 
 std::vector<Commander> GameState::commanders_;
@@ -234,8 +258,8 @@ std::array<int, 2> GameState::getScore() const
 
         assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
         int unitScore = (u.num - 1) * 100 / u.type->growth;
-        unitScore += (100.0 * u.hpLeft / u.type->hp) / u.type->growth;
-        score[u.team] += std::max(unitScore, 1);
+        unitScore += ceil((100.0 * u.hpLeft / u.type->hp) / u.type->growth);
+        score[u.team] += unitScore;
     }
     return score;
 }
@@ -601,12 +625,13 @@ void GameState::nextRound()
             turnOrder_.push_back(u.entityId);
         }
     }
+    curTurn_ = (turnOrder_.empty() ? -1 : 0);
 
     auto sortByInitiative = [this] (int lhs, int rhs) {
         return units_[lhs].type->initiative > units_[rhs].type->initiative;
     };
     stable_sort(std::begin(turnOrder_), std::end(turnOrder_), sortByInitiative);
-    curTurn_ = (turnOrder_.empty() ? -1 : 0);
+    alternateTeamInitiative();
 
     for_each(std::begin(turnOrder_), std::end(turnOrder_),
              [this] (int id) {units_[id].retaliated = false;});
@@ -627,6 +652,26 @@ void GameState::remapUnitPos()
             unitAtPos_[unit.aHex] = unit.entityId;
         }
     }
+}
+
+void GameState::alternateTeamInitiative()
+{
+    if (turnOrder_.size() < 2) return;
+
+    // Break the turn order list into groups of equal initiative (assume it's
+    // sorted) as though we called equal_range multiple times.  Make sure we
+    // alternate teams within each group.
+    auto begin = std::begin(turnOrder_);
+    auto initiative = units_[*begin].type->initiative;
+    for (auto i = std::begin(turnOrder_); i != std::end(turnOrder_); ++i) {
+        if (units_[*i].type->initiative == initiative) continue;
+
+        alternateTeams(begin, i, units_);
+        begin = i;
+        initiative = units_[*begin].type->initiative;
+    }
+
+    alternateTeams(begin, std::end(turnOrder_), units_);
 }
 
 double GameState::getDamageMultiplier(const Action &action) const

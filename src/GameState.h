@@ -113,6 +113,9 @@ private:
     // invalidated.
     void remapUnitPos();
 
+    // When units tie for initiative, make sure we alternate teams.
+    void alternateTeamInitiative();
+
     // Compute a weighting factor applied to attack damage influenced by the
     // commanders of both teams.
     double getDamageMultiplier(const Action &action) const;
