@@ -36,7 +36,7 @@ namespace
     // In-place selection sort to alternate units from each team.
     template <typename Iter, typename Cont>
     void alternateTeams(Iter turnOrderBegin, Iter turnOrderEnd,
-                        const Cont &units)
+                        Cont &units)
     {
         auto isTeam1 = [&] (int id) { return units[id].team == 0; };
         auto isTeam2 = [&] (int id) { return units[id].team == 1; };
@@ -114,11 +114,8 @@ void GameState::addUnit(Unit u)
     assert(unitAtPos_[u.aHex] == -1);
 
     int id = u.entityId;
-    if (id >= static_cast<int>(units_.size())) {
-        units_.resize(id + 1);
-    }
     unitAtPos_[u.aHex] = id;
-    units_[id] = std::move(u);
+    units_.emplace(id, std::move(u));
 }
 
 Unit & GameState::getUnit(int id)
@@ -128,19 +125,19 @@ Unit & GameState::getUnit(int id)
 
 const Unit & GameState::getUnit(int id) const
 {
-    if (id < 0 || id >= static_cast<int>(units_.size())) return nullUnit;
-    if (!units_[id].isValid()) {
-        std::cerr << "WARNING: returning null unit, entity id " << id << " is not valid." << std::endl;
-        return nullUnit;
-    }
+    auto iter = units_.find(id);
+    if (iter == units_.end()) return nullUnit;
 
-    return units_[id];
+    return iter->second;
 }
 
 const Unit & GameState::getActiveUnit() const
 {
     if (curTurn_ == -1) return nullUnit;
-    return units_[turnOrder_[curTurn_]];
+    auto iter = units_.find(turnOrder_[curTurn_]);
+    if (iter == units_.end()) return nullUnit;
+
+    return iter->second;
 }
 
 const Unit & GameState::getUnitAt(int aIndex) const
@@ -150,13 +147,14 @@ const Unit & GameState::getUnitAt(int aIndex) const
     auto id = unitAtPos_[aIndex];
     if (id == -1) return nullUnit;
 
-    auto &unit = units_[id];
-    assert(unit.aHex == aIndex);
-    if (unit.isAlive()) {
-        return unit;
-    }
+    auto iter = units_.find(id);
+    if (iter == units_.end()) return nullUnit;
 
-    return nullUnit;
+    const auto &unit = iter->second;
+    assert(unit.aHex == aIndex);
+    if (!unit.isAlive()) return nullUnit;
+
+    return unit;
 }
 
 bool GameState::isHexOpen(int aIndex) const
@@ -237,7 +235,8 @@ std::vector<int> GameState::getAllEnemies(int id) const
 
     std::vector<int> enemies;
 
-    for (const auto &u : units_) {
+    for (const auto &unitPair : units_) {
+        const auto &u = unitPair.second;
         if (u.isAlive() && unit.isEnemy(u)) {
             enemies.push_back(u.entityId);
         }
@@ -253,7 +252,8 @@ std::array<int, 2> GameState::getScore() const
 
     if (drawTimer_ <= 0) return score;
 
-    for (auto &u : units_) {
+    for (const auto &unitPair : units_) {
+        const auto &u = unitPair.second;
         if (!u.isAlive()) continue;
 
         assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
@@ -620,7 +620,8 @@ void GameState::runActionSeq(Action action)
 void GameState::nextRound()
 {
     turnOrder_.clear();
-    for (const auto &u : units_) {
+    for (const auto &unitPair : units_) {
+        const auto &u = unitPair.second;
         if (u.isAlive()) {
             turnOrder_.push_back(u.entityId);
         }
@@ -647,7 +648,8 @@ void GameState::remapUnitPos()
 {
     fill(std::begin(unitAtPos_), std::end(unitAtPos_), -1);
 
-    for (const auto &unit : units_) {
+    for (const auto &unitPair : units_) {
+        const auto &unit = unitPair.second;
         if (unit.isAlive()) {
             unitAtPos_[unit.aHex] = unit.entityId;
         }

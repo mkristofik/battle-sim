@@ -20,6 +20,7 @@
 #include <array>
 #include <functional>
 #include <iosfwd>
+#include <unordered_map>
 #include <vector>
 
 class Action;
@@ -133,7 +134,7 @@ private:
     void onStartTurn();
 
     const HexGrid &grid_;
-    std::vector<Unit> units_;  // indexed by entity id
+    std::unordered_map<int, Unit> units_;
     std::vector<int> turnOrder_;
     int curTurn_;
     std::vector<int> unitAtPos_;
