@@ -56,17 +56,30 @@ Possible Images
 ---------------
 Druid - human-magi/elder mage
 Dendroid - woses/wose
+Cleric - human-magi/white mage
 
-
-Traits
-------
+Possible Traits
+---------------
 First-strike
 Double-strike
 Flying
 Regeneration - see healing anims in C:\Program Files (x86)\Battle for Wesnoth 1.10.3\data\core\units\elves\Druid.cfg and Shaman.cfg
 Trample
-Deathtouch
-Lifelink
+Deathtouch (probably OP)
+Life drain
+Mana drain
+Reanimator (raise skeletons from dead units)
+Binding (defender moves=0 until attacker killed or moved, defender loses
+flying)
+Zombify
+Undead (immune to life drain, zombify)
+Mechanical (immune to life drain, zombify, poison)
+Poisonous (not sure how to make this fair)
+Mounted (moves=2)
+Knockback (defender moves backward one hex)
+Ranged attack
+Spellcaster
+Summoned (unit doesn't count towards team score)
 
 Champion skills
 ---------------
