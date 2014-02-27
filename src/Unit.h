@@ -35,7 +35,7 @@ struct Unit
     bool retaliated;  // used retaliation this round
 
     Unit();
-    Unit(const UnitType &t);
+    explicit Unit(const UnitType &t);
 
     int randomDamage(ActionType action) const;
     int avgDamage(ActionType action) const;

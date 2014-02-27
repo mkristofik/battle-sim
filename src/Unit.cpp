@@ -34,16 +34,10 @@ Unit::Unit()
 }
 
 Unit::Unit(const UnitType &t)
-    : entityId{-1},
-    num{0},
-    team{-1},
-    aHex{-1},
-    face{Facing::RIGHT},
-    type{&t},
-    labelId{-1},
-    hpLeft{type->hp},
-    retaliated{false}
+    : Unit()
 {
+    type = &t;
+    hpLeft = type->hp;
 }
 
 int Unit::randomDamage(ActionType action) const
