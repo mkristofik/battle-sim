@@ -20,7 +20,6 @@
 #include <array>
 #include <functional>
 #include <iosfwd>
-#include <unordered_map>
 #include <vector>
 
 class Action;
@@ -116,6 +115,7 @@ private:
 
     // When units tie for initiative, make sure we alternate teams.
     void alternateTeamInitiative();
+    void alternateTeams(int turnOrderBegin, int turnOrderEnd);
 
     // Compute a weighting factor applied to attack damage influenced by the
     // commanders of both teams.
@@ -134,7 +134,7 @@ private:
     void onStartTurn();
 
     const HexGrid &grid_;
-    std::unordered_map<int, Unit> units_;
+    std::vector<Unit> units_;
     std::vector<int> turnOrder_;
     int curTurn_;
     std::vector<int> unitAtPos_;

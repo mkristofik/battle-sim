@@ -35,7 +35,7 @@ namespace
 
     // In-place selection sort to alternate units from each team.
     template <typename Iter, typename Cont>
-    void alternateTeams(Iter turnOrderBegin, Iter turnOrderEnd,
+    void alternateTeams2(Iter turnOrderBegin, Iter turnOrderEnd,
                         Cont &units)
     {
         auto isTeam1 = [&] (int id) { return units[id].team == 0; };
@@ -86,7 +86,7 @@ void GameState::nextTurn()
 
     ++curTurn_;
     int endOfRound = turnOrder_.size();
-    while (curTurn_ < endOfRound && !units_[turnOrder_[curTurn_]].isAlive()) {
+    while (curTurn_ < endOfRound && !getUnit(turnOrder_[curTurn_]).isAlive()) {
         ++curTurn_;
     }
 
@@ -115,7 +115,9 @@ void GameState::addUnit(Unit u)
 
     int id = u.entityId;
     unitAtPos_[u.aHex] = id;
-    units_.emplace(id, std::move(u));
+    units_.emplace_back(std::move(u));
+    stable_sort(std::begin(units_), std::end(units_),
+        [] (const Unit &a, const Unit &b) { return a.entityId < b.entityId; });
 }
 
 Unit & GameState::getUnit(int id)
@@ -125,19 +127,17 @@ Unit & GameState::getUnit(int id)
 
 const Unit & GameState::getUnit(int id) const
 {
-    auto iter = units_.find(id);
-    if (iter == units_.end()) return nullUnit;
+    auto iter = lower_bound(std::begin(units_), std::end(units_), id,
+        [] (const Unit &a, int b) { return a.entityId < b; });
+    if (iter == units_.end() || iter->entityId != id) return nullUnit;
 
-    return iter->second;
+    return *iter;
 }
 
 const Unit & GameState::getActiveUnit() const
 {
     if (curTurn_ == -1) return nullUnit;
-    auto iter = units_.find(turnOrder_[curTurn_]);
-    if (iter == units_.end()) return nullUnit;
-
-    return iter->second;
+    return getUnit(turnOrder_[curTurn_]);
 }
 
 const Unit & GameState::getUnitAt(int aIndex) const
@@ -147,10 +147,7 @@ const Unit & GameState::getUnitAt(int aIndex) const
     auto id = unitAtPos_[aIndex];
     if (id == -1) return nullUnit;
 
-    auto iter = units_.find(id);
-    if (iter == units_.end()) return nullUnit;
-
-    const auto &unit = iter->second;
+    const auto &unit = getUnit(id);
     assert(unit.aHex == aIndex);
     if (!unit.isAlive()) return nullUnit;
 
@@ -235,8 +232,7 @@ std::vector<int> GameState::getAllEnemies(int id) const
 
     std::vector<int> enemies;
 
-    for (const auto &unitPair : units_) {
-        const auto &u = unitPair.second;
+    for (const auto &u : units_) {
         if (u.isAlive() && unit.isEnemy(u)) {
             enemies.push_back(u.entityId);
         }
@@ -252,8 +248,7 @@ std::array<int, 2> GameState::getScore() const
 
     if (drawTimer_ <= 0) return score;
 
-    for (const auto &unitPair : units_) {
-        const auto &u = unitPair.second;
+    for (const auto &u : units_) {
         if (!u.isAlive()) continue;
 
         assert(u.team >= 0 && u.team < static_cast<int>(score.size()));
@@ -620,8 +615,7 @@ void GameState::runActionSeq(Action action)
 void GameState::nextRound()
 {
     turnOrder_.clear();
-    for (const auto &unitPair : units_) {
-        const auto &u = unitPair.second;
+    for (const auto &u : units_) {
         if (u.isAlive()) {
             turnOrder_.push_back(u.entityId);
         }
@@ -629,17 +623,20 @@ void GameState::nextRound()
     curTurn_ = (turnOrder_.empty() ? -1 : 0);
 
     auto sortByInitiative = [this] (int lhs, int rhs) {
-        return units_[lhs].type->initiative > units_[rhs].type->initiative;
+        return getUnit(lhs).type->initiative > getUnit(rhs).type->initiative;
     };
     stable_sort(std::begin(turnOrder_), std::end(turnOrder_), sortByInitiative);
     alternateTeamInitiative();
 
     for_each(std::begin(turnOrder_), std::end(turnOrder_),
-             [this] (int id) {units_[id].retaliated = false;});
+             [this] (int id) {getUnit(id).retaliated = false;});
 
     remapUnitPos();
     if (roundNum_ > 0) {
         --drawTimer_;
+        // TODO: we actually want to apply this on round 0 because the next
+        // time a unit is killed is supposed to act like round 0.  We need to
+        // set the default timer to 4, not 3, to get 3 rounds before a draw.
     }
     ++roundNum_;
 }
@@ -648,8 +645,7 @@ void GameState::remapUnitPos()
 {
     fill(std::begin(unitAtPos_), std::end(unitAtPos_), -1);
 
-    for (const auto &unitPair : units_) {
-        const auto &unit = unitPair.second;
+    for (const auto &unit : units_) {
         if (unit.isAlive()) {
             unitAtPos_[unit.aHex] = unit.entityId;
         }
@@ -658,22 +654,42 @@ void GameState::remapUnitPos()
 
 void GameState::alternateTeamInitiative()
 {
-    if (turnOrder_.size() < 2) return;
+    int size = turnOrder_.size();
+    if (size < 2) return;
 
     // Break the turn order list into groups of equal initiative (assume it's
     // sorted) as though we called equal_range multiple times.  Make sure we
     // alternate teams within each group.
-    auto begin = std::begin(turnOrder_);
-    auto initiative = units_[*begin].type->initiative;
-    for (auto i = std::begin(turnOrder_); i != std::end(turnOrder_); ++i) {
-        if (units_[*i].type->initiative == initiative) continue;
+    int begin = 0;
+    auto initiative = getUnit(turnOrder_[0]).type->initiative;
+    for (int i = 0; i < size; ++i) {
+        if (getUnit(turnOrder_[i]).type->initiative == initiative) continue;
 
-        alternateTeams(begin, i, units_);
+        alternateTeams(begin, i);
         begin = i;
-        initiative = units_[*begin].type->initiative;
+        initiative = getUnit(turnOrder_[begin]).type->initiative;
     }
 
-    alternateTeams(begin, std::end(turnOrder_), units_);
+    alternateTeams(begin, size);
+}
+
+void GameState::alternateTeams(int turnOrderBegin, int turnOrderEnd)
+{
+    bool team1sTurn = true;
+
+    // Selection sort to alternate units from each team.
+    for (int i = turnOrderBegin; i < turnOrderEnd; ++i) {
+        for (int j = i; j < turnOrderEnd; ++j) {
+            auto unitId = turnOrder_[j];
+            if ((team1sTurn && getUnit(unitId).team == 0) ||
+                (!team1sTurn && getUnit(unitId).team == 1))
+            {
+                std::rotate(&turnOrder_[i], &turnOrder_[j], &turnOrder_[j+1]);
+                break;
+            }
+        }
+        team1sTurn = !team1sTurn;
+    }
 }
 
 double GameState::getDamageMultiplier(const Action &action) const
