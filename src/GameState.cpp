@@ -26,35 +26,11 @@
 namespace
 {
     Unit nullUnit;
-    const int ROUNDS_TO_DRAW = 3;
+    const int ROUNDS_TO_DRAW = 4;
 
     void nullExecFunc(Action)
     {
         assert(false);
-    }
-
-    // In-place selection sort to alternate units from each team.
-    template <typename Iter, typename Cont>
-    void alternateTeams2(Iter turnOrderBegin, Iter turnOrderEnd,
-                        Cont &units)
-    {
-        auto isTeam1 = [&] (int id) { return units[id].team == 0; };
-        auto isTeam2 = [&] (int id) { return units[id].team == 1; };
-
-        bool team1sTurn = true;
-        for (auto ptr = turnOrderBegin; ptr != turnOrderEnd; ++ptr) {
-            Iter nextUnit = turnOrderEnd;
-            if (team1sTurn) {
-                nextUnit = std::find_if(ptr, turnOrderEnd, isTeam1);
-            }
-            else {
-                nextUnit = std::find_if(ptr, turnOrderEnd, isTeam2);
-            }
-            if (nextUnit == turnOrderEnd) break;
-
-            std::rotate(ptr, nextUnit, std::next(nextUnit));
-            team1sTurn = !team1sTurn;
-        }
     }
 }
 
@@ -632,12 +608,7 @@ void GameState::nextRound()
              [this] (int id) {getUnit(id).retaliated = false;});
 
     remapUnitPos();
-    if (roundNum_ > 0) {
-        --drawTimer_;
-        // TODO: we actually want to apply this on round 0 because the next
-        // time a unit is killed is supposed to act like round 0.  We need to
-        // set the default timer to 4, not 3, to get 3 rounds before a draw.
-    }
+    --drawTimer_;
     ++roundNum_;
 }
 
