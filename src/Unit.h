@@ -14,6 +14,7 @@
 #define UNIT_H
 
 #include "Action.h"
+#include "Effects.h"
 #include "Traits.h"
 #include <string>
 
@@ -21,9 +22,14 @@ class UnitType;
 
 enum class Facing { LEFT, RIGHT };
 
+// TODO - ideas to make this smaller
+// - store facing with the Drawable
+// - store labelId in the Battlefield
+
 // Unit stack on the battlefield.
 struct Unit
 {
+    Effect effect;  // might want more than one of these
     int entityId;
     int num;
     int team;

@@ -21,7 +21,8 @@
 #include <random>
 
 Unit::Unit()
-    : entityId{-1},
+    : effect(EffectNormal::create()),
+    entityId{-1},
     num{0},
     team{-1},
     aHex{-1},

@@ -22,8 +22,6 @@
 #include <unordered_map>
 #include <vector>
 
-using FrameList = std::vector<Uint32>;
-
 // Definition of each unit type.  Contains all combat stats, descriptive info,
 // images, and animations.
 struct UnitType

@@ -35,7 +35,6 @@ public:
     int getActiveTeam() const;
 
     // Units are owned by their GameState instance.
-    // TODO: only const refs should be public
     void addUnit(Unit u);
     Unit & getUnit(int id);
     const Unit & getUnit(int id) const;

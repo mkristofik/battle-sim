@@ -22,11 +22,14 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 using SdlSurface = std::shared_ptr<SDL_Surface>;
 using SdlFont = std::shared_ptr<TTF_Font>;
 using SdlMusic = std::shared_ptr<Mix_Music>;
 using SdlSound = std::shared_ptr<Mix_Chunk>;
+
+using FrameList = std::vector<Uint32>;
 
 // Must call this before any other SDL functions will work.  There is no
 // recovery if this returns false (you should exit the program).
