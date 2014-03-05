@@ -12,6 +12,7 @@
 */
 #include "Effects.h"
 
+#include "Action.h"
 #include "GameState.h"
 #include "Unit.h"
 #include "algo.h"
@@ -29,23 +30,6 @@ namespace
         assert(iter != cache.end());
         return iter->second.get();
     }
-}
-
-
-EffectNormal::EffectNormal()
-    : EffectData{}
-{
-    type = EffectType::NONE;
-    dur = Duration::INSTANT;
-}
-
-void EffectNormal::apply(const GameState &gs, Effect &effect, Unit &unit) const
-{
-}
-
-Effect EffectNormal::create()
-{
-    return {EffectType::NONE, 1, 0, 0};
 }
 
 
@@ -68,11 +52,31 @@ void EffectBound::apply(const GameState &gs, Effect &effect, Unit &unit) const
     }
 }
 
-Effect EffectBound::create(int attId, int attHex)
+Effect EffectBound::create(const GameState &gs, const Action &action) const
 {
-    return {EffectType::BOUND, 1, attId, attHex};
+    const auto &att = gs.getUnit(action.attacker);
+
+    Effect e;
+    e.type = EffectType::BOUND;
+    e.roundsLeft = 1;
+    e.data1 = att.entityId;
+    e.data2 = att.aHex;
+    return e;
 }
 
+
+Effect::Effect()
+    : type{EffectType::NONE},
+    roundsLeft{0},
+    data1{0},
+    data2{0}
+{
+}
+
+Effect::Effect(const GameState &gs, const Action &action)
+{
+    *this = getData(action.effect)->create(gs, action);
+}
 
 const SdlSurface & Effect::getAnim() const
 {

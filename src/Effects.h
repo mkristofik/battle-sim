@@ -16,8 +16,9 @@
 #include "sdl_helper.h"
 #include <string>
 
+struct Action;
 class GameState;
-class Unit;
+struct Unit;
 
 #define DURATION_TYPES \
     X(INSTANT) \
@@ -73,14 +74,7 @@ struct EffectData
     std::string text;
 
     virtual void apply(const GameState &gs, Effect &effect, Unit &unit) const=0;
-};
-
-// Default state, no effect.
-struct EffectNormal : public EffectData
-{
-    EffectNormal();
-    void apply(const GameState &gs, Effect &effect, Unit &unit) const override;
-    static Effect create();
+    virtual Effect create(const GameState &gs, const Action &action) const=0;
 };
 
 // Defender is stuck in current hex until attacker moves or is killed.
@@ -88,7 +82,7 @@ struct EffectBound : public EffectData
 {
     EffectBound();
     void apply(const GameState &gs, Effect &effect, Unit &unit) const override;
-    static Effect create(int attId, int attHex);
+    Effect create(const GameState &gs, const Action &action) const override;
 };
 
 // Generic instance of an effect type to be applied to a unit.  Try to keep
@@ -99,6 +93,9 @@ struct Effect
     int roundsLeft;
     int data1;
     int data2;
+
+    Effect();
+    Effect(const GameState &gs, const Action &action);
 
     const SdlSurface & getAnim() const;
     const FrameList & getFrames() const;

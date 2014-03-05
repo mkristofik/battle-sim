@@ -18,6 +18,7 @@ Action::Action()
     type{ActionType::NONE},
     attacker{-1},
     defender{-1},
-    aTgt{-1}
+    aTgt{-1},
+    effect{EffectType::NONE}
 {
 }

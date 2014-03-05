@@ -13,6 +13,7 @@
 #ifndef ACTION_H
 #define ACTION_H
 
+#include "Effects.h"
 #include <vector>
 
 // Definition of a possible action a unit may take (where it can move, a target
@@ -23,8 +24,17 @@ enum class ActionType {
     ATTACK,
     RANGED,
     RETALIATE,
-    REGENERATE
+    REGENERATE,
+    EFFECT
 };
+
+// TODO:
+// - create AnimEffect that runs the animation for the effect type on the
+//     defender
+// - GameState creates an Effect object of the type and applies it to the
+//     defender (maybe use the Action as a function argument)
+// - battle log records what happened
+// - Battlefield might need to highlight defender if the effect persists
 
 struct Action
 {
@@ -34,6 +44,7 @@ struct Action
     int attacker;
     int defender;
     int aTgt;  // hex the defender is standing in
+    EffectType effect;
 
     Action();
 };
