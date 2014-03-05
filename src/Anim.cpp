@@ -12,6 +12,7 @@
 */
 #include "Anim.h"
 #include "Battlefield.h"
+#include "Effects.h"
 #include "Traits.h"
 
 #include <algorithm>
@@ -521,6 +522,35 @@ void AnimRegenerate::run(Uint32 elapsed)
 }
 
 void AnimRegenerate::stop()
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.visible = false;
+}
+
+
+AnimEffect::AnimEffect(Effect e, Point hex)
+    : effect_{std::move(e)},
+    id_{-1},
+    hex_{std::move(hex)}
+{
+    runTime_ = effect_.getFrames().back();
+}
+
+void AnimEffect::start()
+{
+    id_ = bf_->addEntity(hex_, effect_.getAnim(), ZOrder::ANIMATING);
+    auto &entity = bf_->getEntity(id_);
+    entity.frame = 0;
+}
+
+void AnimEffect::run(Uint32 elapsed)
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.frame = getFrame(effect_.getFrames(), elapsed);
+    // TODO: it might be better to cache the frame list
+}
+
+void AnimEffect::stop()
 {
     auto &entity = bf_->getEntity(id_);
     entity.visible = false;

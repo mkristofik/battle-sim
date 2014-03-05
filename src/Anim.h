@@ -21,6 +21,7 @@
 #include <vector>
 
 class Battlefield;
+struct Effect;
 
 class Anim
 {
@@ -196,6 +197,23 @@ private:
 
     static FrameList timings_;
     static SdlSurface overlay_;
+    int id_;
+    Point hex_;
+};
+
+
+// TODO: this should replace AnimRegenerate
+class AnimEffect : public Anim
+{
+public:
+    AnimEffect(Effect e, Point hex);
+
+private:
+    void start() override;
+    void run(Uint32 elapsed) override;
+    void stop() override;
+
+    Effect effect_;
     int id_;
     Point hex_;
 };
