@@ -15,7 +15,10 @@
 #include "Action.h"
 #include "GameState.h"
 #include "Unit.h"
+#include "UnitType.h"
 #include "algo.h"
+
+#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <unordered_map>
@@ -40,7 +43,7 @@ EffectBound::EffectBound()
     dur = Duration::UNTIL_ATT_MOVES;
 }
 
-void EffectBound::apply(const GameState &gs, Effect &effect, Unit &unit) const
+void EffectBound::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
     const int &attId = effect.data1;
     const int &attHex = effect.data2;
@@ -65,6 +68,34 @@ Effect EffectBound::create(const GameState &gs, const Action &action) const
 }
 
 
+EffectHeal::EffectHeal()
+    : EffectData{}
+{
+    type = EffectType::HEAL;
+    anim = sdlLoadImage("regeneration.png");
+    animFrames = {75, 150, 225, 300, 375, 450, 525, 600};
+    dur = Duration::INSTANT;
+    text = "healed";
+}
+
+void EffectHeal::apply(GameState &gs, Effect &effect, Unit &unit) const
+{
+    const int hpGained = effect.data1;
+    unit.hpLeft += hpGained;
+    unit.hpLeft = std::min(unit.hpLeft, unit.type->hp);
+    effect.dispose();
+}
+
+Effect EffectHeal::create(const GameState &gs, const Action &action) const
+{
+    Effect e;
+    e.type = EffectType::HEAL;
+    e.roundsLeft = 1;
+    e.data1 = action.damage;
+    return e;
+}
+
+
 Effect::Effect()
     : type{EffectType::NONE},
     roundsLeft{0},
@@ -73,9 +104,10 @@ Effect::Effect()
 {
 }
 
-Effect::Effect(const GameState &gs, const Action &action)
+Effect::Effect(const GameState &gs, const Action &action, EffectType type)
+    : Effect{}
 {
-    *this = getData(action.effect)->create(gs, action);
+    *this = getData(type)->create(gs, action);
 }
 
 const SdlSurface & Effect::getAnim() const
@@ -98,7 +130,7 @@ bool Effect::isDone() const
     return roundsLeft <= 0;
 }
 
-void Effect::apply(const GameState &gs, Unit &unit)
+void Effect::apply(GameState &gs, Unit &unit)
 {
     getData(type)->apply(gs, *this, unit);
 }
@@ -113,4 +145,6 @@ void initEffectCache()
 {
     cache.emplace(static_cast<int>(EffectType::BOUND),
                   make_unique<EffectBound>());
+    cache.emplace(static_cast<int>(EffectType::HEAL),
+                  make_unique<EffectHeal>());
 }

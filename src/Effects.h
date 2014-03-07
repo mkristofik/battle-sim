@@ -26,7 +26,8 @@ struct Unit;
 
 #define EFFECT_TYPES \
     X(NONE) \
-    X(BOUND)
+    X(BOUND) \
+    X(HEAL)
 
 #define X(str) str,
 enum class Duration {DURATION_TYPES};
@@ -73,7 +74,7 @@ struct EffectData
     Duration dur;
     std::string text;
 
-    virtual void apply(const GameState &gs, Effect &effect, Unit &unit) const=0;
+    virtual void apply(GameState &gs, Effect &effect, Unit &unit) const=0;
     virtual Effect create(const GameState &gs, const Action &action) const=0;
 };
 
@@ -81,9 +82,18 @@ struct EffectData
 struct EffectBound : public EffectData
 {
     EffectBound();
-    void apply(const GameState &gs, Effect &effect, Unit &unit) const override;
+    void apply(GameState &gs, Effect &effect, Unit &unit) const override;
     Effect create(const GameState &gs, const Action &action) const override;
 };
+
+// "Defender" is healed by X hit points.
+struct EffectHeal : public EffectData
+{
+    EffectHeal();
+    void apply(GameState &gs, Effect &effect, Unit &unit) const override;
+    Effect create(const GameState &gs, const Action &action) const override;
+};
+
 
 // Generic instance of an effect type to be applied to a unit.  Try to keep
 // this as small as possible.
@@ -95,14 +105,14 @@ struct Effect
     int data2;
 
     Effect();
-    Effect(const GameState &gs, const Action &action);
+    Effect(const GameState &gs, const Action &action, EffectType type);
 
     const SdlSurface & getAnim() const;
     const FrameList & getFrames() const;
     const std::string & getText() const;
     bool isDone() const;  // can we remove this effect from the unit?
 
-    void apply(const GameState &gs, Unit &unit);
+    void apply(GameState &gs, Unit &unit);
     void dispose();  // postcondition: isDone() == true
 };
 
