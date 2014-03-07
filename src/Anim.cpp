@@ -60,8 +60,6 @@ namespace
 }
 
 Battlefield *Anim::bf_ = nullptr;
-SdlSurface AnimRegenerate::overlay_;
-FrameList AnimRegenerate::timings_;
 
 void Anim::setBattlefield(Battlefield &b)
 {
@@ -497,37 +495,6 @@ void AnimParallel::stop()
 }
 
 
-AnimRegenerate::AnimRegenerate(Point hex)
-    : id_{-1},
-    hex_{std::move(hex)}
-{
-    if (!overlay_) {
-        overlay_ = sdlLoadImage("regeneration.png");
-        timings_ = {75, 150, 225, 300, 375, 450, 525, 600};
-    }
-    runTime_ = timings_.back();
-}
-
-void AnimRegenerate::start()
-{
-    id_ = bf_->addEntity(hex_, overlay_, ZOrder::ANIMATING);
-    auto &entity = bf_->getEntity(id_);
-    entity.frame = 0;
-}
-
-void AnimRegenerate::run(Uint32 elapsed)
-{
-    auto &entity = bf_->getEntity(id_);
-    entity.frame = getFrame(timings_, elapsed);
-}
-
-void AnimRegenerate::stop()
-{
-    auto &entity = bf_->getEntity(id_);
-    entity.visible = false;
-}
-
-
 AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
     : effect_{std::move(e)},
     id_{bf_->addHiddenEntity(effect_.getAnim(), ZOrder::ANIMATING)},
@@ -554,7 +521,6 @@ void AnimEffect::run(Uint32 elapsed)
     auto &entity = bf_->getEntity(id_);
     entity.visible = true;
     entity.frame = getFrame(effect_.getFrames(), elapsed);
-    // TODO: it might be better to cache the frame list
 }
 
 void AnimEffect::stop()

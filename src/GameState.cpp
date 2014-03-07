@@ -463,9 +463,6 @@ void GameState::execute(const Action &action)
             att.num += numKilled;
         }
     }
-    else if (action.type == ActionType::REGENERATE) {
-        att.hpLeft = att.type->hp;
-    }
     else if (action.type == ActionType::EFFECT) {
         auto effect = action.effect;
         effect.apply(*this, def);

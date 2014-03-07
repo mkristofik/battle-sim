@@ -40,11 +40,7 @@
 #include <unordered_map>
 #include <vector>
 
-// TODO: ideas
-// - leave space to write unit stats for the highlighted hex
-
-// TODO: things we need to figure all this out
-// - traits (X macros?)
+// TODO: leave space to write unit stats for the highlighted hex
 
 namespace
 {
@@ -270,10 +266,6 @@ void animateAction(const Action &action)
         }
         anims.emplace_back(std::move(attackSeq));
     }
-    else if (action.type == ActionType::REGENERATE) {
-        auto hex = grid->hexFromAry(unit.aHex);
-        anims.emplace_back(make_unique<AnimRegenerate>(hex));
-    }
     else if (action.type == ActionType::EFFECT) {
         const auto &target = gs->getUnit(action.defender);
         assert(target.isValid());
@@ -284,8 +276,7 @@ void animateAction(const Action &action)
 
 void logAction(const Action &action)
 {
-    if (action.type != ActionType::RETALIATE &&
-        action.type != ActionType::REGENERATE)
+    if (action.type != ActionType::RETALIATE)
     {
         std::cout << "    ";
         gs->printAction(std::cout, action);
@@ -301,7 +292,6 @@ void logAction(const Action &action)
     if (action.type == ActionType::ATTACK ||
         action.type == ActionType::RANGED ||
         action.type == ActionType::RETALIATE ||
-        action.type == ActionType::REGENERATE ||
         action.type == ActionType::NONE)
     {
         const auto &attacker = gs->getUnit(action.attacker);
@@ -321,9 +311,6 @@ void logAction(const Action &action)
             ostr << (attacker.num == 1 ? " skips its " : " skip their ");
             ostr << "turn.";
         }
-        else if (action.type == ActionType::REGENERATE) {
-            ostr << (attacker.num == 1 ? " regenerates." : " regenerate.");
-        }
     }
     else if (action.type == ActionType::EFFECT) {
         const auto &defender = gs->getUnit(action.defender);
@@ -334,7 +321,6 @@ void logAction(const Action &action)
     }
 
     if (action.type != ActionType::NONE &&
-        action.type != ActionType::REGENERATE &&
         action.type != ActionType::EFFECT)
     {
         ostr << " for " << action.damage << " damage.";

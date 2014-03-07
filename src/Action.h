@@ -24,17 +24,10 @@ enum class ActionType {
     ATTACK,
     RANGED,
     RETALIATE,
-    REGENERATE,
     EFFECT
 };
 
-// TODO:
-// - create AnimEffect that runs the animation for the effect type on the
-//     defender
-// - GameState creates an Effect object of the type and applies it to the
-//     defender (maybe use the Action as a function argument)
-// - battle log records what happened
-// - Battlefield might need to highlight defender if the effect persists
+// TODO: Battlefield might need to highlight defender if an effect persists
 
 struct Action
 {

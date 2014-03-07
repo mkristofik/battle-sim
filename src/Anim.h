@@ -185,24 +185,6 @@ private:
 };
 
 
-class AnimRegenerate : public Anim
-{
-public:
-    AnimRegenerate(Point hex);
-
-private:
-    void start() override;
-    void run(Uint32 elapsed) override;
-    void stop() override;
-
-    static FrameList timings_;
-    static SdlSurface overlay_;
-    int id_;
-    Point hex_;
-};
-
-
-// TODO: this should replace AnimRegenerate
 class AnimEffect : public Anim
 {
 public:
