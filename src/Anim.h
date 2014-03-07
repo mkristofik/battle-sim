@@ -206,16 +206,16 @@ private:
 class AnimEffect : public Anim
 {
 public:
-    AnimEffect(Effect e, Point hex);
+    AnimEffect(Effect e, Point hex, Uint32 startsAt = 0);
 
 private:
-    void start() override;
     void run(Uint32 elapsed) override;
     void stop() override;
 
     Effect effect_;
     int id_;
     Point hex_;
+    Uint32 startTime_;
 };
 
 #endif

@@ -528,24 +528,31 @@ void AnimRegenerate::stop()
 }
 
 
-AnimEffect::AnimEffect(Effect e, Point hex)
+AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
     : effect_{std::move(e)},
-    id_{-1},
-    hex_{std::move(hex)}
+    id_{bf_->addHiddenEntity(effect_.getAnim(), ZOrder::ANIMATING)},
+    hex_{std::move(hex)},
+    startTime_{startsAt}
 {
-    runTime_ = effect_.getFrames().back();
-}
+    const auto &frames = effect_.getFrames();
+    runTime_ = startTime_;
+    if (!frames.empty()) {
+        runTime_ += frames.back();
+    }
 
-void AnimEffect::start()
-{
-    id_ = bf_->addEntity(hex_, effect_.getAnim(), ZOrder::ANIMATING);
     auto &entity = bf_->getEntity(id_);
+    entity.hex = hex_;
     entity.frame = 0;
 }
 
 void AnimEffect::run(Uint32 elapsed)
 {
+    if (elapsed < startTime_) {
+        return;
+    }
+
     auto &entity = bf_->getEntity(id_);
+    entity.visible = true;
     entity.frame = getFrame(effect_.getFrames(), elapsed);
     // TODO: it might be better to cache the frame list
 }

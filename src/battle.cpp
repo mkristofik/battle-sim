@@ -274,6 +274,12 @@ void animateAction(const Action &action)
         auto hex = grid->hexFromAry(unit.aHex);
         anims.emplace_back(make_unique<AnimRegenerate>(hex));
     }
+    else if (action.type == ActionType::EFFECT) {
+        const auto &target = gs->getUnit(action.defender);
+        assert(target.isValid());
+        auto hex = grid->hexFromAry(target.aHex);
+        anims.emplace_back(make_unique<AnimEffect>(action.effect, hex));
+    }
 }
 
 void logAction(const Action &action)
@@ -290,27 +296,46 @@ void logAction(const Action &action)
         return;
     }
 
-    const auto &attacker = gs->getUnit(action.attacker);
-    assert(attacker.isValid());
     std::ostringstream ostr("- ", std::ios::ate);
-    ostr << attacker.getName();
-    if (action.type == ActionType::ATTACK || action.type == ActionType::RANGED) {
-        ostr << (attacker.num == 1 ? " attacks " : " attack ");
-        ostr << gs->getUnit(action.defender).getName();
+
+    if (action.type == ActionType::ATTACK ||
+        action.type == ActionType::RANGED ||
+        action.type == ActionType::RETALIATE ||
+        action.type == ActionType::REGENERATE ||
+        action.type == ActionType::NONE)
+    {
+        const auto &attacker = gs->getUnit(action.attacker);
+        assert(attacker.isValid());
+        ostr << attacker.getName();
+
+        if (action.type == ActionType::ATTACK ||
+            action.type == ActionType::RANGED)
+        {
+            ostr << (attacker.num == 1 ? " attacks " : " attack ");
+            ostr << gs->getUnit(action.defender).getName();
+        }
+        else if (action.type == ActionType::RETALIATE) {
+            ostr << (attacker.num == 1 ? " retaliates" : " retaliate");
+        }
+        else if (action.type == ActionType::NONE) {
+            ostr << (attacker.num == 1 ? " skips its " : " skip their ");
+            ostr << "turn.";
+        }
+        else if (action.type == ActionType::REGENERATE) {
+            ostr << (attacker.num == 1 ? " regenerates." : " regenerate.");
+        }
     }
-    else if (action.type == ActionType::RETALIATE) {
-        ostr << (attacker.num == 1 ? " retaliates" : " retaliate");
-    }
-    else if (action.type == ActionType::NONE) {
-        ostr << (attacker.num == 1 ? " skips its " : " skip their ");
-        ostr << "turn.";
-    }
-    else if (action.type == ActionType::REGENERATE) {
-        ostr << (attacker.num == 1 ? " regenerates." : " regenerate.");
+    else if (action.type == ActionType::EFFECT) {
+        const auto &defender = gs->getUnit(action.defender);
+        assert(defender.isValid());
+        ostr << defender.getName();
+        ostr << (defender.num == 1 ? " is " : " are ");
+        ostr << action.effect.getText() << '.';
     }
 
     if (action.type != ActionType::NONE &&
-        action.type != ActionType::REGENERATE)
+        action.type != ActionType::REGENERATE &&
+        action.type != ActionType::EFFECT)
     {
         ostr << " for " << action.damage << " damage.";
         const auto &defender = gs->getUnit(action.defender);
@@ -624,6 +649,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
 
     initBattleGrid();
+    initEffectCache();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     Anim::setBattlefield(*bf);
 
