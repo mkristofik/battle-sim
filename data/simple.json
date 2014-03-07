@@ -1,10 +1,21 @@
 {
-    "t1p2": {
-        "id": "sprite",
-        "num": 30
+    "cmdr1": {
+        "name": "Konrad",
+        "alignment": "High Lord",
+        "portrait": "portrait-high-lord.png",
+        "attack": 0,
+        "defense": 1
     },
-    "t2p5": {
-        "id": "elf",
+    "t1p2": {
+        "id": "peasant",
+        "num": 1
+    },
+    "t1p6": {
+        "id": "drake",
+        "num": 1
+    },
+    "t2p3": {
+        "id": "troll",
         "num": 4
     }
 }
