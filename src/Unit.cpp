@@ -21,7 +21,7 @@
 #include <random>
 
 Unit::Unit()
-    : effect(EffectNormal::create()),
+    : effect{},
     entityId{-1},
     num{0},
     team{-1},
@@ -131,6 +131,10 @@ bool Unit::isEnemy(const Unit &other) const
 
 unsigned Unit::getMaxPathSize() const
 {
+    if (effect.type == EffectType::BOUND) {
+        return 1;
+    }
+
     return static_cast<unsigned>(type->moves) + 1;
 }
 

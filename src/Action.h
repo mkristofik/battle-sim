@@ -44,7 +44,7 @@ struct Action
     int attacker;
     int defender;
     int aTgt;  // hex the defender is standing in
-    EffectType effect;
+    Effect effect;
 
     Action();
 };

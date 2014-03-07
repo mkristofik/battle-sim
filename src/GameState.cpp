@@ -13,6 +13,7 @@
 #include "GameState.h"
 
 #include "Action.h"
+#include "Effects.h"
 #include "HexGrid.h"
 #include "Pathfinder.h"
 #include "Traits.h"
@@ -410,9 +411,14 @@ Action GameState::makeRetaliation(const Action &action) const
 
 Action GameState::makeRegeneration(int id) const
 {
+    const auto &target = getUnit(id);
+
     Action regen;
-    regen.attacker = id;
-    regen.type = ActionType::REGENERATE;
+    regen.attacker = target.entityId;
+    regen.defender = target.entityId;
+    regen.damage = target.type->hp - target.hpLeft;
+    regen.type = ActionType::EFFECT;
+    regen.effect = Effect(*this, regen, EffectType::HEAL);
     return regen;
 }
 
@@ -457,13 +463,20 @@ void GameState::execute(const Action &action)
             att.num += numKilled;
         }
     }
+    else if (action.type == ActionType::REGENERATE) {
+        att.hpLeft = att.type->hp;
+    }
+    else if (action.type == ActionType::EFFECT) {
+        auto effect = action.effect;
+        effect.apply(*this, def);
+        if (!effect.isDone()) {
+            // Effects with duration stay with the defending unit.
+            def.effect = effect;
+        }
+    }
 
     if (action.type == ActionType::RETALIATE) {
         att.retaliated = true;
-    }
-
-    if (action.type == ActionType::REGENERATE) {
-        att.hpLeft = att.type->hp;
     }
 }
 
@@ -530,6 +543,13 @@ void GameState::printAction(std::ostream &ostr, const Action &action) const
             const auto &def = getUnit(action.defender);
             assert(def.isValid());
             ostr << "Ranged attack " << def.getName();
+            break;
+        }
+        case ActionType::EFFECT:
+        {
+            const auto &def = getUnit(action.defender);
+            assert(def.isValid());
+            ostr << def.getName() << ' ' << action.effect.getText();
             break;
         }
         default:
