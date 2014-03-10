@@ -16,6 +16,7 @@
 #include "algo.h"
 
 #include "boost/lexical_cast.hpp"
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <random>
@@ -43,6 +44,8 @@ Unit::Unit(const UnitType &t)
 
 int Unit::randomDamage(ActionType action) const
 {
+    if (!isValid()) return 0;
+
     if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
         std::uniform_int_distribution<int> dmg(type->minDmg, type->maxDmg);
         return dmg(randomGenerator());
@@ -58,6 +61,8 @@ int Unit::randomDamage(ActionType action) const
 
 int Unit::avgDamage(ActionType action) const
 {
+    if (!isValid()) return 0;
+
     if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
         return nearbyint((type->minDmg + type->maxDmg) / 2);
     }
@@ -70,6 +75,8 @@ int Unit::avgDamage(ActionType action) const
 
 int Unit::takeDamage(int dmg)
 {
+    if (!isValid()) return 0;
+
     if (dmg < hpLeft) {
         hpLeft -= dmg;
         return 0;
@@ -113,6 +120,8 @@ bool Unit::isAlive() const
 
 std::string Unit::getName(int number) const
 {
+    if (!isValid()) return {};
+
     if (number == 1) {
         return "1 " + type->name;
     }
@@ -131,19 +140,22 @@ bool Unit::isEnemy(const Unit &other) const
 
 unsigned Unit::getMaxPathSize() const
 {
+    if (!isValid()) return 0;
+
     if (effect.type == EffectType::BOUND) {
         return 1;
     }
-
     return static_cast<unsigned>(type->moves) + 1;
 }
 
 bool Unit::hasTrait(Trait t) const
 {
+    if (!isValid()) return false;
     return contains(type->traits, t);
 }
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
+    assert(lhs.type && rhs.type);
     return lhs.type->initiative > rhs.type->initiative;
 }
