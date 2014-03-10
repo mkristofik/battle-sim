@@ -72,6 +72,7 @@ public:
     bool isFirstStrikeAllowed(const Action &action) const;
     bool isDoubleStrikeAllowed(const Action &action) const;
     bool isTrampleAllowed(const Action &action) const;
+    bool isBindAllowed(const Action &action) const;
 
     // Get the shortest path between two hexes that is clear of units.
     std::vector<int> getPath(int aSrc, int aTgt) const;
@@ -82,6 +83,7 @@ public:
     Action makeSkip(int id) const;
     Action makeRetaliation(const Action &action) const;
     Action makeRegeneration(int id) const;
+    Action makeBind(int attId, int defId) const;
 
     int computeDamage(const Action &action) const;
     int getSimulatedDamage(const Action &action) const;

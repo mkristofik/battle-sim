@@ -314,10 +314,26 @@ bool GameState::isTrampleAllowed(const Action &action) const
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
 
-    if (!att.hasTrait(Trait::TRAMPLE)) return false;
     if (action.type != ActionType::ATTACK) return false;
+    if (!att.hasTrait(Trait::TRAMPLE)) return false;
 
     return att.isAlive() && !def.isAlive();
+}
+
+bool GameState::isBindAllowed(const Action &action) const
+{
+    const auto &att = getUnit(action.attacker);
+    const auto &def = getUnit(action.defender);
+
+    if (action.type != ActionType::ATTACK &&
+        action.type != ActionType::RETALIATE)
+    {
+        return false;
+    }
+    if (def.effect.type == EffectType::BOUND) return false;
+    if (!att.hasTrait(Trait::BINDING)) return false;
+
+    return att.isAlive() && def.isAlive();
 }
 
 std::vector<int> GameState::getPath(int aSrc, int aTgt) const
@@ -420,6 +436,16 @@ Action GameState::makeRegeneration(int id) const
     regen.type = ActionType::EFFECT;
     regen.effect = Effect(*this, regen, EffectType::HEAL);
     return regen;
+}
+
+Action GameState::makeBind(int attId, int defId) const
+{
+    Action binder;
+    binder.attacker = attId;
+    binder.defender = defId;
+    binder.type = ActionType::EFFECT;
+    binder.effect = Effect(*this, binder, EffectType::BOUND);
+    return binder;
 }
 
 int GameState::computeDamage(const Action &action) const
@@ -589,6 +615,10 @@ void GameState::runActionSeq(Action action)
 
     actionCallback(action);
 
+    if (isBindAllowed(action)) {
+        auto binder = makeBind(action.attacker, action.defender);
+        actionCallback(binder);
+    }
     if (isRetaliationAllowed(action)) {
         auto retal = makeRetaliation(action);
         actionCallback(retal);

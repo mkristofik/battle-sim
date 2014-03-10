@@ -40,7 +40,11 @@ EffectBound::EffectBound()
     : EffectData{}
 {
     type = EffectType::BOUND;
+    // TODO: make this configurable
+    anim = sdlLoadImage("web.png");
+    animFrames.push_back(1500);
     dur = Duration::UNTIL_ATT_MOVES;
+    text = "bound to current hex";
 }
 
 void EffectBound::apply(GameState &gs, Effect &effect, Unit &unit) const

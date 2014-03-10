@@ -17,6 +17,7 @@
 #include <vector>
 
 #define UNIT_TRAITS \
+    X(BINDING) \
     X(DOUBLE_STRIKE) \
     X(FIRST_STRIKE) \
     X(FLYING) \
