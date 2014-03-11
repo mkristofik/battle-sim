@@ -64,6 +64,7 @@ struct Unit
     unsigned getMaxPathSize() const;
 
     bool hasTrait(Trait t) const;
+    bool hasEffect(EffectType e) const;
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);

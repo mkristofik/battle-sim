@@ -272,12 +272,22 @@ bool GameState::isRetaliationAllowed(const Action &action) const
 {
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
-    return action.type == ActionType::ATTACK &&
-           att.isAlive() &&
-           def.isAlive() &&
-           isMeleeAttackAllowed(action.defender) &&
-           !def.retaliated &&
-           (!att.hasTrait(Trait::FLYING) || def.hasTrait(Trait::FLYING));
+
+    if (action.type != ActionType::ATTACK) return false;
+    if (!att.isAlive() || !def.isAlive()) return false;
+    if (!isMeleeAttackAllowed(action.defender)) return false;
+    if (def.retaliated) return false;
+
+    // Non-flying units can't retaliate against flyers.  The bind effect causes
+    // a unit to lose flying.
+    if (!att.hasTrait(Trait::FLYING) || att.hasEffect(EffectType::BOUND)) {
+        return true;
+    }
+    if (def.hasTrait(Trait::FLYING) || !def.hasEffect(EffectType::BOUND)) {
+        return true;
+    }
+
+    return false;
 }
 
 bool GameState::isFirstStrikeAllowed(const Action &action) const
@@ -330,7 +340,7 @@ bool GameState::isBindAllowed(const Action &action) const
     {
         return false;
     }
-    if (def.effect.type == EffectType::BOUND) return false;
+    if (def.hasEffect(EffectType::BOUND)) return false;
     if (!att.hasTrait(Trait::BINDING)) return false;
 
     return att.isAlive() && def.isAlive();

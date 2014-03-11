@@ -142,7 +142,7 @@ unsigned Unit::getMaxPathSize() const
 {
     if (!isValid()) return 0;
 
-    if (effect.type == EffectType::BOUND) {
+    if (hasEffect(EffectType::BOUND)) {
         return 1;
     }
     return static_cast<unsigned>(type->moves) + 1;
@@ -152,6 +152,12 @@ bool Unit::hasTrait(Trait t) const
 {
     if (!isValid()) return false;
     return contains(type->traits, t);
+}
+
+bool Unit::hasEffect(EffectType e) const
+{
+    if (!isValid()) return false;
+    return effect.type == e;
 }
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
