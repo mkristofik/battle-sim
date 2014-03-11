@@ -139,7 +139,7 @@ bool GameState::isHexOpen(int aIndex) const
 
 bool GameState::isHexFlyable(const Unit &unit, int aIndex) const
 {
-    if (!unit.hasTrait(Trait::FLYING)) return false;
+    if (!unit.canFly()) return false;
     if (unit.aHex == aIndex) return true;
 
     if (isHexOpen(aIndex) &&
@@ -278,16 +278,11 @@ bool GameState::isRetaliationAllowed(const Action &action) const
     if (!isMeleeAttackAllowed(action.defender)) return false;
     if (def.retaliated) return false;
 
-    // Non-flying units can't retaliate against flyers.  The bind effect causes
-    // a unit to lose flying.
-    if (!att.hasTrait(Trait::FLYING) || att.hasEffect(EffectType::BOUND)) {
-        return true;
-    }
-    if (def.hasTrait(Trait::FLYING) || !def.hasEffect(EffectType::BOUND)) {
-        return true;
+    if (att.canFly() && !def.canFly()) {
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 bool GameState::isFirstStrikeAllowed(const Action &action) const
@@ -326,6 +321,7 @@ bool GameState::isTrampleAllowed(const Action &action) const
 
     if (action.type != ActionType::ATTACK) return false;
     if (!att.hasTrait(Trait::TRAMPLE)) return false;
+    if (att.getMaxPathSize() < 2) return false;
 
     return att.isAlive() && !def.isAlive();
 }
@@ -756,7 +752,7 @@ std::vector<int> GameState::getReachableHexes(const Unit &unit) const
     std::vector<int> reachable;
 
     // Flying units don't need a clear path.
-    if (unit.hasTrait(Trait::FLYING)) {
+    if (unit.canFly()) {
         for (int i = 0; i < grid_.size(); ++i) {
             if (isHexFlyable(unit, i)) {
                 reachable.push_back(i);

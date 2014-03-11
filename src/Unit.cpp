@@ -160,6 +160,11 @@ bool Unit::hasEffect(EffectType e) const
     return effect.type == e;
 }
 
+bool Unit::canFly() const
+{
+    return hasTrait(Trait::FLYING) && !hasEffect(EffectType::BOUND);
+}
+
 bool sortByInitiative(const Unit &lhs, const Unit &rhs)
 {
     assert(lhs.type && rhs.type);
