@@ -30,6 +30,22 @@
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
+    "dendroid": {
+        "name": "Dendroid",
+        "plural": "Dendroids",
+        "moves": 1,
+        "initiative": 2,
+        "hp": 40,
+        "damage": [7, 14],
+        "growth": 2,
+        "traits": ["steadfast"],
+        "img": "dendroid.png",
+        "anim-attack": "dendroid-attack-melee.png",
+        "attack-frames": [200, 450, 525],
+        "img-defend": "dendroid-defend.png",
+        "anim-die": "dendroid-die.png",
+        "die-frames": [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+    },
     "drake": {
         "name": "Drake",
         "plural": "Drakes",

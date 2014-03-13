@@ -504,7 +504,9 @@ void GameState::execute(const Action &action)
         }
     }
 
-    if (action.type == ActionType::RETALIATE) {
+    if (action.type == ActionType::RETALIATE &&
+        !att.hasTrait(Trait::STEADFAST))
+    {
         att.retaliated = true;
     }
 }
