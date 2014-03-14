@@ -111,6 +111,12 @@ const Unit & GameState::getUnit(int id) const
     return *iter;
 }
 
+Unit & GameState::getActiveUnit()
+{
+    if (curTurn_ == -1) return nullUnit;
+    return getUnit(turnOrder_[curTurn_]);
+}
+
 const Unit & GameState::getActiveUnit() const
 {
     if (curTurn_ == -1) return nullUnit;
@@ -630,6 +636,13 @@ void GameState::runActionSeq(Action action)
     if (isRetaliationAllowed(action)) {
         auto retal = makeRetaliation(action);
         actionCallback(retal);
+
+        // TODO: can we generalize this for any ability that happens on attack
+        // and retaliate?
+        if (isBindAllowed(retal)) {
+            auto binder = makeBind(retal.attacker, retal.defender);
+            actionCallback(binder);
+        }
     }
     if (isDoubleStrikeAllowed(action)) {
         const auto &att = getUnit(action.attacker);
@@ -791,11 +804,18 @@ void GameState::actionCallback(Action action)
 
 void GameState::onStartTurn()
 {
-    const auto &unit = getActiveUnit();
+    auto &unit = getActiveUnit();
     assert(unit.isAlive());
 
     if (unit.hasTrait(Trait::REGENERATE) && unit.hpLeft < unit.type->hp) {
         auto regen = makeRegeneration(unit.entityId);
         runActionSeq(regen);
+    }
+
+    if (unit.effect.type != EffectType::NONE) {
+        unit.effect.apply(*this, unit);
+        if (unit.effect.isDone()) {
+            unit.effect = Effect();
+        }
     }
 }

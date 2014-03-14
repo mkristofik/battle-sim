@@ -109,34 +109,40 @@ Effect::Effect()
 {
 }
 
-Effect::Effect(const GameState &gs, const Action &action, EffectType type)
+Effect::Effect(const GameState &gs, const Action &action, EffectType t)
     : Effect{}
 {
-    *this = getData(type)->create(gs, action);
+    assert(t != EffectType::NONE);
+    *this = getData(t)->create(gs, action);
 }
 
 const SdlSurface & Effect::getAnim() const
 {
+    assert(type != EffectType::NONE);
     return getData(type)->anim;
 }
 
 const FrameList & Effect::getFrames() const
 {
+    assert(type != EffectType::NONE);
     return getData(type)->animFrames;
 }
 
 const std::string & Effect::getText() const
 {
+    assert(type != EffectType::NONE);
     return getData(type)->text;
 }
 
 bool Effect::isDone() const
 {
+    if (type == EffectType::NONE) return false;
     return roundsLeft <= 0;
 }
 
 void Effect::apply(GameState &gs, Unit &unit)
 {
+    assert(type != EffectType::NONE);
     getData(type)->apply(gs, *this, unit);
 }
 

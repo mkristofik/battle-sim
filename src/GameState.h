@@ -38,6 +38,7 @@ public:
     void addUnit(Unit u);
     Unit & getUnit(int id);
     const Unit & getUnit(int id) const;
+    Unit & getActiveUnit();
     const Unit & getActiveUnit() const;
     const Unit & getUnitAt(int aIndex) const;
 

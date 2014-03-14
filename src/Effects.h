@@ -105,7 +105,7 @@ struct Effect
     int data2;
 
     Effect();
-    Effect(const GameState &gs, const Action &action, EffectType type);
+    Effect(const GameState &gs, const Action &action, EffectType t);
 
     const SdlSurface & getAnim() const;
     const FrameList & getFrames() const;
