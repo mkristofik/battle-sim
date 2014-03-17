@@ -510,6 +510,7 @@ AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
     auto &entity = bf_->getEntity(id_);
     entity.hex = hex_;
     entity.frame = 0;
+    entity.alignBottomCenterAnim(frames.size());
 }
 
 void AnimEffect::run(Uint32 elapsed)

@@ -34,3 +34,9 @@ void Drawable::alignBottomCenter()
     pOffset.x = pHexSize / 2 - img->w / 2;
     pOffset.y = pHexSize - img->h - 1;
 }
+
+void Drawable::alignBottomCenterAnim(unsigned numFrames)
+{
+    pOffset.x = pHexSize / 2 - img->w / numFrames / 2;
+    pOffset.y = pHexSize - img->h;
+}

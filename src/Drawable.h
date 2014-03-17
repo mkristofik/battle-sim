@@ -39,6 +39,7 @@ struct Drawable
     // Align the image relative to its hex.
     void alignCenter();
     void alignBottomCenter();
+    void alignBottomCenterAnim(unsigned numFrames);
 };
 
 #endif
