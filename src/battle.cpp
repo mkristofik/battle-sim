@@ -197,10 +197,10 @@ void animateAction(const Action &action)
     }
 
     auto &unit = gs->getUnit(action.attacker);
-    assert(unit.isValid());
 
     // All other actions might involve moving.
     if (action.path.size() > 1) {
+        assert(unit.isValid());
         auto facing = unit.face;
         for (auto i = 1u; i < action.path.size(); ++i) {
             auto hSrc = grid->hexFromAry(action.path[i - 1]);
@@ -217,6 +217,7 @@ void animateAction(const Action &action)
     if (action.type == ActionType::RANGED) {
         auto rangedSeq = make_unique<AnimParallel>();
         auto &defender = gs->getUnit(action.defender);
+        assert(unit.isValid());
         assert(defender.isValid());
 
         auto hSrc = grid->hexFromAry(unit.aHex);
@@ -246,6 +247,7 @@ void animateAction(const Action &action)
     {
         auto attackSeq = make_unique<AnimParallel>();
         auto &defender = gs->getUnit(action.defender);
+        assert(unit.isValid());
         assert(defender.isValid());
 
         auto hSrc = grid->hexFromAry(unit.aHex);
@@ -267,6 +269,7 @@ void animateAction(const Action &action)
         anims.emplace_back(std::move(attackSeq));
     }
     else if (action.type == ActionType::EFFECT) {
+        // TODO: effects can have an attacker.
         const auto &target = gs->getUnit(action.defender);
         assert(target.isValid());
         auto hex = grid->hexFromAry(target.aHex);
@@ -323,6 +326,7 @@ void logAction(const Action &action)
     if (action.type != ActionType::NONE &&
         action.type != ActionType::EFFECT)
     {
+        // TODO: effects can cause damage, effects can heal
         ostr << " for " << action.damage << " damage.";
         const auto &defender = gs->getUnit(action.defender);
         int numKilled = defender.simulateDamage(action.damage);
@@ -588,7 +592,10 @@ void nextTurn()
     checkWinner(score[0], score[1]);
 
     if (!gs->isGameOver()) {
-        std::cout << gs->getActiveUnit().getName();
+        checkNewRound();
+        const auto &unit = gs->getActiveUnit();
+        bf->selectHex(unit.aHex);
+        std::cout << unit.getName();
     }
     else {
         std::cout << "Game over";
@@ -722,14 +729,10 @@ extern "C" int SDL_main(int argc, char *argv[])
         // the next turn.
         if (actionTaken && anims.empty()) {
             actionTaken = false;
+            needRedraw = true;
             nextTurn();
-            if (!gs->isGameOver()) {
-                checkNewRound();
-                bf->selectHex(gs->getActiveUnit().aHex);
-            }
-            else {
+            if (gs->isGameOver()) {
                 bf->clearHighlights();
-                needRedraw = true;
             }
         }
 

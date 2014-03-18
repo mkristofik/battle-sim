@@ -442,7 +442,6 @@ Action GameState::makeRegeneration(int id) const
     const auto &target = getUnit(id);
 
     Action regen;
-    regen.attacker = target.entityId;
     regen.defender = target.entityId;
     regen.damage = target.type->hp - target.hpLeft;
     regen.type = ActionType::EFFECT;
@@ -453,7 +452,6 @@ Action GameState::makeRegeneration(int id) const
 Action GameState::makeBind(int attId, int defId) const
 {
     Action binder;
-    binder.attacker = attId;
     binder.defender = defId;
     binder.type = ActionType::EFFECT;
     binder.effect = Effect(*this, binder, EffectType::BOUND);
@@ -479,11 +477,13 @@ int GameState::getSimulatedDamage(const Action &action) const
 
 void GameState::execute(const Action &action)
 {
+    if (action.type == ActionType::NONE) return;
+
     auto &att = getUnit(action.attacker);
     auto &def = getUnit(action.defender);
-    if (!att.isAlive() || action.type == ActionType::NONE) return;
 
     if (action.path.size() > 1) {
+        assert(att.isAlive());
         moveUnit(action.attacker, action.path.back());
     }
 
@@ -491,6 +491,7 @@ void GameState::execute(const Action &action)
         action.type == ActionType::RANGED ||
         action.type == ActionType::RETALIATE)
     {
+        assert(att.isAlive());
         assert(def.isAlive());
         auto numKilled = assignDamage(action.defender, action.damage);
 
@@ -502,6 +503,7 @@ void GameState::execute(const Action &action)
         }
     }
     else if (action.type == ActionType::EFFECT) {
+        assert(def.isAlive());
         auto effect = action.effect;
         effect.apply(*this, def);
         if (!effect.isDone()) {
