@@ -320,12 +320,10 @@ void logAction(const Action &action)
         assert(defender.isValid());
         ostr << defender.getName();
         ostr << (defender.num == 1 ? " is " : " are ");
-        ostr << action.effect.getText() << '.';
+        ostr << action.effect.getText();
     }
 
-    if (action.type != ActionType::NONE &&
-        action.type != ActionType::EFFECT)
-    {
+    if (action.damage > 0) {
         // TODO: effects can cause damage, effects can heal
         ostr << " for " << action.damage << " damage.";
         const auto &defender = gs->getUnit(action.defender);
@@ -334,6 +332,12 @@ void logAction(const Action &action)
             ostr << "  " << defender.getName(numKilled);
             ostr << (numKilled > 1 ? " perish." : " perishes.");
         }
+    }
+    else if (action.damage < 0) {
+        ostr << " of " << -action.damage << " hit points.";
+    }
+    else {
+        ostr << '.';
     }
 
     logv->add(ostr.str());

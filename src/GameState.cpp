@@ -443,7 +443,7 @@ Action GameState::makeRegeneration(int id) const
 
     Action regen;
     regen.defender = target.entityId;
-    regen.damage = target.type->hp - target.hpLeft;
+    regen.damage = target.hpLeft - target.type->hp;
     regen.type = ActionType::EFFECT;
     regen.effect = Effect(*this, regen, EffectType::HEAL);
     return regen;
@@ -460,6 +460,11 @@ Action GameState::makeBind(int attId, int defId) const
 
 int GameState::computeDamage(const Action &action) const
 {
+    // Spells and traits have already computed damage.
+    if (action.type == ActionType::EFFECT) {
+        return action.damage;
+    }
+
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
     if (!att.isAlive() || !def.isAlive()) return 0;

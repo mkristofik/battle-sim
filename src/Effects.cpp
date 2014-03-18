@@ -96,7 +96,7 @@ Effect EffectHeal::create(const GameState &gs, const Action &action) const
     Effect e;
     e.type = EffectType::HEAL;
     e.roundsLeft = 1;
-    e.data1 = action.damage;
+    e.data1 = -action.damage;
     return e;
 }
 
