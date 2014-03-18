@@ -224,7 +224,7 @@ void animateAction(const Action &action)
         auto hTgt = grid->hexFromAry(defender.aHex);
 
         unit.face = getFacing(hSrc, hTgt, unit.face);
-        auto animShooter = make_unique<AnimRanged>(unit, hTgt);
+        auto animShooter = make_unique<AnimRanged>(unit);
 
         auto animShot = make_unique<AnimProjectile>(unit.type->projectile,
              hSrc, hTgt, animShooter->getShotTime());
@@ -235,7 +235,7 @@ void animateAction(const Action &action)
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
         if (defender.isAlive()) {
-            rangedSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
+            rangedSeq->add(make_unique<AnimDefend>(defender, hitTime));
         }
         else {
             rangedSeq->add(make_unique<AnimDie>(defender, hitTime));
@@ -261,7 +261,7 @@ void animateAction(const Action &action)
 
         attackSeq->add(std::move(anim1));
         if (defender.isAlive()) {
-            attackSeq->add(make_unique<AnimDefend>(defender, hSrc, hitTime));
+            attackSeq->add(make_unique<AnimDefend>(defender, hitTime));
         }
         else {
             attackSeq->add(make_unique<AnimDie>(defender, hitTime));
@@ -269,11 +269,35 @@ void animateAction(const Action &action)
         anims.emplace_back(std::move(attackSeq));
     }
     else if (action.type == ActionType::EFFECT) {
-        // TODO: effects can have an attacker.
-        const auto &target = gs->getUnit(action.defender);
+        auto effectSeq = make_unique<AnimParallel>();
+        auto &target = gs->getUnit(action.defender);
         assert(target.isValid());
-        auto hex = grid->hexFromAry(target.aHex);
-        anims.emplace_back(make_unique<AnimEffect>(action.effect, hex));
+
+        auto hTgt = grid->hexFromAry(target.aHex);
+        int castTime = 0;
+
+        if (unit.isAlive()) {
+            auto hSrc = grid->hexFromAry(unit.aHex);
+            unit.face = getFacing(hSrc, hTgt, unit.face);
+            target.face = getFacing(hTgt, hSrc, target.face);
+
+            auto animCaster = make_unique<AnimRanged>(unit);
+            castTime = animCaster->getShotTime();
+            effectSeq->add(std::move(animCaster));
+        }
+
+        effectSeq->add(make_unique<AnimEffect>(action.effect, hTgt, castTime));
+
+        // TODO: maybe refactor this block into an animDefender function?
+        auto hitTime = castTime + 250;  // TODO: magic number
+        if (target.isAlive() && action.damage > 0) {
+            effectSeq->add(make_unique<AnimDefend>(target, hitTime));
+        }
+        else if (!target.isAlive()) {
+            effectSeq->add(make_unique<AnimDie>(target, hitTime));
+        }
+
+        anims.emplace_back(std::move(effectSeq));
     }
 }
 

@@ -100,14 +100,13 @@ public:
     // correct.  By the time the animation runs, both strikes have already
     // executed in the game state.  Thus, we wouldn't have the correct unit
     // size following the first strike.
-    AnimDefend(Unit unit, Point hSrc, Uint32 hitsAt);
+    AnimDefend(Unit unit, Uint32 hitsAt);
 
 private:
     void run(Uint32 elapsed) override;
     void stop() override;
 
     Unit unit_;
-    Point hAttacker_;
     bool faceLeft_;
     Uint32 hitTime_;
 };
@@ -116,7 +115,7 @@ private:
 class AnimRanged : public Anim
 {
 public:
-    AnimRanged(const Unit &unit, Point hTgt);
+    AnimRanged(const Unit &unit);
     Uint32 getShotTime() const;  // time when projectile is fired
 
 private:
@@ -126,7 +125,6 @@ private:
     void setFrame(Uint32 elapsed);
 
     const Unit &unit_;
-    Point hTarget_;
     bool faceLeft_;
 };
 

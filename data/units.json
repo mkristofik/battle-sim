@@ -60,6 +60,19 @@
         "attack-frames": [100, 200, 300, 400, 500, 600],
         "img-defend": "drake-defend.png"
     },
+    "druid": {
+        "name": "Druid",
+        "plural": "Druids",
+        "moves": 1,
+        "initiative": 5,
+        "hp": 25,
+        "growth": 3,
+        "img": "druid.png",
+        "anim-ranged": "druid-attack-magic.png",
+        "ranged-frames": [100, 200, 400, 500, 550],
+        "img-defend": "druid-defend.png",
+        "spell": "lightning"
+    },
     "dwarf": {
         "name": "Dwarf",
         "plural": "Dwarves",

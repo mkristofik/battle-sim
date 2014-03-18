@@ -246,10 +246,9 @@ void AnimAttack::setFrame(Uint32 elapsed)
 }
 
 
-AnimDefend::AnimDefend(Unit unit, Point hSrc, Uint32 hitsAt)
+AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
-    hAttacker_{std::move(hSrc)},
     faceLeft_{unit.face == Facing::LEFT},
     hitTime_{hitsAt}
 {
@@ -284,10 +283,9 @@ void AnimDefend::stop()
 }
 
 
-AnimRanged::AnimRanged(const Unit &unit, Point hTgt)
+AnimRanged::AnimRanged(const Unit &unit)
     : Anim(),
     unit_(unit),
-    hTarget_{std::move(hTgt)},
     faceLeft_{unit.face == Facing::LEFT}
 {
     runTime_ = 600;

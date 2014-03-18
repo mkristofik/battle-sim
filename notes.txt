@@ -55,7 +55,6 @@ Giant - 1, 13/10, 20-30, 150 hp, immune to mind spells
 Possible Images
 ---------------
 Druid - human-magi/elder mage
-Dendroid - woses/wose
 Cleric - human-magi/white mage
 
 Possible Traits
@@ -80,6 +79,7 @@ Knockback (defender moves backward one hex)
 Ranged attack
 Spellcaster
 Summoned (unit doesn't count towards team score)
+Steadfast (unlimited retaliation)
 
 Champion skills
 ---------------
