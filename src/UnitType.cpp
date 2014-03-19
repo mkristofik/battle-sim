@@ -134,7 +134,14 @@ UnitType::UnitType(const rapidjson::Value &json)
                       dieFrames);
     }
     if (json.HasMember("traits")) {
+        // TODO: make this an insert - other fields might add traits too
         traits = parseTraits(json["traits"]);
+    }
+    if (json.HasMember("spell")) {
+        spell = getSpell(json["spell"].GetString());
+        if (spell) {
+            traits.push_back(Trait::SPELLCASTER);
+        }
     }
 
     if (hasRangedAttack && !projectile) {

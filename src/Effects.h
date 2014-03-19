@@ -27,7 +27,8 @@ struct Unit;
 #define EFFECT_TYPES \
     X(NONE) \
     X(BOUND) \
-    X(HEAL)
+    X(HEAL) \
+    X(LIGHTNING)
 
 #define X(str) str,
 enum class Duration {DURATION_TYPES};
@@ -90,6 +91,14 @@ struct EffectBound : public EffectData
 struct EffectHeal : public EffectData
 {
     EffectHeal();
+    void apply(GameState &gs, Effect &effect, Unit &unit) const override;
+    Effect create(const GameState &gs, const Action &action) const override;
+};
+
+// Defender is hit by lightning.
+struct EffectLightning : public EffectData
+{
+    EffectLightning();
     void apply(GameState &gs, Effect &effect, Unit &unit) const override;
     Effect create(const GameState &gs, const Action &action) const override;
 };

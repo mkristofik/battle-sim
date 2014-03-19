@@ -17,6 +17,7 @@
 #include "GameState.h"
 #include "HexGrid.h"
 #include "LogView.h"
+#include "Spells.h"
 #include "Unit.h"
 #include "UnitType.h"
 #include "ai.h"
@@ -336,7 +337,7 @@ void logAction(const Action &action)
         }
         else if (action.type == ActionType::NONE) {
             ostr << (attacker.num == 1 ? " skips its " : " skip their ");
-            ostr << "turn.";
+            ostr << "turn";
         }
     }
     else if (action.type == ActionType::EFFECT) {
@@ -348,7 +349,6 @@ void logAction(const Action &action)
     }
 
     if (action.damage > 0) {
-        // TODO: effects can cause damage, effects can heal
         ostr << " for " << action.damage << " damage.";
         const auto &defender = gs->getUnit(action.defender);
         int numKilled = defender.simulateDamage(action.damage);
@@ -671,6 +671,7 @@ extern "C" int SDL_main(int argc, char *argv[])
 
     initBattleGrid();
     initEffectCache();
+    initSpellCache();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     Anim::setBattlefield(*bf);
 

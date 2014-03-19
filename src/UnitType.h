@@ -13,6 +13,7 @@
 #ifndef UNIT_TYPE_H
 #define UNIT_TYPE_H
 
+#include "Spells.h"
 #include "Traits.h"
 #include "sdl_helper.h"
 #include "team_color.h"
@@ -38,6 +39,7 @@ struct UnitType
     int maxDmgRanged;
     int growth;
     std::vector<Trait> traits;
+    const Spell *spell;
     ImageSet baseImg;
     ImageSet reverseImg;
     ImageSet imgMove;

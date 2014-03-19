@@ -23,6 +23,7 @@
     X(FLYING) \
     X(LIFE_DRAIN) \
     X(REGENERATE) \
+    X(SPELLCASTER) \
     X(STEADFAST) \
     X(TRAMPLE) \
     X(ZOMBIFY)

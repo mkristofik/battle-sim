@@ -101,6 +101,35 @@ Effect EffectHeal::create(const GameState &gs, const Action &action) const
 }
 
 
+// TODO: any effect that causes damage is going to be very similar to this.
+EffectLightning::EffectLightning()
+    : EffectData{}
+{
+    type = EffectType::LIGHTNING;
+    // TODO: make this configurable
+    anim = sdlLoadImage("lightning.png");
+    animFrames = {100, 200, 300, 400};
+    dur = Duration::INSTANT;
+    text = "hit by lightning";
+}
+
+void EffectLightning::apply(GameState &gs, Effect &effect, Unit &unit) const
+{
+    const int damage = effect.data1;
+    gs.assignDamage(unit.entityId, damage);
+    effect.dispose();
+}
+
+Effect EffectLightning::create(const GameState &gs, const Action &action) const
+{
+    Effect e;
+    e.type = EffectType::LIGHTNING;
+    e.roundsLeft = 1;
+    e.data1 = action.damage;
+    return e;
+}
+
+
 Effect::Effect()
     : type{EffectType::NONE},
     roundsLeft{0},
@@ -158,4 +187,6 @@ void initEffectCache()
                   make_unique<EffectBound>());
     cache.emplace(static_cast<int>(EffectType::HEAL),
                   make_unique<EffectHeal>());
+    cache.emplace(static_cast<int>(EffectType::LIGHTNING),
+                  make_unique<EffectLightning>());
 }
