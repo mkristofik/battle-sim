@@ -30,6 +30,7 @@ struct Drawable
     Point pOffset;
     SdlSurface img;
     int frame;
+    int numFrames;
     ZOrder z;
     bool visible;
     SdlFont font;
@@ -39,7 +40,7 @@ struct Drawable
     // Align the image relative to its hex.
     void alignCenter();
     void alignBottomCenter();
-    void alignBottomCenterAnim(unsigned numFrames);
+    void alignBottomCenterAnim();
 };
 
 #endif

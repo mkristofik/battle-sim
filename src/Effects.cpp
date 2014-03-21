@@ -109,7 +109,7 @@ EffectLightning::EffectLightning()
     type = EffectType::LIGHTNING;
     // TODO: make this configurable
     anim = sdlLoadImage("lightning.png");
-    animFrames = {100, 200, 300, 400};
+    animFrames = {100, 200, 400, 600};
     dur = Duration::INSTANT;
     text = "hit by lightning";
 }

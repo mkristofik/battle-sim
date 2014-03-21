@@ -53,6 +53,9 @@ Battlefield::Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid)
             }
         }
     }
+
+    getEntity(attackSrc_).numFrames = 6;
+    getEntity(attackTgt_).numFrames = 6;
 }
 
 int Battlefield::addEntity(Point hex, SdlSurface img, ZOrder z)
@@ -268,7 +271,7 @@ void Battlefield::draw() const
                     sdlBlit(e.img, sPixelFromHex(e.hex) + e.pOffset);
                 }
                 else {
-                    sdlBlitFrame(e.img, e.frame,
+                    sdlBlitFrame(e.img, e.frame, e.numFrames,
                                  sPixelFromHex(e.hex) + e.pOffset);
                 }
             }

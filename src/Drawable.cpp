@@ -17,6 +17,7 @@ Drawable::Drawable(Point h, SdlSurface surf, ZOrder order)
     pOffset{0, 0},
     img{std::move(surf)},
     frame{-1},
+    numFrames{1},
     z{std::move(order)},
     visible{true},
     font{}
@@ -35,7 +36,7 @@ void Drawable::alignBottomCenter()
     pOffset.y = pHexSize - img->h - 1;
 }
 
-void Drawable::alignBottomCenterAnim(unsigned numFrames)
+void Drawable::alignBottomCenterAnim()
 {
     pOffset.x = pHexSize / 2 - img->w / numFrames / 2;
     pOffset.y = pHexSize - img->h;

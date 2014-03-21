@@ -230,17 +230,21 @@ void AnimAttack::setFrame(Uint32 elapsed)
     if (faceLeft_) {
         if (!unit_.type->reverseAnimAttack.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimAttack[unit_.team];
+            entity.numFrames = unit_.type->attackFrames.size();
         }
         else {
             entity.img = unit_.type->reverseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
     else {
         if (!unit_.type->animAttack.empty() && entity.frame >= 0) {
             entity.img = unit_.type->animAttack[unit_.team];
+            entity.numFrames = unit_.type->attackFrames.size();
         }
         else {
             entity.img = unit_.type->baseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
 }
@@ -314,17 +318,21 @@ void AnimRanged::setFrame(Uint32 elapsed)
     if (faceLeft_) {
         if (!unit_.type->reverseAnimRanged.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimRanged[unit_.team];
+            entity.numFrames = unit_.type->rangedFrames.size();
         }
         else {
             entity.img = unit_.type->reverseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
     else {
         if (!unit_.type->animRanged.empty() && entity.frame >= 0) {
             entity.img = unit_.type->animRanged[unit_.team];
+            entity.numFrames = unit_.type->rangedFrames.size();
         }
         else {
             entity.img = unit_.type->baseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
 }
@@ -426,23 +434,29 @@ void AnimDie::setFrame(Uint32 elapsed)
     if (faceLeft_) {
         if (!unit_.type->reverseAnimDie.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimDie[unit_.team];
+            entity.numFrames = unit_.type->dieFrames.size();
         }
         else if (!unit_.type->reverseImgDefend.empty()) {
             entity.img = unit_.type->reverseImgDefend[unit_.team];
+            entity.numFrames = 1;
         }
         else {
             entity.img = unit_.type->reverseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
     else {
         if (!unit_.type->animDie.empty() && entity.frame >= 0) {
             entity.img = unit_.type->animDie[unit_.team];
+            entity.numFrames = unit_.type->dieFrames.size();
         }
         else if (!unit_.type->imgDefend.empty()) {
             entity.img = unit_.type->imgDefend[unit_.team];
+            entity.numFrames = 1;
         }
         else {
             entity.img = unit_.type->baseImg[unit_.team];
+            entity.numFrames = 1;
         }
     }
 }
@@ -495,7 +509,7 @@ void AnimParallel::stop()
 
 AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
     : effect_{std::move(e)},
-    id_{bf_->addHiddenEntity(effect_.getAnim(), ZOrder::ANIMATING)},
+    id_{bf_->addHiddenEntity(effect_.getAnim(), ZOrder::PROJECTILE)},
     hex_{std::move(hex)},
     startTime_{startsAt}
 {
@@ -508,7 +522,8 @@ AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
     auto &entity = bf_->getEntity(id_);
     entity.hex = hex_;
     entity.frame = 0;
-    entity.alignBottomCenterAnim(frames.size());
+    entity.numFrames = frames.size();
+    entity.alignBottomCenterAnim();
 }
 
 void AnimEffect::run(Uint32 elapsed)
@@ -519,7 +534,7 @@ void AnimEffect::run(Uint32 elapsed)
 
     auto &entity = bf_->getEntity(id_);
     entity.visible = true;
-    entity.frame = getFrame(effect_.getFrames(), elapsed);
+    entity.frame = getFrame(effect_.getFrames(), elapsed - startTime_);
 }
 
 void AnimEffect::stop()

@@ -358,7 +358,8 @@ void logAction(const Action &action)
         }
     }
     else if (action.damage < 0) {
-        ostr << " of " << -action.damage << " hit points.";
+        ostr << " of " << -action.damage;
+        ostr << (-action.damage > 1 ? " hit points." : " hit point.");
     }
     else {
         ostr << '.';
