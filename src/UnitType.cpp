@@ -57,7 +57,6 @@ UnitType::UnitType(const rapidjson::Value &json)
     moves{1},
     initiative{0},
     hp{1},
-    hasRangedAttack{false},
     minDmg{1},
     maxDmg{1},
     minDmgRanged{0},
@@ -80,6 +79,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     reverseAnimDie{},
     dieFrames{}
 {
+    bool hasRangedAttack = false;
+
     if (json.HasMember("name")) {
         name = json["name"].GetString();
     }
@@ -148,9 +149,12 @@ UnitType::UnitType(const rapidjson::Value &json)
         }
     }
 
-    if (hasRangedAttack && !projectile) {
-        std::cerr << "WARNING: ranged attack projectile not specified for " <<
-            name << '\n';
-        projectile = sdlLoadImage("missile.png");
+    if (hasRangedAttack) {
+        traits.push_back(Trait::RANGED);
+        if (!projectile) {
+            std::cerr << "WARNING: projectile not specified for " <<
+                name << '\n';
+            projectile = sdlLoadImage("missile.png");
+        }
     }
 }

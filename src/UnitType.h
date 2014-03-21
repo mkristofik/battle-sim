@@ -32,7 +32,6 @@ struct UnitType
     int moves;
     int initiative;
     int hp;
-    bool hasRangedAttack;  // TODO: make this a trait
     int minDmg;
     int maxDmg;
     int minDmgRanged;

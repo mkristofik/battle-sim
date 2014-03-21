@@ -264,7 +264,9 @@ bool GameState::isMeleeAttackAllowed(int id) const
 {
     const auto &attacker = getUnit(id);
     if (!attacker.isAlive()) return false;
-    if (attacker.type->hasRangedAttack || attacker.hasTrait(Trait::SPELLCASTER)){
+    if (attacker.hasTrait(Trait::RANGED) ||
+        attacker.hasTrait(Trait::SPELLCASTER))
+    {
         return false;
     }
     return true;
@@ -276,7 +278,7 @@ bool GameState::isRangedAttackAllowed(int id) const
     if (!attacker.isAlive()) return false;
     if (attacker.hasTrait(Trait::SPELLCASTER)) return false;
 
-    return getAdjEnemies(id).empty() && attacker.type->hasRangedAttack;
+    return getAdjEnemies(id).empty() && attacker.hasTrait(Trait::RANGED);
 }
 
 bool GameState::isSpellAllowed(int id) const
