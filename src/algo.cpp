@@ -11,10 +11,23 @@
     See the COPYING.txt file for more details.
 */
 #include "algo.h"
+#include <cctype>
 #include <ctime>
 
 std::minstd_rand & randomGenerator()
 {
     static std::minstd_rand gen(static_cast<unsigned int>(std::time(nullptr)));
     return gen;
+}
+
+std::string to_upper(std::string str)
+{
+    transform(std::begin(str), std::end(str), std::begin(str), ::toupper);
+    return str;
+}
+
+std::string to_lower(std::string str)
+{
+    transform(std::begin(str), std::end(str), std::begin(str), ::tolower);
+    return str;
 }

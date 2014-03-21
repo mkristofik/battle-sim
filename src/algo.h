@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <memory>
 #include <random>
+#include <string>
 
 template <class Container, class T>
 bool contains(const Container &c, const T &elem)
@@ -38,5 +39,8 @@ std::unique_ptr<T> make_unique(Args &&... args)
 }
 
 std::minstd_rand & randomGenerator();
+
+std::string to_upper(std::string str);
+std::string to_lower(std::string str);
 
 #endif
