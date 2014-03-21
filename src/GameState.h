@@ -69,6 +69,7 @@ public:
 
     bool isMeleeAttackAllowed(int id) const;
     bool isRangedAttackAllowed(int id) const;
+    bool isSpellAllowed(int id) const;
     bool isRetaliationAllowed(const Action &action) const;
     bool isFirstStrikeAllowed(const Action &action) const;
     bool isDoubleStrikeAllowed(const Action &action) const;

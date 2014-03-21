@@ -65,7 +65,7 @@ struct Unit
 
     bool hasTrait(Trait t) const;
     bool hasEffect(EffectType e) const;
-    bool canFly() const;
+    bool canFly() const;  // prefer this over hasTrait(Trait::FLYING)
 };
 
 bool sortByInitiative(const Unit &lhs, const Unit &rhs);

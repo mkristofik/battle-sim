@@ -64,6 +64,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     maxDmgRanged{0},
     growth{1},
     traits{},
+    spell{nullptr},
     baseImg{},
     reverseImg{},
     animAttack{},
@@ -141,6 +142,9 @@ UnitType::UnitType(const rapidjson::Value &json)
         spell = getSpell(json["spell"].GetString());
         if (spell) {
             traits.push_back(Trait::SPELLCASTER);
+        }
+        else {
+            std::cerr << "WARNING: unrecognized spell for " << name << '\n';
         }
     }
 

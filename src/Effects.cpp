@@ -102,6 +102,7 @@ Effect EffectHeal::create(const GameState &gs, const Action &action) const
 
 
 // TODO: any effect that causes damage is going to be very similar to this.
+// TODO: can we store the damage as part of the action instead?
 EffectLightning::EffectLightning()
     : EffectData{}
 {

@@ -263,15 +263,28 @@ const Commander & GameState::getCommander(int team) const
 bool GameState::isMeleeAttackAllowed(int id) const
 {
     const auto &attacker = getUnit(id);
-    return attacker.isAlive() && !attacker.type->hasRangedAttack;
+    if (!attacker.isAlive()) return false;
+    if (attacker.type->hasRangedAttack || attacker.hasTrait(Trait::SPELLCASTER)){
+        return false;
+    }
+    return true;
 }
 
 bool GameState::isRangedAttackAllowed(int id) const
 {
     const auto &attacker = getUnit(id);
-    if (!attacker.isAlive() || !attacker.type->hasRangedAttack) return false;
+    if (!attacker.isAlive()) return false;
+    if (attacker.hasTrait(Trait::SPELLCASTER)) return false;
 
-    return getAdjEnemies(id).empty();
+    return getAdjEnemies(id).empty() && attacker.type->hasRangedAttack;
+}
+
+bool GameState::isSpellAllowed(int id) const
+{
+    const auto &unit = getUnit(id);
+    if (!unit.isAlive()) return false;
+    if (!unit.hasTrait(Trait::SPELLCASTER)) return false;
+    return unit.type->spell != nullptr;
 }
 
 bool GameState::isRetaliationAllowed(const Action &action) const
@@ -404,6 +417,12 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
 
     if (isRangedAttackAllowed(attId)) {
         action.type = ActionType::RANGED;
+        return action;
+    }
+    if (isSpellAllowed(attId)) {
+        action.type = ActionType::EFFECT;
+        action.damage = attacker.num * attacker.type->spell->damage;
+        action.effect = Effect(*this, action, attacker.type->spell->effect);
         return action;
     }
     if (!isMeleeAttackAllowed(attId)) {

@@ -117,9 +117,12 @@ void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
         showMouseover(aMoveTo);
         showAttackArrow(aMoveTo, action.aTgt);
     }
-    else if (action.type == ActionType::RANGED) {
+    else if (action.type == ActionType::RANGED ||
+             action.type == ActionType::EFFECT)
+    {
         showMouseover(action.aTgt);
         setRangedTarget(action.aTgt);
+        // TODO: expand on this for targets of friendly spells
     }
     else if (action.type == ActionType::MOVE) {
         auto aMoveTo = action.path.back();

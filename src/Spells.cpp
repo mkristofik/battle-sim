@@ -55,7 +55,7 @@ const Spell * getSpell(SpellType type)
 
 const Spell * getSpell(const std::string &type)
 {
-    auto iter = allSpells.find(type);
+    auto iter = allSpells.find(to_upper(type));
     if (iter == std::end(allSpells)) return nullptr;
     return getSpell(iter->second);
 }
