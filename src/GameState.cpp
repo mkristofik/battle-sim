@@ -473,6 +473,7 @@ Action GameState::makeRegeneration(int id) const
 Action GameState::makeBind(int attId, int defId) const
 {
     Action binder;
+    // TODO: I think we need attacker here.
     binder.defender = defId;
     binder.type = ActionType::EFFECT;
     binder.effect = Effect(*this, binder, EffectType::BOUND);
@@ -541,6 +542,8 @@ void GameState::execute(const Action &action)
             // Effects with duration stay with the defending unit.
             def.effect = effect;
         }
+
+        assignDamage(action.defender, action.damage);
     }
 
     if (action.type == ActionType::RETALIATE &&

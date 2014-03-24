@@ -85,9 +85,6 @@ EffectHeal::EffectHeal()
 
 void EffectHeal::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
-    const int hpGained = effect.data1;
-    unit.hpLeft += hpGained;
-    unit.hpLeft = std::min(unit.hpLeft, unit.type->hp);
     effect.dispose();
 }
 
@@ -96,13 +93,12 @@ Effect EffectHeal::create(const GameState &gs, const Action &action) const
     Effect e;
     e.type = EffectType::HEAL;
     e.roundsLeft = 1;
-    e.data1 = -action.damage;
     return e;
 }
 
 
-// TODO: any effect that causes damage is going to be very similar to this.
-// TODO: can we store the damage as part of the action instead?
+// TODO: any instant effect that causes damage is going to be very similar to
+// this.
 EffectLightning::EffectLightning()
     : EffectData{}
 {
@@ -116,8 +112,6 @@ EffectLightning::EffectLightning()
 
 void EffectLightning::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
-    const int damage = effect.data1;
-    gs.assignDamage(unit.entityId, damage);
     effect.dispose();
 }
 
@@ -126,7 +120,6 @@ Effect EffectLightning::create(const GameState &gs, const Action &action) const
     Effect e;
     e.type = EffectType::LIGHTNING;
     e.roundsLeft = 1;
-    e.data1 = action.damage;
     return e;
 }
 
