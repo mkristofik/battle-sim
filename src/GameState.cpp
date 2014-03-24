@@ -473,7 +473,7 @@ Action GameState::makeRegeneration(int id) const
 Action GameState::makeBind(int attId, int defId) const
 {
     Action binder;
-    // TODO: I think we need attacker here.
+    binder.attacker = attId;
     binder.defender = defId;
     binder.type = ActionType::EFFECT;
     binder.effect = Effect(*this, binder, EffectType::BOUND);
