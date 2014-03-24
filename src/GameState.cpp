@@ -495,6 +495,11 @@ int GameState::computeDamage(const Action &action) const
 
 int GameState::getSimulatedDamage(const Action &action) const
 {
+    // Spells and traits have already computed damage.
+    if (action.type == ActionType::EFFECT) {
+        return action.damage;
+    }
+
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
     if (!att.isAlive() || !def.isAlive()) return 0;
@@ -553,7 +558,7 @@ std::vector<Action> GameState::getPossibleActions() const
     auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
-    if (isRangedAttackAllowed(unit.entityId)) {
+    if (isRangedAttackAllowed(unit.entityId) || isSpellAllowed(unit.entityId)) {
         for (auto e : getAllEnemies(unit.entityId)) {
             actions.emplace_back(makeAttack(unit.entityId, e, -1));
         }

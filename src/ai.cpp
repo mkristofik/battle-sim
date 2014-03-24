@@ -105,7 +105,9 @@ Action bestAction(const GameState &gs, F aiFunc)
         std::cout << "    No action is good, skipping turn.\n";
         return {};
     }
-    best->damage = 0;  // clear simulated damage
+    if (best->type != ActionType::EFFECT) {
+        best->damage = 0;  // clear simulated damage
+    }
     return *best;
 }
 
