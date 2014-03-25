@@ -67,7 +67,6 @@ struct EffectData
     Duration dur;
     std::string text;
 
-    EffectData();  // TODO: remove this
     EffectData(EffectType t, const rapidjson::Value &json);
 
     virtual void apply(GameState &gs, Effect &effect, Unit &unit) const=0;
@@ -77,7 +76,6 @@ struct EffectData
 // Defender is stuck in current hex until attacker moves or is killed.
 struct EffectBound : public EffectData
 {
-    EffectBound();
     EffectBound(EffectType type, const rapidjson::Value &json);
     void apply(GameState &gs, Effect &effect, Unit &unit) const override;
     Effect create(const GameState &gs, const Action &action) const override;

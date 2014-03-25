@@ -40,15 +40,6 @@ namespace
 }
 
 
-EffectData::EffectData()
-    : type{EffectType::NONE},
-    anim{},
-    animFrames{},
-    dur{Duration::INSTANT},
-    text{}
-{
-}
-
 EffectData::EffectData(EffectType t, const rapidjson::Value &json)
     : type{t},
     anim{},
@@ -82,17 +73,6 @@ EffectData::EffectData(EffectType t, const rapidjson::Value &json)
     }
 }
 
-
-EffectBound::EffectBound()
-    : EffectData{}
-{
-    type = EffectType::BOUND;
-    // TODO: make this configurable
-    anim = sdlLoadImage("web.png");
-    animFrames.push_back(1500);
-    dur = Duration::UNTIL_ATT_MOVES;
-    text = "bound to current hex";
-}
 
 EffectBound::EffectBound(EffectType type, const rapidjson::Value &json)
     : EffectData{type, json}
