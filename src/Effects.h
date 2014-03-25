@@ -14,6 +14,8 @@
 #define EFFECTS_H
 
 #include "sdl_helper.h"
+
+#include "rapidjson/document.h"
 #include <string>
 
 struct Action;
@@ -36,11 +38,6 @@ enum class EffectType {EFFECT_TYPES};
 #undef X
 
 // Ideas
-// Binding/Bound
-// - defender moves = 0
-// - duration: until attacker moves or is killed
-// - needs: attacker id, attacker hex
-//
 // Bless/Blessed
 // - unit always does max damage
 // - cancels: curse
@@ -50,11 +47,6 @@ enum class EffectType {EFFECT_TYPES};
 // - unit always does min damage
 // - cancels: bless
 // - needs: duration
-//
-// Heal
-// - target gains X hp
-// - duration: instant
-// - needs: amount to heal
 //
 // Hurricane Winds/Grounded
 // - all creatures lose flying
@@ -75,6 +67,9 @@ struct EffectData
     Duration dur;
     std::string text;
 
+    EffectData();  // TODO: remove this
+    EffectData(EffectType t, const rapidjson::Value &json);
+
     virtual void apply(GameState &gs, Effect &effect, Unit &unit) const=0;
     virtual Effect create(const GameState &gs, const Action &action) const=0;
 };
@@ -83,22 +78,14 @@ struct EffectData
 struct EffectBound : public EffectData
 {
     EffectBound();
+    EffectBound(EffectType type, const rapidjson::Value &json);
     void apply(GameState &gs, Effect &effect, Unit &unit) const override;
     Effect create(const GameState &gs, const Action &action) const override;
 };
 
-// "Defender" is healed by X hit points.
-struct EffectHeal : public EffectData
+struct EffectSimple : public EffectData
 {
-    EffectHeal();
-    void apply(GameState &gs, Effect &effect, Unit &unit) const override;
-    Effect create(const GameState &gs, const Action &action) const override;
-};
-
-// Defender is hit by lightning.
-struct EffectLightning : public EffectData
-{
-    EffectLightning();
+    EffectSimple(EffectType type, const rapidjson::Value &json);
     void apply(GameState &gs, Effect &effect, Unit &unit) const override;
     Effect create(const GameState &gs, const Action &action) const override;
 };
@@ -126,6 +113,6 @@ struct Effect
 };
 
 // Call this after SDL initialized but before the game starts.
-void initEffectCache();
+void initEffectCache(const rapidjson::Document &doc);
 
 #endif

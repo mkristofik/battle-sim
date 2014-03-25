@@ -17,6 +17,7 @@
 
 namespace
 {
+    // TODO: move these to a json helper lib
     void loadImages(const rapidjson::Value &json,
                     const char *imgName,
                     ImageSet &img,
@@ -45,6 +46,8 @@ namespace
         auto baseAnim = sdlLoadImage(json[animName].GetString());
         if (baseAnim) {
             anim = applyTeamColors(baseAnim);
+            // This can be broken out.  Shouldn't need to reapply team colors if
+            // we start from 'anim' instead of 'baseAnim'.
             reverseAnim = applyTeamColors(sdlFlipSheetH(baseAnim,
                 frames.size()));
         }

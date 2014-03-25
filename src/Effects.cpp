@@ -20,18 +20,65 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
+#include <iterator>
 #include <memory>
 #include <unordered_map>
 
 namespace
 {
     std::unordered_map<int, std::unique_ptr<EffectData>> cache;
+    std::unordered_map<std::string, EffectType> allEffects;
+    std::unordered_map<std::string, Duration> allDurations;
 
     const EffectData * getData(EffectType type)
     {
         auto iter = cache.find(static_cast<int>(type));
         assert(iter != cache.end());
         return iter->second.get();
+    }
+}
+
+
+EffectData::EffectData()
+    : type{EffectType::NONE},
+    anim{},
+    animFrames{},
+    dur{Duration::INSTANT},
+    text{}
+{
+}
+
+EffectData::EffectData(EffectType t, const rapidjson::Value &json)
+    : type{t},
+    anim{},
+    animFrames{},
+    dur{Duration::INSTANT},
+    text{}
+{
+    if (json.HasMember("anim")) {
+        anim = sdlLoadImage(json["anim"].GetString());
+    }
+    if (json.HasMember("anim-frames")) {
+        const auto &frameListJson = json["anim-frames"];
+        transform(frameListJson.Begin(),
+                  frameListJson.End(),
+                  std::back_inserter(animFrames),
+                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+    }
+    if (json.HasMember("duration")) {
+        const auto &durType = json["duration"].GetString();
+        auto iter = allDurations.find(to_upper(durType));
+        if (iter != std::end(allDurations)) {
+            dur = iter->second;
+        }
+        else {
+            std::cerr << "Warning: unrecognized duration type for effect " <<
+                " type " << static_cast<int>(type) << '\n';
+        }
+    }
+    if (json.HasMember("text")) {
+        text = json["text"].GetString();
     }
 }
 
@@ -45,6 +92,11 @@ EffectBound::EffectBound()
     animFrames.push_back(1500);
     dur = Duration::UNTIL_ATT_MOVES;
     text = "bound to current hex";
+}
+
+EffectBound::EffectBound(EffectType type, const rapidjson::Value &json)
+    : EffectData{type, json}
+{
 }
 
 void EffectBound::apply(GameState &gs, Effect &effect, Unit &unit) const
@@ -72,53 +124,20 @@ Effect EffectBound::create(const GameState &gs, const Action &action) const
 }
 
 
-EffectHeal::EffectHeal()
-    : EffectData{}
+EffectSimple::EffectSimple(EffectType type, const rapidjson::Value &json)
+    : EffectData{type, json}
 {
-    type = EffectType::HEAL;
-    // TODO: make this configurable
-    anim = sdlLoadImage("regeneration.png");
-    animFrames = {75, 150, 225, 300, 375, 450, 525, 600};
-    dur = Duration::INSTANT;
-    text = "healed";
 }
 
-void EffectHeal::apply(GameState &gs, Effect &effect, Unit &unit) const
+void EffectSimple::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
     effect.dispose();
 }
 
-Effect EffectHeal::create(const GameState &gs, const Action &action) const
+Effect EffectSimple::create(const GameState &gs, const Action &action) const
 {
     Effect e;
-    e.type = EffectType::HEAL;
-    e.roundsLeft = 1;
-    return e;
-}
-
-
-// TODO: any instant effect that causes damage is going to be very similar to
-// this.
-EffectLightning::EffectLightning()
-    : EffectData{}
-{
-    type = EffectType::LIGHTNING;
-    // TODO: make this configurable
-    anim = sdlLoadImage("lightning.png");
-    animFrames = {100, 200, 400, 600};
-    dur = Duration::INSTANT;
-    text = "hit by lightning";
-}
-
-void EffectLightning::apply(GameState &gs, Effect &effect, Unit &unit) const
-{
-    effect.dispose();
-}
-
-Effect EffectLightning::create(const GameState &gs, const Action &action) const
-{
-    Effect e;
-    e.type = EffectType::LIGHTNING;
+    e.type = type;
     e.roundsLeft = 1;
     return e;
 }
@@ -175,12 +194,37 @@ void Effect::dispose()
 }
 
 
-void initEffectCache()
+void initEffectCache(const rapidjson::Document &doc)
 {
-    cache.emplace(static_cast<int>(EffectType::BOUND),
-                  make_unique<EffectBound>());
-    cache.emplace(static_cast<int>(EffectType::HEAL),
-                  make_unique<EffectHeal>());
-    cache.emplace(static_cast<int>(EffectType::LIGHTNING),
-                  make_unique<EffectLightning>());
+#define X(str) allEffects.emplace(#str, EffectType::str);
+    EFFECT_TYPES
+#undef X
+#define X(str) allDurations.emplace(#str, Duration::str);
+    DURATION_TYPES
+#undef X
+
+    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
+        if (!i->value.IsObject()) {
+            std::cerr << "effects: skipping id '" << i->name.GetString() <<
+                "'\n";
+            continue;
+        }
+
+        auto effectIter = allEffects.find(to_upper(i->name.GetString()));
+        if (effectIter == std::end(allEffects)) {
+            std::cerr << "effects: unknown type '" << i->name.GetString() <<
+                "'\n";
+            continue;
+        }
+
+        auto type = effectIter->second;
+        if (type == EffectType::BOUND) {
+            cache.emplace(static_cast<int>(type),
+                          make_unique<EffectBound>(type, i->value));
+        }
+        else {
+            cache.emplace(static_cast<int>(type),
+                          make_unique<EffectSimple>(type, i->value));
+        }
+    }
 }

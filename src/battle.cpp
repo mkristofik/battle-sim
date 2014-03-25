@@ -671,7 +671,6 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
 
     initBattleGrid();
-    initEffectCache();
     initSpellCache();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     Anim::setBattlefield(*bf);
@@ -682,6 +681,14 @@ extern "C" int SDL_main(int argc, char *argv[])
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
     labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);
     logv = make_unique<LogView>(logWindow, font);
+
+    rapidjson::Document effectsDoc;
+    if (parseJson("effects.json", effectsDoc)) {
+        initEffectCache(effectsDoc);
+    }
+    else {
+        std::cerr << "Warning: no effect definitions loaded" << std::endl;
+    }
 
     rapidjson::Document unitsDoc;
     if (!parseJson("units.json", unitsDoc)) {

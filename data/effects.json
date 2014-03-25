@@ -1,0 +1,20 @@
+{
+    "bound": {
+        "text": "bound to current hex",
+        "duration": "until_att_moves",
+        "anim": "web.png",
+        "anim-frames": [1200]
+    },
+    "heal": {
+        "text": "healed",
+        "duration": "instant",
+        "anim": "regeneration.png",
+        "anim-frames": [75, 150, 225, 300, 375, 450, 525, 600]
+    },
+    "lightning": {
+        "text": "hit by lightning",
+        "duration": "instant",
+        "anim": "lightning.png",
+        "anim-frames": [100, 200, 300, 400]
+    }
+}
