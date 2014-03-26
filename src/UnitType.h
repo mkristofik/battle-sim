@@ -15,10 +15,10 @@
 
 #include "Spells.h"
 #include "Traits.h"
+#include "json_utils.h"
 #include "sdl_helper.h"
 #include "team_color.h"
 
-#include "rapidjson/document.h"
 #include <string>
 #include <unordered_map>
 #include <vector>

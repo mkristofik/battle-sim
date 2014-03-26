@@ -13,7 +13,7 @@
 #ifndef TRAITS_H
 #define TRAITS_H
 
-#include "rapidjson/document.h"
+#include "json_utils.h"
 #include <vector>
 
 #define UNIT_TRAITS \

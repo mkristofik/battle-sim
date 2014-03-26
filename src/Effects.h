@@ -13,9 +13,9 @@
 #ifndef EFFECTS_H
 #define EFFECTS_H
 
+#include "json_utils.h"
 #include "sdl_helper.h"
 
-#include "rapidjson/document.h"
 #include <string>
 
 struct Action;

@@ -11,13 +11,10 @@
     See the COPYING.txt file for more details.
 */
 #include "UnitType.h"
-#include <algorithm>
 #include <iostream>
-#include <iterator>
 
 namespace
 {
-    // TODO: move these to a json helper lib
     void loadImages(const rapidjson::Value &json,
                     const char *imgName,
                     ImageSet &img,
@@ -37,17 +34,11 @@ namespace
                        const char *framesName,
                        FrameList &frames)
     {
-        const auto &frameListJson = json[framesName];
-        transform(frameListJson.Begin(),
-                  frameListJson.End(),
-                  std::back_inserter(frames),
-                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+        frames = jsonListUnsigned(json[framesName]);
 
         auto baseAnim = sdlLoadImage(json[animName].GetString());
         if (baseAnim) {
             anim = applyTeamColors(baseAnim);
-            // This can be broken out.  Shouldn't need to reapply team colors if
-            // we start from 'anim' instead of 'baseAnim'.
             reverseAnim = applyTeamColors(sdlFlipSheetH(baseAnim,
                 frames.size()));
         }

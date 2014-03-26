@@ -23,14 +23,11 @@
 #include "ai.h"
 #include "algo.h"
 #include "hex_utils.h"
+#include "json_utils.h"
 #include "sdl_helper.h"
 
-#include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/thread/future.hpp"
-
-#include "rapidjson/document.h"
-#include "rapidjson/filestream.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -115,26 +112,6 @@ namespace
         }
 
         return nullptr;
-    }
-
-    bool parseJson(const char *filename, rapidjson::Document &doc)
-    {
-        boost::filesystem::path dataPath{"../data"};
-        dataPath /= filename;
-        std::shared_ptr<FILE> fp{fopen(dataPath.string().c_str(), "r"), fclose};
-
-        rapidjson::FileStream file(fp.get());
-        if (doc.ParseStream<0>(file).HasParseError()) {
-            std::cerr << "Error reading json file " << dataPath.string() << ": "
-                << doc.GetParseError() << '\n';
-            return false;
-        }
-        if (!doc.IsObject()) {
-            std::cerr << "Expected top-level object in json file\n";
-            return false;
-        }
-
-        return true;
     }
 }
 
@@ -683,7 +660,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     logv = make_unique<LogView>(logWindow, font);
 
     rapidjson::Document effectsDoc;
-    if (parseJson("effects.json", effectsDoc)) {
+    if (jsonParse("effects.json", effectsDoc)) {
         initEffectCache(effectsDoc);
     }
     else {
@@ -691,7 +668,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
 
     rapidjson::Document unitsDoc;
-    if (!parseJson("units.json", unitsDoc)) {
+    if (!jsonParse("units.json", unitsDoc)) {
         return EXIT_FAILURE;
     }
     if (!parseUnits(unitsDoc)) {
@@ -702,7 +679,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     translateUnitPos();
 
     rapidjson::Document scenario;
-    if (!parseJson(getScenario(argc, argv), scenario)) {
+    if (!jsonParse(getScenario(argc, argv), scenario)) {
         return EXIT_FAILURE;
     }
     parseScenario(scenario);

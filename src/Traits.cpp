@@ -11,8 +11,8 @@
     See the COPYING.txt file for more details.
 */
 #include "Traits.h"
-#include <algorithm>
-#include <cctype>
+
+#include "algo.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -34,17 +34,15 @@ std::vector<Trait> parseTraits(const rapidjson::Value &json)
 
     std::vector<Trait> traits;
 
-    std::for_each(json.Begin(), json.End(), [&] (const rapidjson::Value &elem) {
-        std::string t = elem.GetString();
-        std::transform(t.begin(), t.end(), t.begin(), ::toupper);
-        auto i = allTraits.find(t);
+    for (const auto &str : jsonListStr(json)) {
+        auto i = allTraits.find(to_upper(str));
         if (i != allTraits.end()) {
             traits.push_back(i->second);
         }
         else {
-            std::cerr << "Unrecognized trait: " << t << '\n';
+            std::cerr << "Unrecognized trait: " << str << '\n';
         }
-    });
+    }
 
     return traits;
 }

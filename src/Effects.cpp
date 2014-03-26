@@ -51,11 +51,7 @@ EffectData::EffectData(EffectType t, const rapidjson::Value &json)
         anim = sdlLoadImage(json["anim"].GetString());
     }
     if (json.HasMember("anim-frames")) {
-        const auto &frameListJson = json["anim-frames"];
-        transform(frameListJson.Begin(),
-                  frameListJson.End(),
-                  std::back_inserter(animFrames),
-                  [&] (const rapidjson::Value &elem) { return elem.GetInt(); });
+        animFrames = jsonListUnsigned(json["anim-frames"]);
     }
     if (json.HasMember("duration")) {
         const auto &durType = json["duration"].GetString();
