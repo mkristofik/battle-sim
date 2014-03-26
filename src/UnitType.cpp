@@ -130,8 +130,8 @@ UnitType::UnitType(const rapidjson::Value &json)
                       dieFrames);
     }
     if (json.HasMember("traits")) {
-        // TODO: make this an insert - other fields might add traits too
-        traits = parseTraits(json["traits"]);
+        auto tlist = parseTraits(json["traits"]);
+        traits.insert(std::end(traits), std::begin(tlist), std::end(tlist));
     }
     if (json.HasMember("spell")) {
         spell = getSpell(json["spell"].GetString());
