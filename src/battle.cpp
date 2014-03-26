@@ -648,7 +648,6 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
 
     initBattleGrid();
-    initSpellCache();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     Anim::setBattlefield(*bf);
 
@@ -665,6 +664,14 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
     else {
         std::cerr << "Warning: no effect definitions loaded" << std::endl;
+    }
+
+    rapidjson::Document spellsDoc;
+    if (jsonParse("spells.json", spellsDoc)) {
+        initSpellCache(spellsDoc);
+    }
+    else {
+        std::cerr << "Warning: no spell definitions loaded" << std::endl;
     }
 
     rapidjson::Document unitsDoc;

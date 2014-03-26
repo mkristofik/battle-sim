@@ -204,3 +204,12 @@ void initEffectCache(const rapidjson::Document &doc)
         }
     }
 }
+
+EffectType effectFromStr(const std::string &str)
+{
+    auto i = allEffects.find(to_upper(str));
+    if (i == std::end(allEffects)) {
+        return EffectType::NONE;
+    }
+    return i->second;
+}

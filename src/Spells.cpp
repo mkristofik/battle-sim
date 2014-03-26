@@ -20,30 +20,69 @@ namespace
 {
     std::unordered_map<int, std::unique_ptr<Spell>> cache;
     std::unordered_map<std::string, SpellType> allSpells;
+    std::unordered_map<std::string, SpellTarget> allTargets;
 }
 
-Spell::Spell(SpellType t)
+Spell::Spell(SpellType t, const rapidjson::Value &json)
     : name{},
     damage{0},
     type{t},
     target{SpellTarget::ENEMY},
     effect{EffectType::NONE}
 {
+    if (json.HasMember("name")) {
+        name = json["name"].GetString();
+    }
+    if (json.HasMember("target")) {
+        auto i = allTargets.find(to_upper(json["target"].GetString()));
+        if (i != std::end(allTargets)) {
+            target = i->second;
+        }
+        else {
+            std::cerr << "Warning: unrecognized target type for spell " <<
+                " type " << static_cast<int>(type) << '\n';
+        }
+    }
+    if (json.HasMember("damage")) {
+        damage = json["damage"].GetInt();
+    }
+    if (json.HasMember("effect")) {
+        auto effType = json["effect"].GetString();
+        effect = effectFromStr(effType);
+        if (effect == EffectType::NONE) {
+            std::cerr << "Warning: unrecognized effect type for spell " <<
+                " type " << static_cast<int>(type) << '\n';
+        }
+    }
 }
 
-void initSpellCache()
+void initSpellCache(const rapidjson::Document &doc)
 {
 #define X(str) allSpells.emplace(#str, SpellType::str);
     SPELL_TYPES
 #undef X
+#define X(str) allTargets.emplace(#str, SpellTarget::str);
+    SPELL_TARGETS
+#undef X
 
-    // TODO: make this configurable
-    auto lightning = make_unique<Spell>(SpellType::LIGHTNING);
-    lightning->name = "Lightning Bolt";
-    lightning->target = SpellTarget::ENEMY;
-    lightning->damage = 10;
-    lightning->effect = EffectType::LIGHTNING;
-    cache.emplace(static_cast<int>(SpellType::LIGHTNING), std::move(lightning));
+    for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
+        if (!i->value.IsObject()) {
+            std::cerr << "spells: skipping id '" << i->name.GetString() <<
+                "'\n";
+            continue;
+        }
+
+        auto spellIter = allSpells.find(to_upper(i->name.GetString()));
+        if (spellIter == std::end(allSpells)) {
+            std::cerr << "spells: unknown type '" << i->name.GetString() <<
+                "'\n";
+            continue;
+        }
+
+        auto type = spellIter->second;
+        cache.emplace(static_cast<int>(type),
+                      make_unique<Spell>(type, i->value));
+    }
 }
 
 const Spell * getSpell(SpellType type)

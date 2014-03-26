@@ -1,0 +1,8 @@
+{
+    "lightning": {
+        "name": "Lightning Bolt",
+        "target": "enemy",
+        "damage": 10,
+        "effect": "lightning"
+    }
+}

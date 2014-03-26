@@ -14,6 +14,7 @@
 #define SPELLS_H
 
 #include "Effects.h"
+#include "json_utils.h"
 #include <string>
 
 #define SPELL_TYPES \
@@ -38,12 +39,12 @@ struct Spell
     SpellTarget target;
     EffectType effect;
 
-    Spell(SpellType t);
+    Spell(SpellType t, const rapidjson::Value &json);
 };
 
-// Call this after SDL initialized but before the game data initialized.
-// TODO: enforce this in code
-void initSpellCache();
+// Call this after SDL and effects initialized but before the game data
+// initialized.  TODO: enforce this in code
+void initSpellCache(const rapidjson::Document &doc);
 
 const Spell * getSpell(SpellType type);
 const Spell * getSpell(const std::string &type);

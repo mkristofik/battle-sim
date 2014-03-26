@@ -113,4 +113,7 @@ struct Effect
 // Call this after SDL initialized but before the game starts.
 void initEffectCache(const rapidjson::Document &doc);
 
+// Return the effect type given by 'str' if possible, otherwise NONE.
+EffectType effectFromStr(const std::string &str);
+
 #endif
