@@ -170,7 +170,7 @@ void Effect::dispose()
 }
 
 
-void initEffectCache(const rapidjson::Document &doc)
+bool initEffectCache(const char *filename)
 {
 #define X(str) allEffects.emplace(#str, EffectType::str);
     EFFECT_TYPES
@@ -178,6 +178,9 @@ void initEffectCache(const rapidjson::Document &doc)
 #define X(str) allDurations.emplace(#str, Duration::str);
     DURATION_TYPES
 #undef X
+
+    rapidjson::Document doc;
+    if (!jsonParse(filename, doc)) return false;
 
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
@@ -203,6 +206,8 @@ void initEffectCache(const rapidjson::Document &doc)
                           make_unique<EffectSimple>(type, i->value));
         }
     }
+
+    return true;
 }
 
 EffectType effectFromStr(const std::string &str)

@@ -56,7 +56,7 @@ Spell::Spell(SpellType t, const rapidjson::Value &json)
     }
 }
 
-void initSpellCache(const rapidjson::Document &doc)
+bool initSpellCache(const char *filename)
 {
 #define X(str) allSpells.emplace(#str, SpellType::str);
     SPELL_TYPES
@@ -64,6 +64,9 @@ void initSpellCache(const rapidjson::Document &doc)
 #define X(str) allTargets.emplace(#str, SpellTarget::str);
     SPELL_TARGETS
 #undef X
+
+    rapidjson::Document doc;
+    if (!jsonParse(filename, doc)) return false;
 
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
         if (!i->value.IsObject()) {
@@ -83,6 +86,8 @@ void initSpellCache(const rapidjson::Document &doc)
         cache.emplace(static_cast<int>(type),
                       make_unique<Spell>(type, i->value));
     }
+
+    return true;
 }
 
 const Spell * getSpell(SpellType type)

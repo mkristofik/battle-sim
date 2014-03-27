@@ -658,19 +658,10 @@ extern "C" int SDL_main(int argc, char *argv[])
     labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);
     logv = make_unique<LogView>(logWindow, font);
 
-    rapidjson::Document effectsDoc;
-    if (jsonParse("effects.json", effectsDoc)) {
-        initEffectCache(effectsDoc);
-    }
-    else {
+    if (!initEffectCache("effects.json")) {
         std::cerr << "Warning: no effect definitions loaded" << std::endl;
     }
-
-    rapidjson::Document spellsDoc;
-    if (jsonParse("spells.json", spellsDoc)) {
-        initSpellCache(spellsDoc);
-    }
-    else {
+    if (!initSpellCache("spells.json")) {
         std::cerr << "Warning: no spell definitions loaded" << std::endl;
     }
 

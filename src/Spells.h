@@ -44,7 +44,7 @@ struct Spell
 
 // Call this after SDL and effects initialized but before the game data
 // initialized.  TODO: enforce this in code
-void initSpellCache(const rapidjson::Document &doc);
+bool initSpellCache(const char *filename);
 
 const Spell * getSpell(SpellType type);
 const Spell * getSpell(const std::string &type);
