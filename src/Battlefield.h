@@ -45,9 +45,6 @@ public:
     Point sPixelFromHex(int hx, int hy) const;
     Point sPixelFromHex(const Point &hex) const;
 
-    void handleMouseMotion(const SDL_MouseMotionEvent &event,
-                           const Action &action);
-
     // Functions for hex highlights.
     void showMouseover(int spx, int spy);
     void showMouseover(const Point &hex);

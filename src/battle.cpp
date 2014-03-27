@@ -355,12 +355,36 @@ bool isHumanTurn()
 
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
-    if (insideRect(event.x, event.y, bfWindow) &&
-        !logHasFocus &&
-        !gs->isGameOver() &&
-        isHumanTurn())
+    if (!insideRect(event.x, event.y, bfWindow) ||
+        logHasFocus ||
+        gs->isGameOver() ||
+        !isHumanTurn())
     {
-        bf->handleMouseMotion(event, getPossibleAction(event.x, event.y));
+        return;
+    }
+
+    bf->clearHighlights();
+
+    auto action = getPossibleAction(event.x, event.y);
+    if (action.type == ActionType::ATTACK) {
+        auto aMoveTo = action.path.back();
+        bf->showMouseover(aMoveTo);
+        bf->showAttackArrow(aMoveTo, action.aTgt);
+    }
+    else if (action.type == ActionType::RANGED ||
+             action.type == ActionType::EFFECT)
+    {
+        bf->showMouseover(action.aTgt);
+        bf->setRangedTarget(action.aTgt);
+        // TODO: expand on this for targets of friendly spells
+    }
+    else if (action.type == ActionType::MOVE) {
+        auto aMoveTo = action.path.back();
+        bf->showMouseover(aMoveTo);
+        bf->setMoveTarget(aMoveTo);
+    }
+    else {
+        bf->showMouseover(event.x, event.y);
     }
 }
 

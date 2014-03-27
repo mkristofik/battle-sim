@@ -111,32 +111,6 @@ Point Battlefield::sPixelFromHex(const Point &hex) const
     return sPixelFromHex(hex.x, hex.y);
 }
 
-void Battlefield::handleMouseMotion(const SDL_MouseMotionEvent &event,
-                                    const Action &action)
-{
-    clearHighlights();
-    if (action.type == ActionType::ATTACK) {
-        auto aMoveTo = action.path.back();
-        showMouseover(aMoveTo);
-        showAttackArrow(aMoveTo, action.aTgt);
-    }
-    else if (action.type == ActionType::RANGED ||
-             action.type == ActionType::EFFECT)
-    {
-        showMouseover(action.aTgt);
-        setRangedTarget(action.aTgt);
-        // TODO: expand on this for targets of friendly spells
-    }
-    else if (action.type == ActionType::MOVE) {
-        auto aMoveTo = action.path.back();
-        showMouseover(aMoveTo);
-        setMoveTarget(aMoveTo);
-    }
-    else {
-        showMouseover(event.x, event.y);
-    }
-}
-
 void Battlefield::showMouseover(int spx, int spy)
 {
     showMouseover(hexFromPixel(spx, spy));
