@@ -54,9 +54,6 @@ enum class EffectType {EFFECT_TYPES};
 //
 // I don't think I can configure effects completely in data without writing
 // some kind of minilanguage.
-//
-// Traits are conceptually just permanent effects.  But!  They apply to the
-// unit type, not an individual unit.
 struct Effect;
 
 struct EffectData
@@ -109,6 +106,7 @@ struct Effect
     void apply(GameState &gs, Unit &unit);
     void dispose();  // postcondition: isDone() == true
 };
+
 
 // Call this after SDL initialized but before the game starts.
 bool initEffectCache(const char *filename);

@@ -317,6 +317,8 @@ void sdlClear(SDL_Rect region)
 
 SdlSurface sdlLoadImage(const char *filename)
 {
+    assert(SDL_WasInit(SDL_INIT_VIDEO) != 0);
+
     auto img = make_surface(IMG_Load(getImagePath(filename).c_str()));
     if (!img) {
         std::cerr << "Error loading image " << filename
