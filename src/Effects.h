@@ -65,6 +65,7 @@ struct EffectData
     std::string text;
 
     EffectData(EffectType t, const rapidjson::Value &json);
+    virtual ~EffectData() = default;
 
     virtual void apply(GameState &gs, Effect &effect, Unit &unit) const=0;
     virtual Effect create(const GameState &gs, const Action &action) const=0;

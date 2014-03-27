@@ -31,7 +31,7 @@ public:
     static void setBattlefield(Battlefield &b);
 
     Anim();
-    virtual ~Anim();
+    virtual ~Anim() = default;
 
     virtual bool isDone() const;
     Uint32 getRunTime() const;

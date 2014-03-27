@@ -74,10 +74,6 @@ Anim::Anim()
     assert(bf_);
 }
 
-Anim::~Anim()
-{
-}
-
 bool Anim::isDone() const
 {
     return done_;
