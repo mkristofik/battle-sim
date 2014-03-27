@@ -168,6 +168,14 @@ Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
     return Facing::RIGHT;
 }
 
+std::unique_ptr<Anim> animateDefender(const Unit &unit, int hitTime)
+{
+    if (!unit.isAlive()) {
+        return make_unique<AnimDie>(unit, hitTime);
+    }
+    return make_unique<AnimDefend>(unit, hitTime);
+}
+
 void animateAction(const Action &action)
 {
     if (action.type == ActionType::NONE) {
@@ -212,12 +220,7 @@ void animateAction(const Action &action)
 
         rangedSeq->add(std::move(animShooter));
         rangedSeq->add(std::move(animShot));
-        if (defender.isAlive()) {
-            rangedSeq->add(make_unique<AnimDefend>(defender, hitTime));
-        }
-        else {
-            rangedSeq->add(make_unique<AnimDie>(defender, hitTime));
-        }
+        rangedSeq->add(animateDefender(defender, hitTime));
         anims.emplace_back(std::move(rangedSeq));
     }
     else if (action.type == ActionType::ATTACK ||
@@ -238,12 +241,7 @@ void animateAction(const Action &action)
         defender.face = getFacing(hTgt, hSrc, defender.face);
 
         attackSeq->add(std::move(anim1));
-        if (defender.isAlive()) {
-            attackSeq->add(make_unique<AnimDefend>(defender, hitTime));
-        }
-        else {
-            attackSeq->add(make_unique<AnimDie>(defender, hitTime));
-        }
+        attackSeq->add(animateDefender(defender, hitTime));
         anims.emplace_back(std::move(attackSeq));
     }
     else if (action.type == ActionType::EFFECT) {
@@ -265,16 +263,10 @@ void animateAction(const Action &action)
         }
 
         effectSeq->add(make_unique<AnimEffect>(action.effect, hTgt, castTime));
-
-        // TODO: maybe refactor this block into an animDefender function?
-        auto hitTime = castTime + 250;  // TODO: magic number
-        if (target.isAlive() && action.damage > 0) {
-            effectSeq->add(make_unique<AnimDefend>(target, hitTime));
+        if (action.damage > 0) {
+            auto hitTime = castTime + 250;  // TODO: magic number
+            effectSeq->add(animateDefender(target, hitTime));
         }
-        else if (!target.isAlive()) {
-            effectSeq->add(make_unique<AnimDie>(target, hitTime));
-        }
-
         anims.emplace_back(std::move(effectSeq));
     }
 }
@@ -335,7 +327,7 @@ void logAction(const Action &action)
         }
     }
     else if (action.damage < 0) {
-        ostr << " of " << -action.damage;
+        ostr << " by " << -action.damage;
         ostr << (-action.damage > 1 ? " hit points." : " hit point.");
     }
     else {

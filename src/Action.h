@@ -27,8 +27,6 @@ enum class ActionType {
     EFFECT
 };
 
-// TODO: Battlefield might need to highlight defender if an effect persists
-
 struct Action
 {
     std::vector<int> path;
