@@ -67,9 +67,9 @@ public:
     void setCommander(Commander c, int team);
     const Commander & getCommander(int team) const;
 
-    bool isMeleeAttackAllowed(int id) const;
-    bool isRangedAttackAllowed(int id) const;
-    bool isSpellAllowed(int id) const;
+    bool isMeleeAttackAllowed(int attId, int defId) const;
+    bool isRangedAttackAllowed(int attId, int defId) const;
+    bool isSpellAllowed(int attId, int defId) const;
     bool isRetaliationAllowed(const Action &action) const;
     bool isFirstStrikeAllowed(const Action &action) const;
     bool isDoubleStrikeAllowed(const Action &action) const;

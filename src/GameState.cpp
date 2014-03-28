@@ -260,33 +260,47 @@ const Commander & GameState::getCommander(int team) const
     return commanders_[team];
 }
 
-bool GameState::isMeleeAttackAllowed(int id) const
+bool GameState::isMeleeAttackAllowed(int attId, int defId) const
 {
-    const auto &attacker = getUnit(id);
-    if (!attacker.isAlive()) return false;
-    if (attacker.hasTrait(Trait::RANGED) ||
-        attacker.hasTrait(Trait::SPELLCASTER))
+    const auto &att = getUnit(attId);
+    const auto &def = getUnit(defId);
+
+    if (!att.isAlive() || !def.isAlive()) return false;
+    if (!att.isEnemy(def)) return false;
+
+    if (att.hasTrait(Trait::RANGED) ||
+        att.hasTrait(Trait::SPELLCASTER))
     {
         return false;
     }
+
     return true;
 }
 
-bool GameState::isRangedAttackAllowed(int id) const
+bool GameState::isRangedAttackAllowed(int attId, int defId) const
 {
-    const auto &attacker = getUnit(id);
-    if (!attacker.isAlive()) return false;
-    if (attacker.hasTrait(Trait::SPELLCASTER)) return false;
+    const auto &att = getUnit(attId);
+    const auto &def = getUnit(defId);
 
-    return getAdjEnemies(id).empty() && attacker.hasTrait(Trait::RANGED);
+    if (!att.isAlive() || !def.isAlive()) return false;
+    if (!att.isEnemy(def)) return false;
+    if (att.hasTrait(Trait::SPELLCASTER)) return false;
+
+    return getAdjEnemies(attId).empty() && att.hasTrait(Trait::RANGED);
 }
 
-bool GameState::isSpellAllowed(int id) const
+bool GameState::isSpellAllowed(int attId, int defId) const
 {
-    const auto &unit = getUnit(id);
-    if (!unit.isAlive()) return false;
-    if (!unit.hasTrait(Trait::SPELLCASTER)) return false;
-    return unit.type->spell != nullptr;
+    const auto &att = getUnit(attId);
+    const auto &def = getUnit(defId);
+    const Spell *spell = att.type->spell;
+
+    if (!att.isAlive() || !def.isAlive()) return false;
+    if (!att.hasTrait(Trait::SPELLCASTER)) return false;
+    if (spell == nullptr) return false;
+
+    return (spell->target == SpellTarget::ENEMY && att.isEnemy(def)) ||
+        (spell->target == SpellTarget::FRIEND && !att.isEnemy(def));
 }
 
 bool GameState::isRetaliationAllowed(const Action &action) const
@@ -295,8 +309,7 @@ bool GameState::isRetaliationAllowed(const Action &action) const
     const auto &def = getUnit(action.defender);
 
     if (action.type != ActionType::ATTACK) return false;
-    if (!att.isAlive() || !def.isAlive()) return false;
-    if (!isMeleeAttackAllowed(action.defender)) return false;
+    if (!isMeleeAttackAllowed(action.defender, action.attacker)) return false;
     if (def.retaliated) return false;
 
     if (att.canFly() && !def.canFly()) {
@@ -327,7 +340,7 @@ bool GameState::isDoubleStrikeAllowed(const Action &action) const
         return true;
     }
     if (action.type == ActionType::ATTACK &&
-        isMeleeAttackAllowed(action.attacker))
+        isMeleeAttackAllowed(action.attacker, action.defender))
     {
         return true;
     }
@@ -417,17 +430,20 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
     action.defender = defId;
     action.aTgt = defender.aHex;
 
-    if (isRangedAttackAllowed(attId)) {
+    bool attMoved = (aMoveTgt != attacker.aHex);
+    bool isAdjacent = contains(grid_.aryNeighbors(aMoveTgt), defender.aHex);
+
+    if (!attMoved && isRangedAttackAllowed(attId, defId)) {
         action.type = ActionType::RANGED;
         return action;
     }
-    if (isSpellAllowed(attId)) {
+    if (!attMoved && isSpellAllowed(attId, defId)) {
         action.type = ActionType::EFFECT;
         action.damage = attacker.num * attacker.type->spell->damage;
         action.effect = Effect(*this, action, attacker.type->spell->effect);
         return action;
     }
-    if (!isMeleeAttackAllowed(attId)) {
+    if (!isAdjacent || !isMeleeAttackAllowed(attId, defId)) {
         return {};
     }
 
@@ -561,16 +577,13 @@ std::vector<Action> GameState::getPossibleActions() const
     auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
-    if (isRangedAttackAllowed(unit.entityId) || isSpellAllowed(unit.entityId)) {
-        for (auto e : getAllEnemies(unit.entityId)) {
-            actions.emplace_back(makeAttack(unit.entityId, e, -1));
-        }
-    }
-    else if (isMeleeAttackAllowed(unit.entityId)) {
+    for (const auto &target : units_) {
+        if (!target.isAlive()) continue;
+
         for (auto aHex : reachableHexes) {
-            for (auto e : getAdjEnemies(unit.entityId, aHex)) {
-                actions.emplace_back(makeAttack(unit.entityId, e, aHex));
-            }
+            auto possible = makeAttack(unit.entityId, target.entityId, aHex);
+            if (possible.type == ActionType::NONE) continue;
+            actions.emplace_back(std::move(possible));
         }
     }
 

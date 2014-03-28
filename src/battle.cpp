@@ -116,7 +116,8 @@ namespace
 }
 
 // Human player's function - determine what action the active unit can take if
-// the user clicks at the given screen coordinates.
+// the user clicks at the given screen coordinates.  Return an empty action if
+// no legal action is possible.
 Action getPossibleAction(int px, int py)
 {
     auto aTgt = bf->aryFromPixel(px, py);
@@ -131,12 +132,25 @@ Action getPossibleAction(int px, int py)
     }
     const auto &defender = gs->getUnitAt(aTgt);
 
-    if (defender.isAlive() && attacker.isEnemy(defender)) {
+    if (defender.isAlive()) {
+        // First, try an attack from the hex nearest where you're pointing.
         auto pOffset = Point{px, py} - bf->sPixelFromHex(hTgt);
         auto attackDir = getSector(pOffset.x, pOffset.y);
         auto hMoveTo = adjacent(hTgt, attackDir);
         auto aMoveTo = grid->aryFromHex(hMoveTo);
-        return gs->makeAttack(attacker.entityId, defender.entityId, aMoveTo);
+        auto action = gs->makeAttack(attacker.entityId, defender.entityId,
+                                     aMoveTo);
+        if (action.type != ActionType::NONE) {
+            return action;
+        }
+
+        // Next, try an attack without moving.
+        if (attacker.hasTrait(Trait::RANGED) ||
+            attacker.hasTrait(Trait::SPELLCASTER))
+        {
+            return gs->makeAttack(attacker.entityId, defender.entityId,
+                                  attacker.aHex);
+        }
     }
     else if (!defender.isAlive()) {
         return gs->makeMove(attacker.entityId, aTgt);
