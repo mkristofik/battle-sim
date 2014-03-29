@@ -67,8 +67,11 @@ public:
     void setCommander(Commander c, int team);
     const Commander & getCommander(int team) const;
 
+    bool canUseMeleeAttack(int attId) const;
     bool isMeleeAttackAllowed(int attId, int defId) const;
+    bool canUseRangedAttack(int attId) const;
     bool isRangedAttackAllowed(int attId, int defId) const;
+    bool canUseSpell(int attId) const;
     bool isSpellAllowed(int attId, int defId) const;
     bool isRetaliationAllowed(const Action &action) const;
     bool isFirstStrikeAllowed(const Action &action) const;

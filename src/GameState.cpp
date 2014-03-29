@@ -260,13 +260,10 @@ const Commander & GameState::getCommander(int team) const
     return commanders_[team];
 }
 
-bool GameState::isMeleeAttackAllowed(int attId, int defId) const
+bool GameState::canUseMeleeAttack(int attId) const
 {
     const auto &att = getUnit(attId);
-    const auto &def = getUnit(defId);
-
-    if (!att.isAlive() || !def.isAlive()) return false;
-    if (!att.isEnemy(def)) return false;
+    if (!att.isAlive()) return false;
 
     if (att.hasTrait(Trait::RANGED) ||
         att.hasTrait(Trait::SPELLCASTER))
@@ -277,28 +274,50 @@ bool GameState::isMeleeAttackAllowed(int attId, int defId) const
     return true;
 }
 
-bool GameState::isRangedAttackAllowed(int attId, int defId) const
+bool GameState::isMeleeAttackAllowed(int attId, int defId) const
 {
+    if (!canUseMeleeAttack(attId)) return false;
+
     const auto &att = getUnit(attId);
     const auto &def = getUnit(defId);
+    return def.isAlive() && att.isEnemy(def);
+}
 
-    if (!att.isAlive() || !def.isAlive()) return false;
-    if (!att.isEnemy(def)) return false;
+bool GameState::canUseRangedAttack(int attId) const
+{
+    const auto &att = getUnit(attId);
+    if (!att.isAlive()) return false;
     if (att.hasTrait(Trait::SPELLCASTER)) return false;
 
     return getAdjEnemies(attId).empty() && att.hasTrait(Trait::RANGED);
 }
 
-bool GameState::isSpellAllowed(int attId, int defId) const
+bool GameState::isRangedAttackAllowed(int attId, int defId) const
 {
+    if (!canUseRangedAttack(attId)) return false;
+
     const auto &att = getUnit(attId);
     const auto &def = getUnit(defId);
+    return def.isAlive() && att.isEnemy(def);
+}
+
+bool GameState::canUseSpell(int attId) const
+{
+    const auto &att = getUnit(attId);
+    if (!att.isAlive()) return false;
+
+    return att.type->spell != nullptr && att.hasTrait(Trait::SPELLCASTER);
+}
+
+bool GameState::isSpellAllowed(int attId, int defId) const
+{
+    if (!canUseSpell(attId)) return false;
+
+    const auto &att = getUnit(attId);
+    const auto &def = getUnit(defId);
+    if (!def.isAlive()) return false;
+
     const Spell *spell = att.type->spell;
-
-    if (!att.isAlive() || !def.isAlive()) return false;
-    if (!att.hasTrait(Trait::SPELLCASTER)) return false;
-    if (spell == nullptr) return false;
-
     return (spell->target == SpellTarget::ENEMY && att.isEnemy(def)) ||
         (spell->target == SpellTarget::FRIEND && !att.isEnemy(def));
 }
@@ -431,7 +450,6 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
     action.aTgt = defender.aHex;
 
     bool attMoved = (aMoveTgt != attacker.aHex);
-    bool isAdjacent = contains(grid_.aryNeighbors(aMoveTgt), defender.aHex);
 
     if (!attMoved && isRangedAttackAllowed(attId, defId)) {
         action.type = ActionType::RANGED;
@@ -443,6 +461,8 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
         action.effect = Effect(*this, action, attacker.type->spell->effect);
         return action;
     }
+
+    bool isAdjacent = contains(grid_.aryNeighbors(aMoveTgt), defender.aHex);
     if (!isAdjacent || !isMeleeAttackAllowed(attId, defId)) {
         return {};
     }
@@ -577,13 +597,25 @@ std::vector<Action> GameState::getPossibleActions() const
     auto reachableHexes = getReachableHexes(unit);
     std::vector<Action> actions;
 
-    for (const auto &target : units_) {
-        if (!target.isAlive()) continue;
-
-        for (auto aHex : reachableHexes) {
-            auto possible = makeAttack(unit.entityId, target.entityId, aHex);
+    if (canUseRangedAttack(unit.entityId)) {
+        for (auto e : getAllEnemies(unit.entityId)) {
+            actions.push_back(makeAttack(unit.entityId, e, unit.aHex));
+        }
+    }
+    else if (canUseSpell(unit.entityId)) {
+        for (const auto &target : units_) {
+            if (!target.isAlive()) continue;
+            auto possible = makeAttack(unit.entityId, target.entityId,
+                                       unit.aHex);
             if (possible.type == ActionType::NONE) continue;
-            actions.emplace_back(std::move(possible));
+            actions.push_back(std::move(possible));
+        }
+    }
+    else if (canUseMeleeAttack(unit.entityId)) {
+        for (auto aHex : reachableHexes) {
+            for (auto e : getAdjEnemies(unit.entityId, aHex)) {
+                actions.push_back(makeAttack(unit.entityId, e, aHex));
+            }
         }
     }
 
