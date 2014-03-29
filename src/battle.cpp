@@ -385,12 +385,21 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
         bf->showMouseover(aMoveTo);
         bf->showAttackArrow(aMoveTo, action.aTgt);
     }
-    else if (action.type == ActionType::RANGED ||
-             action.type == ActionType::EFFECT)
-    {
+    else if (action.type == ActionType::RANGED) {
         bf->showMouseover(action.aTgt);
         bf->setRangedTarget(action.aTgt);
-        // TODO: expand on this for targets of friendly spells
+    }
+    else if (action.type == ActionType::EFFECT) {
+        bf->showMouseover(action.aTgt);
+
+        const auto &attacker = gs->getUnit(action.attacker);
+        const Spell *spell = attacker.type->spell;
+        if (spell && spell->target == SpellTarget::FRIEND) {
+            bf->setFriendlyTarget(action.aTgt);
+        }
+        else {
+            bf->setRangedTarget(action.aTgt);
+        }
     }
     else if (action.type == ActionType::MOVE) {
         auto aMoveTo = action.path.back();

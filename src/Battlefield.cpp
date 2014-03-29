@@ -30,6 +30,8 @@ Battlefield::Battlefield(SDL_Rect dispArea, const HexGrid &bfGrid)
                                ZOrder::SHADOW)},
     redHex_{addHiddenEntity(sdlLoadImage("hex-red.png"),
                             ZOrder::HIGHLIGHT)},
+    blueHex_{addHiddenEntity(sdlLoadImage("hex-blue.png"),
+                            ZOrder::HIGHLIGHT)},
     yellowHex_{addHiddenEntity(sdlLoadImage("hex-yellow.png"),
                                ZOrder::HIGHLIGHT)},
     greenHex_{addHiddenEntity(sdlLoadImage("hex-green.png"),
@@ -194,6 +196,28 @@ void Battlefield::clearRangedTarget()
     getEntity(redHex_).visible = false;
 }
 
+void Battlefield::setFriendlyTarget(const Point &hex)
+{
+    if (grid_.offGrid(hex)) {
+        clearFriendlyTarget();
+        return;
+    }
+
+    auto &target = getEntity(blueHex_);
+    target.hex = hex;
+    target.visible = true;
+}
+
+void Battlefield::setFriendlyTarget(int aIndex)
+{
+    setFriendlyTarget(grid_.hexFromAry(aIndex));
+}
+
+void Battlefield::clearFriendlyTarget()
+{
+    getEntity(blueHex_).visible = false;
+}
+
 void Battlefield::showAttackArrow(int aSrc, int aTgt)
 {
     auto hSrc = grid_.hexFromAry(aSrc);
@@ -224,6 +248,7 @@ void Battlefield::clearHighlights()
     hideMouseover();
     clearMoveTarget();
     clearRangedTarget();
+    clearFriendlyTarget();
     hideAttackArrow();
 }
 

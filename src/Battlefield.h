@@ -58,7 +58,9 @@ public:
     void setRangedTarget(const Point &hex);
     void setRangedTarget(int aIndex);
     void clearRangedTarget();
-    // TODO: add friendly target
+    void setFriendlyTarget(const Point &hex);
+    void setFriendlyTarget(int aIndex);
+    void clearFriendlyTarget();
     void showAttackArrow(int aSrc, int aTgt);
     void hideAttackArrow();
     void clearHighlights();
@@ -73,6 +75,7 @@ private:
     // Entities for display features.
     int hexShadow_;
     int redHex_;
+    int blueHex_;
     int yellowHex_;
     int greenHex_;
     int attackSrc_;
