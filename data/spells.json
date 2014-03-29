@@ -1,4 +1,10 @@
 {
+    "cure": {
+        "name": "Cure",
+        "target": "friend",
+        "damage": -6,
+        "effect": "heal"
+    },
     "lightning": {
         "name": "Lightning Bolt",
         "target": "enemy",

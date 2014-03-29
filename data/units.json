@@ -147,6 +147,21 @@
         "img-defend": "lich-defend.png",
         "projectile": "missile-dark.png"
     },
+    "mage": {
+        "name": "Mage",
+        "plural": "Magi",
+        "moves": 1,
+        "initiative": 5,
+        "hp": 15,
+        "growth": 5,
+        "img": "mage.png",
+        "anim-ranged": "mage-attack-magic.png",
+        "ranged-frames": [75, 150, 500, 550, 600],
+        "img-defend": "mage-defend.png",
+        "anim-die": "mage-die.png",
+        "die-frames": [120, 240, 360, 480],
+        "spell": "cure"
+    },
     "ogre": {
         "name": "Ogre",
         "plural": "Ogres",

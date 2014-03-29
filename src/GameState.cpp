@@ -518,16 +518,25 @@ Action GameState::makeBind(int attId, int defId) const
 
 int GameState::computeDamage(const Action &action) const
 {
-    // Spells and traits have already computed damage.
-    if (action.type == ActionType::EFFECT) {
-        return action.damage;
-    }
+    if (action.type == ActionType::NONE) return 0;
 
     const auto &att = getUnit(action.attacker);
     const auto &def = getUnit(action.defender);
-    if (!att.isAlive() || !def.isAlive()) return 0;
-    return att.num * att.randomDamage(action.type) *
-        getDamageMultiplier(action);
+    int damage = action.damage;
+
+    // Spells and traits have already computed damage.
+    if (action.type != ActionType::EFFECT) {
+        damage = att.num * att.randomDamage(action.type) *
+            getDamageMultiplier(action);
+    }
+
+    // Healing effects need to not put a unit beyond max HP.
+    if (damage < 0 && def.isAlive()) {
+        int maxHealing = def.hpLeft - def.type->hp;
+        damage = std::max(damage, maxHealing);
+    }
+
+    return damage;
 }
 
 int GameState::getSimulatedDamage(const Action &action) const

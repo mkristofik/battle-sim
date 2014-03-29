@@ -18,6 +18,7 @@
 #include <string>
 
 #define SPELL_TYPES \
+    X(CURE) \
     X(LIGHTNING)
 
 #define SPELL_TARGETS \

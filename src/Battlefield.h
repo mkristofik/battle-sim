@@ -58,6 +58,7 @@ public:
     void setRangedTarget(const Point &hex);
     void setRangedTarget(int aIndex);
     void clearRangedTarget();
+    // TODO: add friendly target
     void showAttackArrow(int aSrc, int aTgt);
     void hideAttackArrow();
     void clearHighlights();
