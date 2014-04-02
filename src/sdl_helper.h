@@ -57,6 +57,11 @@ SdlSurface sdlZoom(const SdlSurface &src, double zoom);
 // 0 = transparent, 1 = opaque
 SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha);
 
+// Blend all non-transparent pixels toward the given color.  Ratio 0 = no
+// change, 1 = fully colored.
+SdlSurface sdlBlendColor(const SdlSurface &src, const SDL_Color &color,
+                         double ratio);
+
 // Draw the full surface to the screen using (px,py) as the upper-left corner.
 // Use the raw SDL_BlitSurface if you need something more specific.
 void sdlBlit(const SdlSurface &surf, Sint16 px, Sint16 py);
@@ -169,6 +174,7 @@ void sdlPlayMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);
 
 // Common colors.
+const SDL_Color RED = SDL_Color{255, 0, 0, 0};
 const SDL_Color WHITE = SDL_Color{255, 255, 255, 0};
 const SDL_Color BORDER_FG = SDL_Color{96, 100, 96, 0};
 const SDL_Color BORDER_BG = SDL_Color{32, 32, 24, 0};

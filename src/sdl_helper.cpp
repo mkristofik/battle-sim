@@ -268,6 +268,39 @@ SdlSurface sdlSetAlpha(const SdlSurface &src, double alpha)
     return surf;
 }
 
+SdlSurface sdlBlendColor(const SdlSurface &src, const SDL_Color &color,
+                         double ratio)
+{
+    ratio = bound(ratio, 0.0, 1.0);
+    auto surf = sdlDeepCopy(src);
+    if (!surf) {
+        return nullptr;
+    }
+
+    SdlLock(surf, [&] {
+        auto *begin = static_cast<Uint32 *>(surf->pixels);
+        auto *end = begin + surf->w * surf->h;
+        for (auto *i = begin; i != end; ++i) {
+            auto curAlpha = (*i & surf->format->Amask) >> surf->format->Ashift;
+            if (curAlpha == SDL_ALPHA_TRANSPARENT) continue;
+
+            int curRed = (*i & surf->format->Rmask) >> surf->format->Rshift;
+            int curGreen = (*i & surf->format->Gmask) >> surf->format->Gshift;
+            int curBlue = (*i & surf->format->Bmask) >> surf->format->Bshift;
+            Uint32 newRed = curRed + (color.r - curRed) * ratio;
+            Uint32 newGreen = curGreen + (color.g - curGreen) * ratio;
+            Uint32 newBlue = curBlue + (color.b - curBlue) * ratio;
+
+            *i &= surf->format->Amask;
+            *i |= (newRed << surf->format->Rshift);
+            *i |= (newGreen << surf->format->Gshift);
+            *i |= (newBlue << surf->format->Bshift);
+        }
+    });
+
+    return surf;
+}
+
 void sdlBlit(const SdlSurface &surf, Sint16 px, Sint16 py)
 {
     assert(screen != nullptr);
