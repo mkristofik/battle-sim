@@ -269,15 +269,25 @@ void animateAction(const Action &action)
         if (unit.isAlive()) {
             auto hSrc = grid->hexFromAry(unit.aHex);
             unit.face = getFacing(hSrc, hTgt, unit.face);
-            target.face = getFacing(hTgt, hSrc, target.face);
+
+            // Target turns to face the caster for offensive spells.
+            if (action.damage > 0) {
+                target.face = getFacing(hTgt, hSrc, target.face);
+            }
 
             auto animCaster = make_unique<AnimRanged>(unit);
             castTime = animCaster->getShotTime();
+
+            // If unit casting on itself, let the cast animation finish before
+            // showing the effect.
+            if (action.attacker == action.defender) {
+                castTime = animCaster->getRunTime();
+            }
             effectSeq->add(std::move(animCaster));
         }
 
-        effectSeq->add(make_unique<AnimEffect>(action.effect, target.entityId,
-                                               hTgt, castTime));
+        effectSeq->add(make_unique<AnimEffect>(action.effect, target, hTgt,
+                                               castTime));
         if (action.damage > 0) {
             auto hitTime = castTime + 250;  // TODO: magic number
             effectSeq->add(animateDefender(target, hitTime));

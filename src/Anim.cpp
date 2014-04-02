@@ -22,18 +22,23 @@
 
 namespace
 {
+    // Return the appropriate base image for a unit given its facing.
+    // TODO: remove 'faceLeft' everywhere because we should be taking all units
+    // by value.
+    SdlSurface getBaseImage(const Unit &unit, bool faceLeft)
+    {
+        if (faceLeft) {
+            return unit.type->reverseImg[unit.team];
+        }
+        return unit.type->baseImg[unit.team];
+    }
+
     // Restore the unit to the center of its hex and return to the base image.
     void idle(Drawable &entity, const Unit &unit, bool faceLeft)
     {
         entity.frame = -1;
         entity.z = ZOrder::CREATURE;
-
-        if (faceLeft) {
-            entity.img = unit.type->reverseImg[unit.team];
-        }
-        else {
-            entity.img = unit.type->baseImg[unit.team];
-        }
+        entity.img = getBaseImage(unit, faceLeft);
         entity.alignCenter();
     }
 
@@ -504,11 +509,10 @@ void AnimParallel::stop()
 }
 
 
-AnimEffect::AnimEffect(Effect e, int targetId, Point hex, Uint32 startsAt)
+AnimEffect::AnimEffect(Effect e, Unit target, Point hex, Uint32 startsAt)
     : effect_{std::move(e)},
     id_{-1},
-    target_{targetId},
-    baseTargetImg_{bf_->getEntity(target_).img},
+    target_{std::move(target)},
     hex_{std::move(hex)},
     startTime_{startsAt}
 {
@@ -547,11 +551,9 @@ void AnimEffect::runEnraged(Uint32 timeSinceStart)
     const auto &frames = effect_.getFrames();
     if (frames.size() < 2) return;
 
-    auto &entity = bf_->getEntity(target_);
     auto fadeInTime = frames[0];
     auto fadeOutTime = frames[1];
     double frac = 0.0;
-
     if (timeSinceStart < fadeInTime) {
         frac = static_cast<double>(timeSinceStart) / fadeInTime;
     }
@@ -560,7 +562,10 @@ void AnimEffect::runEnraged(Uint32 timeSinceStart)
             (fadeOutTime - fadeInTime);
     }
     frac *= 0.6;  // don't get all the way to full red
-    entity.img = sdlBlendColor(baseTargetImg_, RED, frac);
+
+    auto &entity = bf_->getEntity(target_.entityId);
+    auto baseImg = getBaseImage(target_, target_.face == Facing::LEFT);
+    entity.img = sdlBlendColor(baseImg, RED, frac);
 }
 
 void AnimEffect::runOther(Uint32 timeSinceStart)
@@ -582,8 +587,8 @@ void AnimEffect::stop()
 
 void AnimEffect::stopEnraged()
 {
-    auto &entity = bf_->getEntity(target_);
-    entity.img = baseTargetImg_;
+    auto &entity = bf_->getEntity(target_.entityId);
+    entity.img = getBaseImage(target_, target_.face == Facing::LEFT);
 }
 
 void AnimEffect::stopOther()
