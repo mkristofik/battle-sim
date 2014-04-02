@@ -190,7 +190,11 @@ public:
 
 private:
     void run(Uint32 elapsed) override;
+    void runEnraged(Uint32 timeSinceStart);
+    void runOther(Uint32 timeSinceStart);
     void stop() override;
+    void stopEnraged();
+    void stopOther();
 
     Effect effect_;
     int id_;

@@ -534,37 +534,60 @@ void AnimEffect::run(Uint32 elapsed)
         return;
     }
 
-    const auto &frames = effect_.getFrames();
-    if (effect_.type == EffectType::ENRAGED && frames.size() >= 2) {
-        auto &entity = bf_->getEntity(target_);
-        auto fadeInTime = frames[0];
-        auto fadeOutTime = frames[1];
-        double frac = 0.0;
-        if (elapsed - startTime_ < fadeInTime) {
-            frac = static_cast<double>(elapsed - startTime_) / fadeInTime;
-        }
-        else {
-            frac = static_cast<double>(fadeOutTime - (elapsed - startTime_)) /
-                (fadeOutTime - fadeInTime);
-        }
-        frac *= 0.6;  // don't get all the way to full red
-        entity.img = sdlBlendColor(baseTargetImg_, RED, frac);
+    if (effect_.type == EffectType::ENRAGED) {
+        runEnraged(elapsed - startTime_);
     }
     else if (id_ >= 0) {
-        auto &entity = bf_->getEntity(id_);
-        entity.visible = true;
-        entity.frame = getFrame(effect_.getFrames(), elapsed - startTime_);
+        runOther(elapsed - startTime_);
     }
+}
+
+void AnimEffect::runEnraged(Uint32 timeSinceStart)
+{
+    const auto &frames = effect_.getFrames();
+    if (frames.size() < 2) return;
+
+    auto &entity = bf_->getEntity(target_);
+    auto fadeInTime = frames[0];
+    auto fadeOutTime = frames[1];
+    double frac = 0.0;
+
+    if (timeSinceStart < fadeInTime) {
+        frac = static_cast<double>(timeSinceStart) / fadeInTime;
+    }
+    else {
+        frac = static_cast<double>(fadeOutTime - timeSinceStart) /
+            (fadeOutTime - fadeInTime);
+    }
+    frac *= 0.6;  // don't get all the way to full red
+    entity.img = sdlBlendColor(baseTargetImg_, RED, frac);
+}
+
+void AnimEffect::runOther(Uint32 timeSinceStart)
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.visible = true;
+    entity.frame = getFrame(effect_.getFrames(), timeSinceStart);
 }
 
 void AnimEffect::stop()
 {
     if (effect_.type == EffectType::ENRAGED) {
-        auto &entity = bf_->getEntity(target_);
-        entity.img = baseTargetImg_;
+        stopEnraged();
     }
     else if (id_ >= 0) {
-        auto &entity = bf_->getEntity(id_);
-        entity.visible = false;
+        stopOther();
     }
+}
+
+void AnimEffect::stopEnraged()
+{
+    auto &entity = bf_->getEntity(target_);
+    entity.img = baseTargetImg_;
+}
+
+void AnimEffect::stopOther()
+{
+    auto &entity = bf_->getEntity(id_);
+    entity.visible = false;
 }
