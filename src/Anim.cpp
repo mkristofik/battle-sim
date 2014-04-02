@@ -14,6 +14,7 @@
 #include "Battlefield.h"
 #include "Effects.h"
 #include "Traits.h"
+#include "algo.h"
 
 #include <algorithm>
 #include <cassert>
@@ -503,9 +504,11 @@ void AnimParallel::stop()
 }
 
 
-AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
+AnimEffect::AnimEffect(Effect e, int targetId, Point hex, Uint32 startsAt)
     : effect_{std::move(e)},
-    id_{bf_->addHiddenEntity(effect_.getAnim(), ZOrder::PROJECTILE)},
+    id_{-1},
+    target_{targetId},
+    baseTargetImg_{bf_->getEntity(target_).img},
     hex_{std::move(hex)},
     startTime_{startsAt}
 {
@@ -515,11 +518,14 @@ AnimEffect::AnimEffect(Effect e, Point hex, Uint32 startsAt)
         runTime_ += frames.back();
     }
 
-    auto &entity = bf_->getEntity(id_);
-    entity.hex = hex_;
-    entity.frame = 0;
-    entity.numFrames = frames.size();
-    entity.alignBottomCenterAnim();
+    if (effect_.getAnim()) {
+        id_ = bf_->addHiddenEntity(effect_.getAnim(), ZOrder::PROJECTILE);
+        auto &entity = bf_->getEntity(id_);
+        entity.hex = hex_;
+        entity.frame = 0;
+        entity.numFrames = frames.size();
+        entity.alignBottomCenterAnim();
+    }
 }
 
 void AnimEffect::run(Uint32 elapsed)
@@ -528,13 +534,37 @@ void AnimEffect::run(Uint32 elapsed)
         return;
     }
 
-    auto &entity = bf_->getEntity(id_);
-    entity.visible = true;
-    entity.frame = getFrame(effect_.getFrames(), elapsed - startTime_);
+    const auto &frames = effect_.getFrames();
+    if (effect_.type == EffectType::ENRAGED && frames.size() >= 2) {
+        auto &entity = bf_->getEntity(target_);
+        auto fadeInTime = frames[0];
+        auto fadeOutTime = frames[1];
+        double frac = 0.0;
+        if (elapsed - startTime_ < fadeInTime) {
+            frac = static_cast<double>(elapsed - startTime_) / fadeInTime;
+        }
+        else {
+            frac = static_cast<double>(fadeOutTime - (elapsed - startTime_)) /
+                (fadeOutTime - fadeInTime);
+        }
+        frac *= 0.6;  // don't get all the way to full red
+        entity.img = sdlBlendColor(baseTargetImg_, RED, frac);
+    }
+    else if (id_ >= 0) {
+        auto &entity = bf_->getEntity(id_);
+        entity.visible = true;
+        entity.frame = getFrame(effect_.getFrames(), elapsed - startTime_);
+    }
 }
 
 void AnimEffect::stop()
 {
-    auto &entity = bf_->getEntity(id_);
-    entity.visible = false;
+    if (effect_.type == EffectType::ENRAGED) {
+        auto &entity = bf_->getEntity(target_);
+        entity.img = baseTargetImg_;
+    }
+    else if (id_ >= 0) {
+        auto &entity = bf_->getEntity(id_);
+        entity.visible = false;
+    }
 }

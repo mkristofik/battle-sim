@@ -24,11 +24,13 @@ struct Unit;
 
 #define DURATION_TYPES \
     X(INSTANT) \
+    X(STANDARD) \
     X(UNTIL_ATT_MOVES)
 
 #define EFFECT_TYPES \
     X(NONE) \
     X(BOUND) \
+    X(ENRAGED) \
     X(HEAL) \
     X(LIGHTNING)
 
@@ -38,10 +40,11 @@ enum class EffectType {EFFECT_TYPES};
 #undef X
 
 // Ideas
-// Bless/Blessed
+// Bloodlust/Enraged
 // - unit always does max damage
 // - cancels: curse
-// - needs: duration
+// - standard duration (3 turns)
+// - anim fades the unit to red and then back to normal over maybe 1 second
 //
 // Curse/Cursed
 // - unit always does min damage

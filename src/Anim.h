@@ -186,7 +186,7 @@ private:
 class AnimEffect : public Anim
 {
 public:
-    AnimEffect(Effect e, Point hex, Uint32 startsAt = 0);
+    AnimEffect(Effect e, int targetId, Point hex, Uint32 startsAt = 0);
 
 private:
     void run(Uint32 elapsed) override;
@@ -194,6 +194,8 @@ private:
 
     Effect effect_;
     int id_;
+    int target_;
+    SdlSurface baseTargetImg_;
     Point hex_;
     Uint32 startTime_;
 };

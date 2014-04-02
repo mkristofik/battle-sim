@@ -18,6 +18,7 @@
 #include <string>
 
 #define SPELL_TYPES \
+    X(BLOODLUST) \
     X(CURE) \
     X(LIGHTNING)
 

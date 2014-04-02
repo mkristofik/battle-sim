@@ -5,6 +5,11 @@
         "anim": "web.png",
         "anim-frames": [1200]
     },
+    "enraged": {
+        "text": "enraged",
+        "duration": "standard",
+        "anim-frames": [700, 1400]
+    },
     "heal": {
         "text": "healed",
         "duration": "instant",

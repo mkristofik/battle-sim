@@ -1,4 +1,9 @@
 {
+    "bloodlust": {
+        "name": "Bloodlust",
+        "target": "friend",
+        "effect": "enraged"
+    },
     "cure": {
         "name": "Cure",
         "target": "friend",

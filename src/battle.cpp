@@ -276,7 +276,8 @@ void animateAction(const Action &action)
             effectSeq->add(std::move(animCaster));
         }
 
-        effectSeq->add(make_unique<AnimEffect>(action.effect, hTgt, castTime));
+        effectSeq->add(make_unique<AnimEffect>(action.effect, target.entityId,
+                                               hTgt, castTime));
         if (action.damage > 0) {
             auto hitTime = castTime + 250;  // TODO: magic number
             effectSeq->add(animateDefender(target, hitTime));

@@ -107,14 +107,19 @@ EffectSimple::EffectSimple(EffectType type, const rapidjson::Value &json)
 
 void EffectSimple::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
-    effect.dispose();
+    --effect.roundsLeft;
 }
 
 Effect EffectSimple::create(const GameState &gs, const Action &action) const
 {
     Effect e;
     e.type = type;
-    e.roundsLeft = 1;
+    if (dur == Duration::STANDARD) {
+        e.roundsLeft = 4;
+    }
+    else {
+        e.roundsLeft = 1;
+    }
     return e;
 }
 

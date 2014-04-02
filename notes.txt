@@ -54,7 +54,9 @@ Giant - 1, 13/10, 20-30, 150 hp, immune to mind spells
 
 Possible Images
 ---------------
-Cleric - human-magi/white mage
+saurians/soothsayer/soothsayer-se-* or /oracle-se-*
+http://devdocs.wesnoth.org/sdl__utils_8cpp_source.html#l01562
+- color blending code is like sdlSetAlpha but with red/green/blue
 
 Possible Traits
 ---------------
