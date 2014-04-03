@@ -30,6 +30,10 @@
         "id": "peasant",
         "num": 22
     },
+    "t1p7": {
+        "id": "mage",
+        "num": 5
+    },
     "cmdr2": {
         "name": "Crag Hack",
         "alignment": "Barbarian",
@@ -52,6 +56,10 @@
     "t2p4": {
         "id": "wolf",
         "num": 5
+    },
+    "t2p5": {
+        "id": "saurian",
+        "num": 1
     },
     "t2p6": {
         "id": "troll",

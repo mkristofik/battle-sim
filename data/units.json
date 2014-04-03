@@ -267,6 +267,21 @@
         "anim-die": "revenant-die.png",
         "die-frames": [100, 200, 300, 400, 500, 600, 700]
     },
+    "saurian": {
+        "name": "Saurian",
+        "plural": "Saurians",
+        "moves": 1,
+        "initiative": 5,
+        "hp": 80,
+        "growth": 1,
+        "img": "saurian.png",
+        "anim-ranged": "saurian-attack-magic.png",
+        "ranged-frames": [100, 200, 300],
+        "img-defend": "saurian-defend.png",
+        "anim-die": "saurian-die.png",
+        "die-frames": [100, 200, 300, 400, 500, 600],
+        "spell": "bloodlust"
+    },
     "spider": {
         "name": "Giant Spider",
         "plural": "Giant Spiders",
