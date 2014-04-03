@@ -46,31 +46,39 @@ int Unit::randomDamage(ActionType action) const
 {
     if (!isValid()) return 0;
 
+    int damage = 0;
     if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
         std::uniform_int_distribution<int> dmg(type->minDmg, type->maxDmg);
-        return dmg(randomGenerator());
+        damage = dmg(randomGenerator());
     }
     else if (action == ActionType::RANGED) {
         std::uniform_int_distribution<int> dmg(type->minDmgRanged,
                                                type->maxDmgRanged);
-        return dmg(randomGenerator());
+        damage = dmg(randomGenerator());
     }
 
-    return 0;
+    if (hasEffect(EffectType::ENRAGED)) {
+        damage *= 2;
+    }
+    return damage;
 }
 
 int Unit::avgDamage(ActionType action) const
 {
     if (!isValid()) return 0;
 
+    int damage = 0;
     if (action == ActionType::ATTACK || action == ActionType::RETALIATE) {
-        return nearbyint((type->minDmg + type->maxDmg) / 2);
+        damage = nearbyint((type->minDmg + type->maxDmg) / 2);
     }
     else if (action == ActionType::RANGED) {
-        return nearbyint((type->minDmgRanged + type->maxDmgRanged) / 2);
+        damage = nearbyint((type->minDmgRanged + type->maxDmgRanged) / 2);
     }
 
-    return 0;
+    if (hasEffect(EffectType::ENRAGED)) {
+        damage *= 2;
+    }
+    return damage;
 }
 
 int Unit::takeDamage(int dmg)
