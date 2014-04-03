@@ -93,7 +93,7 @@ Effect EffectBound::create(const GameState &gs, const Action &action) const
 
     Effect e;
     e.type = EffectType::BOUND;
-    e.roundsLeft = 1;
+    e.roundsLeft = 999;
     e.data1 = att.entityId;
     e.data2 = att.aHex;
     return e;
@@ -107,7 +107,6 @@ EffectSimple::EffectSimple(EffectType type, const rapidjson::Value &json)
 
 void EffectSimple::apply(GameState &gs, Effect &effect, Unit &unit) const
 {
-    --effect.roundsLeft;
 }
 
 Effect EffectSimple::create(const GameState &gs, const Action &action) const
@@ -116,9 +115,6 @@ Effect EffectSimple::create(const GameState &gs, const Action &action) const
     e.type = type;
     if (dur == Duration::STANDARD) {
         e.roundsLeft = 4;
-    }
-    else {
-        e.roundsLeft = 1;
     }
     return e;
 }

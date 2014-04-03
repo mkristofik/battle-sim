@@ -903,7 +903,11 @@ void GameState::onStartTurn()
     }
 
     if (unit.effect.type != EffectType::NONE) {
-        unit.effect.apply(*this, unit);
+        // TODO: this setup should work but it's awkward
+        --unit.effect.roundsLeft;
+        if (!unit.effect.isDone()) {
+            unit.effect.apply(*this, unit);
+        }
         if (unit.effect.isDone()) {
             unit.effect = Effect();
         }
