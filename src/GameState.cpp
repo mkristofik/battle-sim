@@ -582,7 +582,6 @@ void GameState::execute(const Action &action)
     else if (action.type == ActionType::EFFECT) {
         assert(def.isAlive());
         auto effect = action.effect;
-        effect.apply(*this, def);
         if (!effect.isDone()) {
             // Effects with duration stay with the defending unit.
             def.effect = effect;
@@ -903,11 +902,7 @@ void GameState::onStartTurn()
     }
 
     if (unit.effect.type != EffectType::NONE) {
-        // TODO: this setup should work but it's awkward
-        --unit.effect.roundsLeft;
-        if (!unit.effect.isDone()) {
-            unit.effect.apply(*this, unit);
-        }
+        unit.effect.apply(*this, unit);
         if (unit.effect.isDone()) {
             unit.effect = Effect();
         }
