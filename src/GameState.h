@@ -91,7 +91,6 @@ public:
     Action makeBind(int attId, int defId) const;
 
     int computeDamage(const Action &action) const;
-    int getSimulatedDamage(const Action &action) const;
     void execute(const Action &action);
 
     // Generate the set of all possible actions for the active unit.

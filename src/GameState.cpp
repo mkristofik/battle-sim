@@ -526,8 +526,13 @@ int GameState::computeDamage(const Action &action) const
 
     // Spells and traits have already computed damage.
     if (action.type != ActionType::EFFECT) {
-        damage = att.num * att.randomDamage(action.type) *
-            getDamageMultiplier(action);
+        if (simMode_) {
+            damage = att.num * att.avgDamage(action.type);
+        }
+        else {
+            damage = att.num * att.randomDamage(action.type);
+        }
+        damage *= getDamageMultiplier(action);
     }
 
     // Healing effects need to not put a unit beyond max HP.
@@ -537,19 +542,6 @@ int GameState::computeDamage(const Action &action) const
     }
 
     return damage;
-}
-
-int GameState::getSimulatedDamage(const Action &action) const
-{
-    // Spells and traits have already computed damage.
-    if (action.type == ActionType::EFFECT) {
-        return action.damage;
-    }
-
-    const auto &att = getUnit(action.attacker);
-    const auto &def = getUnit(action.defender);
-    if (!att.isAlive() || !def.isAlive()) return 0;
-    return att.num * att.avgDamage(action.type) * getDamageMultiplier(action);
 }
 
 void GameState::execute(const Action &action)
@@ -874,7 +866,7 @@ std::vector<int> GameState::getReachableHexes(const Unit &unit) const
 
 void GameState::simulate(Action action)
 {
-    action.damage = getSimulatedDamage(action);
+    action.damage = computeDamage(action);
     execute(action);
 }
 
