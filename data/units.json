@@ -276,7 +276,7 @@
         "growth": 1,
         "img": "saurian.png",
         "anim-ranged": "saurian-attack-magic.png",
-        "ranged-frames": [100, 200, 300],
+        "ranged-frames": [150, 300, 450],
         "img-defend": "saurian-defend.png",
         "anim-die": "saurian-die.png",
         "die-frames": [100, 200, 300, 400, 500, 600],
