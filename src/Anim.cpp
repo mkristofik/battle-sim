@@ -117,11 +117,10 @@ void Anim::stop()
 }
 
 
-AnimMove::AnimMove(const Unit &unit, const Point &hSrc, Point hDest, Facing f)
+AnimMove::AnimMove(Unit unit, const Point &hSrc, Point hDest)
     : Anim(),
-    unit_(unit),
-    destHex_{std::move(hDest)},
-    faceLeft_{f == Facing::LEFT}
+    unit_{std::move(unit)},
+    destHex_{std::move(hDest)}
 {
     runTime_ = 300 * hexDist(hSrc, destHex_);
     // Note: we can't use the unit's internal facing in here because that holds
@@ -132,7 +131,7 @@ AnimMove::AnimMove(const Unit &unit, const Point &hSrc, Point hDest, Facing f)
 void AnimMove::start()
 {
     auto &entity = bf_->getEntity(unit_.entityId);
-    if (faceLeft_) {
+    if (unit_.face == Facing::LEFT) {
         if (!unit_.type->reverseImgMove.empty()) {
             entity.img = unit_.type->reverseImgMove[unit_.team];
         }
@@ -166,7 +165,7 @@ void AnimMove::stop()
 {
     auto &entity = bf_->getEntity(unit_.entityId);
     entity.hex = destHex_;
-    idle(entity, unit_, faceLeft_);
+    idle(entity, unit_, unit_.face == Facing::LEFT);
 
     auto &labelEntity = bf_->getEntity(unit_.labelId);
     labelEntity.hex = destHex_;
@@ -177,8 +176,7 @@ void AnimMove::stop()
 AnimAttack::AnimAttack(Unit unit, Point hTgt)
     : Anim(),
     unit_{std::move(unit)},
-    hTarget_{std::move(hTgt)},
-    faceLeft_{unit.face == Facing::LEFT}
+    hTarget_{std::move(hTgt)}
 {
     runTime_ = 600;
 }
@@ -202,7 +200,7 @@ void AnimAttack::run(Uint32 elapsed)
 
 void AnimAttack::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
 
     // Allow for attacks that can grow the number of units.
     updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
@@ -229,7 +227,7 @@ void AnimAttack::setFrame(Uint32 elapsed)
     auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->attackFrames, elapsed);
 
-    if (faceLeft_) {
+    if (unit_.face == Facing::LEFT) {
         if (!unit_.type->reverseAnimAttack.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimAttack[unit_.team];
             entity.numFrames = unit_.type->attackFrames.size();
@@ -255,7 +253,6 @@ void AnimAttack::setFrame(Uint32 elapsed)
 AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
-    faceLeft_{unit.face == Facing::LEFT},
     hitTime_{hitsAt}
 {
     runTime_ = hitTime_ + 250;
@@ -264,7 +261,7 @@ AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
 void AnimDefend::run(Uint32 elapsed)
 {
     auto &entity = bf_->getEntity(unit_.entityId);
-    if (faceLeft_) {
+    if (unit_.face == Facing::LEFT) {
         if (elapsed >= hitTime_ && !unit_.type->reverseImgDefend.empty()) {
             entity.img = unit_.type->reverseImgDefend[unit_.team];
         }
@@ -284,15 +281,14 @@ void AnimDefend::run(Uint32 elapsed)
 
 void AnimDefend::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
     updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
 }
 
 
-AnimRanged::AnimRanged(const Unit &unit)
+AnimRanged::AnimRanged(Unit unit)
     : Anim(),
-    unit_(unit),
-    faceLeft_{unit.face == Facing::LEFT}
+    unit_{std::move(unit)}
 {
     runTime_ = 600;
 }
@@ -309,7 +305,7 @@ void AnimRanged::run(Uint32 elapsed)
 
 void AnimRanged::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, faceLeft_);
+    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
 }
 
 void AnimRanged::setFrame(Uint32 elapsed)
@@ -317,7 +313,7 @@ void AnimRanged::setFrame(Uint32 elapsed)
     auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->rangedFrames, elapsed);
 
-    if (faceLeft_) {
+    if (unit_.face == Facing::LEFT) {
         if (!unit_.type->reverseAnimRanged.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimRanged[unit_.team];
             entity.numFrames = unit_.type->rangedFrames.size();
@@ -389,10 +385,9 @@ void AnimProjectile::stop()
 }
 
 
-AnimDie::AnimDie(const Unit &unit, Uint32 hitsAt)
+AnimDie::AnimDie(Unit unit, Uint32 hitsAt)
     : Anim(),
-    unit_(unit),
-    faceLeft_{unit_.face == Facing::LEFT},
+    unit_{std::move(unit)},
     hitTime_{hitsAt},
     fadeTime_{hitsAt}
 {
@@ -433,7 +428,7 @@ void AnimDie::setFrame(Uint32 elapsed)
     auto &entity = bf_->getEntity(unit_.entityId);
     entity.frame = getFrame(unit_.type->dieFrames, elapsed - hitTime_);
 
-    if (faceLeft_) {
+    if (unit_.face == Facing::LEFT) {
         if (!unit_.type->reverseAnimDie.empty() && entity.frame >= 0) {
             entity.img = unit_.type->reverseAnimDie[unit_.team];
             entity.numFrames = unit_.type->dieFrames.size();

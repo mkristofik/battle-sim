@@ -54,16 +54,15 @@ private:
 class AnimMove : public Anim
 {
 public:
-    AnimMove(const Unit &unit, const Point &hSrc, Point hDest, Facing f);
+    AnimMove(Unit unit, const Point &hSrc, Point hDest);
 
 private:
     void start() override;
     void run(Uint32 elapsed) override;
     void stop() override;
 
-    const Unit &unit_;
+    Unit unit_;
     Point destHex_;
-    bool faceLeft_;
 };
 
 
@@ -89,7 +88,6 @@ private:
 
     Unit unit_;
     Point hTarget_;
-    bool faceLeft_;
 };
 
 
@@ -107,7 +105,6 @@ private:
     void stop() override;
 
     Unit unit_;
-    bool faceLeft_;
     Uint32 hitTime_;
 };
 
@@ -115,17 +112,15 @@ private:
 class AnimRanged : public Anim
 {
 public:
-    AnimRanged(const Unit &unit);
+    AnimRanged(Unit unit);
     Uint32 getShotTime() const;  // time when projectile is fired
 
 private:
     void run(Uint32 elapsed) override;
     void stop() override;
-
     void setFrame(Uint32 elapsed);
 
-    const Unit &unit_;
-    bool faceLeft_;
+    Unit unit_;
 };
 
 
@@ -151,16 +146,14 @@ private:
 class AnimDie : public Anim
 {
 public:
-    AnimDie(const Unit &unit, Uint32 hitsAt);
+    AnimDie(Unit unit, Uint32 hitsAt);
 
 private:
     void run(Uint32 elapsed) override;
     void stop() override;
-
     void setFrame(Uint32 elapsed);
 
-    const Unit &unit_;
-    bool faceLeft_;
+    Unit unit_;
     Uint32 hitTime_;
     Uint32 fadeTime_;
     static const Uint32 fadeLength_ = 1000;

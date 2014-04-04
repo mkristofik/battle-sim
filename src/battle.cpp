@@ -201,16 +201,13 @@ void animateAction(const Action &action)
     // All other actions might involve moving.
     if (action.path.size() > 1) {
         assert(unit.isValid());
-        auto facing = unit.face;
         for (auto i = 1u; i < action.path.size(); ++i) {
             auto hSrc = grid->hexFromAry(action.path[i - 1]);
             auto hDest = grid->hexFromAry(action.path[i]);
-            auto prevFacing = facing;
-            facing = getFacing(hSrc, hDest, prevFacing);
+            unit.face = getFacing(hSrc, hDest, unit.face);
 
-            anims.emplace_back(make_unique<AnimMove>(unit, hSrc, hDest, facing));
+            anims.emplace_back(make_unique<AnimMove>(unit, hSrc, hDest));
         }
-        unit.face = facing;
     }
 
     // These animations happen after the attacker is done moving.
