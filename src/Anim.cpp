@@ -23,22 +23,20 @@
 namespace
 {
     // Return the appropriate base image for a unit given its facing.
-    // TODO: remove 'faceLeft' everywhere because we should be taking all units
-    // by value.
-    SdlSurface getBaseImage(const Unit &unit, bool faceLeft)
+    SdlSurface getBaseImage(const Unit &unit)
     {
-        if (faceLeft) {
+        if (unit.face == Facing::LEFT) {
             return unit.type->reverseImg[unit.team];
         }
         return unit.type->baseImg[unit.team];
     }
 
     // Restore the unit to the center of its hex and return to the base image.
-    void idle(Drawable &entity, const Unit &unit, bool faceLeft)
+    void idle(Drawable &entity, const Unit &unit)
     {
         entity.frame = -1;
         entity.z = ZOrder::CREATURE;
-        entity.img = getBaseImage(unit, faceLeft);
+        entity.img = getBaseImage(unit);
         entity.alignCenter();
     }
 
@@ -165,7 +163,7 @@ void AnimMove::stop()
 {
     auto &entity = bf_->getEntity(unit_.entityId);
     entity.hex = destHex_;
-    idle(entity, unit_, unit_.face == Facing::LEFT);
+    idle(entity, unit_);
 
     auto &labelEntity = bf_->getEntity(unit_.labelId);
     labelEntity.hex = destHex_;
@@ -200,7 +198,7 @@ void AnimAttack::run(Uint32 elapsed)
 
 void AnimAttack::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
+    idle(bf_->getEntity(unit_.entityId), unit_);
 
     // Allow for attacks that can grow the number of units.
     updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
@@ -281,7 +279,7 @@ void AnimDefend::run(Uint32 elapsed)
 
 void AnimDefend::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
+    idle(bf_->getEntity(unit_.entityId), unit_);
     updateSize(bf_->getEntity(unit_.labelId), unit_, unit_.num);
 }
 
@@ -305,7 +303,7 @@ void AnimRanged::run(Uint32 elapsed)
 
 void AnimRanged::stop()
 {
-    idle(bf_->getEntity(unit_.entityId), unit_, unit_.face == Facing::LEFT);
+    idle(bf_->getEntity(unit_.entityId), unit_);
 }
 
 void AnimRanged::setFrame(Uint32 elapsed)
@@ -559,8 +557,7 @@ void AnimEffect::runEnraged(Uint32 timeSinceStart)
     frac *= 0.6;  // don't get all the way to full red
 
     auto &entity = bf_->getEntity(target_.entityId);
-    auto baseImg = getBaseImage(target_, target_.face == Facing::LEFT);
-    entity.img = sdlBlendColor(baseImg, RED, frac);
+    entity.img = sdlBlendColor(getBaseImage(target_), RED, frac);
 }
 
 void AnimEffect::runOther(Uint32 timeSinceStart)
@@ -583,7 +580,7 @@ void AnimEffect::stop()
 void AnimEffect::stopEnraged()
 {
     auto &entity = bf_->getEntity(target_.entityId);
-    entity.img = getBaseImage(target_, target_.face == Facing::LEFT);
+    entity.img = getBaseImage(target_);
 }
 
 void AnimEffect::stopOther()
