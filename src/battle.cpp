@@ -50,9 +50,11 @@ namespace
     Uint16 winHeight = 425;
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
-    SDL_Rect border1 = {200, 0, 5, winHeight};
-    SDL_Rect border2 = {493, 0, 5, winHeight};
-    SDL_Rect border3 = {203, 360, 293, 5};
+    SDL_Rect borders[] = {{200, 0, 5, winHeight},  // left side vertical
+                          {493, 0, 5, winHeight},  // right side vertical
+                          {203, 360, 292, 5},  // above log window
+                          {0, 230, 202, 5},  // beneath cmdr1
+                          {496, 230, 200, 5}};  // beneath cmdr2
     SDL_Rect bfWindow = {205, 0, 288, 360};
     SDL_Rect logWindow = {205, 365, 288, 60};
     SdlFont labelFont;
@@ -605,16 +607,11 @@ void drawBorders()
     auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
                                BORDER_FG.b);
 
-    SDL_FillRect(screen, &border1, bgColor);
-    SDL_FillRect(screen, &border2, bgColor);
-    SDL_FillRect(screen, &border3, bgColor);
-
-    SDL_Rect line1 = getBorderFgLine(border1);
-    SDL_FillRect(screen, &line1, fgColor);
-    SDL_Rect line2 = getBorderFgLine(border2);
-    SDL_FillRect(screen, &line2, fgColor);
-    SDL_Rect line3 = getBorderFgLine(border3);
-    SDL_FillRect(screen, &line3, fgColor);
+    for (auto &b : borders) {
+        SDL_FillRect(screen, &b, bgColor);
+        SDL_Rect line = getBorderFgLine(b);
+        SDL_FillRect(screen, &line, fgColor);
+    }
 }
 
 bool checkWinner(int score1, int score2)
