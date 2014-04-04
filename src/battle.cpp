@@ -162,8 +162,9 @@ Action getPossibleAction(int px, int py)
 // Get direction to have a unit in the source hex face the target hex.
 Facing getFacing(const Point &hSrc, const Point &hTgt, Facing curFacing)
 {
-    auto dir = direction(hSrc, hTgt);
+    if (hSrc == hTgt) return curFacing;
 
+    auto dir = direction(hSrc, hTgt);
     if (dir == Dir::NW || dir == Dir::SW) {
         return Facing::LEFT;
     }
