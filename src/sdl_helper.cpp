@@ -58,6 +58,7 @@ namespace
                                       const std::string &txt, int lineLen)
     {
         assert(lineLen > 0);
+        if (txt.empty()) return {};
 
         // First try: does it all fit on one line?
         int width = 0;
@@ -498,8 +499,9 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
                 const SDL_Color &color, Justify just)
 {
     auto lines = wordWrap(font, txt, pos.w);
-    int numRendered = 0;
+    if (lines.empty()) return 0;
 
+    int numRendered = 0;
     SdlSetClipRect(pos, [&]
     {
         auto yPos = pos.y;
