@@ -14,6 +14,7 @@
 #define TRAITS_H
 
 #include "json_utils.h"
+#include <string>
 #include <vector>
 
 #define UNIT_TRAITS \
@@ -34,5 +35,8 @@ enum class Trait {UNIT_TRAITS};
 #undef X
 
 std::vector<Trait> parseTraits(const rapidjson::Value &json);
+
+// Convert a list of traits into a string separated by commas.
+std::string strFromTraits(const std::vector<Trait> &traits);
 
 #endif

@@ -19,12 +19,23 @@
 
 namespace {
     std::unordered_map<std::string, Trait> allTraits;
+    std::unordered_map<int, std::string> traitStr;
 
     void initTraits()
     {
 #define X(str) allTraits.emplace(#str, Trait::str);
         UNIT_TRAITS
 #undef X
+        for (const auto &i : allTraits) {
+            auto str = i.first;
+            auto idx = str.find('_');
+            while (idx != std::string::npos) {
+                str.replace(idx, 1, " ");
+                idx = str.find('_', idx + 1);
+            }
+
+            traitStr.emplace(static_cast<int>(i.second), to_lower(str));
+        }
     }
 }
 
@@ -45,4 +56,17 @@ std::vector<Trait> parseTraits(const rapidjson::Value &json)
     }
 
     return traits;
+}
+
+std::string strFromTraits(const std::vector<Trait> &traits)
+{
+    if (traits.empty()) return {};
+
+    std::string ret;
+    for (auto t : traits) {
+        ret += traitStr[static_cast<int>(t)];
+        ret += ", ";
+    }
+    ret.erase(ret.size() - 2);
+    return ret;
 }
