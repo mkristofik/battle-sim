@@ -17,6 +17,7 @@
 #include "GameState.h"
 #include "HexGrid.h"
 #include "LogView.h"
+#include "UnitView.h"
 #include "Spells.h"
 #include "Unit.h"
 #include "UnitType.h"
@@ -56,6 +57,8 @@ namespace
                           {0, 230, 202, 5},  // beneath cmdr1
                           {496, 230, 200, 5}};  // beneath cmdr2
     SDL_Rect bfWindow = {205, 0, 288, 360};
+    SDL_Rect unitWindow1 = {0, 235, 200, pHexSize + 60};
+    SDL_Rect unitWindow2 = {498, 235, 200, pHexSize + 60};
     SDL_Rect logWindow = {205, 365, 288, 60};
     SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
@@ -729,6 +732,8 @@ extern "C" int SDL_main(int argc, char *argv[])
 
     CommanderView cView1{gs->getCommander(0), 0, font, cmdrWindow1};
     CommanderView cView2{gs->getCommander(1), 1, font, cmdrWindow2};
+    UnitView uView1{unitWindow1, 0, *gs, font};
+    UnitView uView2{unitWindow2, 1, *gs, font};
 
     nextTurn();
     bf->selectHex(gs->getActiveUnit().aHex);
@@ -737,6 +742,8 @@ extern "C" int SDL_main(int argc, char *argv[])
     logv->draw();
     cView1.draw();
     cView2.draw();
+    uView1.draw();
+    uView2.draw();
     drawBorders();
 
     auto screen = SDL_GetVideoSurface();
@@ -796,6 +803,10 @@ extern "C" int SDL_main(int argc, char *argv[])
         if (needRedraw) {
             bf->draw();
             logv->draw();
+            if (anims.empty()) {
+                uView1.draw();
+                uView2.draw();
+            }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
         }
 
