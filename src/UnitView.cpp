@@ -12,6 +12,7 @@
 */
 #include "UnitView.h"
 
+#include "Effects.h"
 #include "GameState.h"
 #include "UnitType.h"
 #include <sstream>
@@ -21,6 +22,8 @@
  * |     |  Dmg 2-3
  * |     |  HP 8/10   (make first # yellow if < 50%, red if < 25%)
  * -------
+ *  Trait 1, Trait 2, ...
+ *  Status 1, Status 2, ...
  */
 
 UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs,
@@ -34,6 +37,8 @@ UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs,
 
 void UnitView::draw() const
 {
+    // TODO: the size changes depending on how many lines of text we draw
+    // TODO: add accessor for the current size.
     sdlClear(displayArea_);
 
     const auto &unit = gs_.getActiveUnit();
@@ -43,16 +48,42 @@ void UnitView::draw() const
     sdlBlit(img, displayArea_.x, displayArea_.y);
 
     // Draw unit name and size.
-    auto lineHeight = sdlLineHeight(font_);
-    SDL_Rect txtArea;
-    txtArea.x = displayArea_.x + img->w + 5;
-    txtArea.y = displayArea_.y + 5;
-    txtArea.w = displayArea_.w - img->w - 10;
-    txtArea.h = sdlLineHeight(font_);
-    sdlDrawText(font_, unit.getName(), txtArea, WHITE);
+    auto px = displayArea_.x + img->w + 5;
+    auto py = displayArea_.y + 5;
+    sdlBlit(renderName(unit), px, py);
 
     // Damage
-    txtArea.y += lineHeight + 2;
+    auto lineHeight = sdlLineHeight(font_);
+    py += lineHeight;
+    sdlBlit(renderDamage(unit), px, py);
+
+    // HP
+    py += lineHeight;
+    sdlBlit(renderHP(unit), px, py);
+
+    // Traits
+    auto traitSurf = renderTraits(unit);
+    px = displayArea_.x + 5;
+    py = displayArea_.y + img->h;
+    if (traitSurf != nullptr) {
+        sdlBlit(traitSurf, px, py);
+        py += lineHeight;
+    }
+
+    // Effects
+    auto effectSurf = renderEffects(unit);
+    if (effectSurf != nullptr) {
+        sdlBlit(effectSurf, px, py);
+    }
+}
+
+SdlSurface UnitView::renderName(const Unit &unit) const
+{
+    return sdlPreRender(font_, unit.getName(), WHITE);
+}
+
+SdlSurface UnitView::renderDamage(const Unit &unit) const
+{
     std::ostringstream dmg{"Damage ", std::ios::app};
     if (unit.hasTrait(Trait::RANGED)) {
         dmg << unit.type->minDmgRanged << '-' << unit.type->maxDmgRanged;
@@ -60,11 +91,14 @@ void UnitView::draw() const
     else {
         dmg << unit.type->minDmg << '-' << unit.type->maxDmg;
     }
-    sdlDrawText(font_, dmg.str(), txtArea, WHITE);
 
-    // HP
-    txtArea.y += lineHeight + 1;
+    return sdlPreRender(font_, dmg.str(), WHITE);
+}
+
+SdlSurface UnitView::renderHP(const Unit &unit) const
+{
     auto lblHP = sdlPreRender(font_, "HP ", WHITE);
+
     auto hpColor = WHITE;
     if (static_cast<double>(unit.hpLeft) / unit.type->hp < 0.25) {
         hpColor = RED;
@@ -73,24 +107,34 @@ void UnitView::draw() const
         hpColor = YELLOW;
     }
     auto lblHpLeft = sdlPreRender(font_, unit.hpLeft, hpColor);
+
     std::ostringstream ostr{" / ", std::ios::app};
     ostr << unit.type->hp;
     auto lblHpTot = sdlPreRender(font_, ostr.str(), WHITE);
-    sdlBlit(lblHP, txtArea.x, txtArea.y);
-    sdlBlit(lblHpLeft, txtArea.x + lblHP->w, txtArea.y);
-    sdlBlit(lblHpTot, txtArea.x + lblHP->w + lblHpLeft->w, txtArea.y);
 
-    // Traits
-    txtArea.x = displayArea_.x + 5;
-    txtArea.y = displayArea_.y + img->h;
-    txtArea.w = displayArea_.w - 10;
-    txtArea.h = sdlLineHeight(font_) * 2;
-    auto lines = sdlDrawText(font_, strFromTraits(unit.type->traits), txtArea,
-                             WHITE);
+    SDL_Rect dest = {0};
+    auto width = lblHP->w + lblHpLeft->w + lblHpTot->w;
+    auto hpSurf = sdlCreate(width, sdlLineHeight(font_));
+    SDL_BlitSurface(lblHP.get(), nullptr, hpSurf.get(), nullptr);
+    dest.x = lblHP->w;
+    SDL_BlitSurface(lblHpLeft.get(), nullptr, hpSurf.get(), &dest);
+    dest.x += lblHpLeft->w;
+    SDL_BlitSurface(lblHpTot.get(), nullptr, hpSurf.get(), &dest);
 
-    // Effects
-    if (unit.effect.type != EffectType::NONE) {
-        txtArea.y += lines * lineHeight;
-        sdlDrawText(font_, unit.effect.getText(), txtArea, YELLOW);
-    }
+    return hpSurf;
+}
+
+SdlSurface UnitView::renderTraits(const Unit &unit) const
+{
+    auto str = strFromTraits(unit.type->traits);
+    if (str.empty()) return {};
+
+    // TODO: need something for spellcasters
+    return sdlPreRender(font_, str, WHITE);
+}
+
+SdlSurface UnitView::renderEffects(const Unit &unit) const
+{
+    if (unit.effect.type == EffectType::NONE) return {};
+    return sdlPreRender(font_, unit.effect.getText(), YELLOW);
 }

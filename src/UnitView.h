@@ -16,6 +16,7 @@
 #include "sdl_helper.h"
 
 class GameState;
+class Unit;
 
 class UnitView
 {
@@ -24,6 +25,12 @@ public:
     void draw() const;
 
 private:
+    SdlSurface renderName(const Unit &unit) const;
+    SdlSurface renderDamage(const Unit &unit) const;
+    SdlSurface renderHP(const Unit &unit) const;
+    SdlSurface renderTraits(const Unit &unit) const;
+    SdlSurface renderEffects(const Unit &unit) const;
+
     SDL_Rect displayArea_;
     int team_;
     const GameState &gs_;
