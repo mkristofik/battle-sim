@@ -16,15 +16,6 @@
 #include "GameState.h"
 #include "UnitType.h"
 #include <sstream>
-/*
- * -------
- * |     |  23 Archers
- * |     |  Dmg 2-3
- * |     |  HP 8/10   (make first # yellow if < 50%, red if < 25%)
- * -------
- *  Trait 1, Trait 2, ...
- *  Status 1, Status 2, ...
- */
 
 UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs,
                    const SdlFont &f)

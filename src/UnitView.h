@@ -18,6 +18,16 @@
 class GameState;
 class Unit;
 
+/*
+ * -------
+ * |     |  23 Archers
+ * |     |  Dmg 2-3
+ * |     |  HP 8/10
+ * -------
+ *  Trait 1, Trait 2, ...
+ *  Status 1, Status 2, ...
+ */
+
 class UnitView
 {
 public:
