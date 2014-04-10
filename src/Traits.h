@@ -33,6 +33,7 @@
 #define X(str) str,
 enum class Trait {UNIT_TRAITS};
 #undef X
+bool operator<(Trait lhs, Trait rhs);
 
 std::vector<Trait> parseTraits(const rapidjson::Value &json);
 

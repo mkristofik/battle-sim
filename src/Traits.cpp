@@ -39,6 +39,11 @@ namespace {
     }
 }
 
+bool operator<(Trait lhs, Trait rhs)
+{
+    return static_cast<int>(lhs) < static_cast<int>(rhs);
+}
+
 std::vector<Trait> parseTraits(const rapidjson::Value &json)
 {
     if (allTraits.empty()) initTraits();

@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "UnitType.h"
+#include <algorithm>
 #include <iostream>
 
 namespace
@@ -51,8 +52,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     moves{1},
     initiative{0},
     hp{1},
-    minDmg{1},
-    maxDmg{1},
+    minDmg{0},
+    maxDmg{0},
     minDmgRanged{0},
     maxDmgRanged{0},
     growth{1},
@@ -151,4 +152,6 @@ UnitType::UnitType(const rapidjson::Value &json)
             projectile = sdlLoadImage("missile.png");
         }
     }
+
+    sort(std::begin(traits), std::end(traits));
 }

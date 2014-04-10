@@ -37,8 +37,6 @@ UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs,
 
 void UnitView::draw() const
 {
-    // TODO: the size changes depending on how many lines of text we draw
-    // TODO: add accessor for the current size.
     sdlClear(displayArea_);
 
     const auto &unit = gs_.getActiveUnit();
@@ -47,21 +45,17 @@ void UnitView::draw() const
     const auto &img = unit.type->baseImg[team_];
     sdlBlit(img, displayArea_.x, displayArea_.y);
 
-    // Draw unit name and size.
     auto px = displayArea_.x + img->w + 5;
     auto py = displayArea_.y + 5;
     sdlBlit(renderName(unit), px, py);
 
-    // Damage
     auto lineHeight = sdlLineHeight(font_);
     py += lineHeight;
     sdlBlit(renderDamage(unit), px, py);
 
-    // HP
     py += lineHeight;
     sdlBlit(renderHP(unit), px, py);
 
-    // Traits
     auto traitSurf = renderTraits(unit);
     px = displayArea_.x + 5;
     py = displayArea_.y + img->h;
@@ -70,7 +64,6 @@ void UnitView::draw() const
         py += lineHeight;
     }
 
-    // Effects
     auto effectSurf = renderEffects(unit);
     if (effectSurf != nullptr) {
         sdlBlit(effectSurf, px, py);
