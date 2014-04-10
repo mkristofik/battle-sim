@@ -39,6 +39,7 @@ bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconFile,
 // Like std::make_shared, but with SDL_Surface.
 SdlSurface make_surface(SDL_Surface *surf);
 
+SdlSurface sdlCreate(int width, int height);
 SdlSurface sdlDeepCopy(const SdlSurface &src);
 
 // Flip a surface or sprite sheet.  Creates a new surface.

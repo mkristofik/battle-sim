@@ -191,6 +191,25 @@ SdlSurface make_surface(SDL_Surface *surf)
     return SdlSurface(surf, SDL_FreeSurface);
 }
 
+SdlSurface sdlCreate(int width, int height)
+{
+    assert(screen != nullptr);
+    auto surf = SDL_CreateRGBSurface(screen->flags,
+                                     width,
+                                     height,
+                                     screen->format->BitsPerPixel,
+                                     screen->format->Rmask,
+                                     screen->format->Gmask,
+                                     screen->format->Bmask,
+                                     screen->format->Amask);
+    if (surf == nullptr) {
+        std::cerr << "Error creating blank surface: " << SDL_GetError();
+        return {};
+    }
+
+    return make_surface(surf);
+}
+
 SdlSurface sdlDeepCopy(const SdlSurface &src)
 {
     auto surf = SDL_ConvertSurface(src.get(), src->format, src->flags);
