@@ -16,10 +16,9 @@
 #include "boost/lexical_cast.hpp"
 #include <string>
 
-CommanderView::CommanderView(const Commander &c, int team, const SdlFont &f,
-                             SDL_Rect dispArea)
+CommanderView::CommanderView(const Commander &c, int team, SDL_Rect dispArea)
     : cmdr_(c),
-    font_(f),
+    font_(sdlGetFont(FontType::MEDIUM)),
     displayArea_(std::move(dispArea)),
     txtAlign_{team == 0 ? Justify::LEFT : Justify::RIGHT}
 {

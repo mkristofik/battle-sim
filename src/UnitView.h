@@ -31,7 +31,7 @@ class Unit;
 class UnitView
 {
 public:
-    UnitView(SDL_Rect dispArea, int team, const GameState &gs, const SdlFont &f);
+    UnitView(SDL_Rect dispArea, int team, const GameState &gs);
     void draw() const;
 
 private:

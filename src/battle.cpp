@@ -701,9 +701,6 @@ extern "C" int SDL_main(int argc, char *argv[])
     gs = make_unique<GameState>(*grid);
     gs->setExecFunc(execAnimate);
 
-    auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
-    logv = make_unique<LogView>(logWindow, font);
-
     if (!initEffectCache("effects.json")) {
         std::cerr << "Warning: no effect definitions loaded" << std::endl;
     }
@@ -728,10 +725,11 @@ extern "C" int SDL_main(int argc, char *argv[])
     }
     parseScenario(scenario);
 
-    CommanderView cView1{gs->getCommander(0), 0, font, cmdrWindow1};
-    CommanderView cView2{gs->getCommander(1), 1, font, cmdrWindow2};
-    UnitView uView1{unitWindow1, 0, *gs, font};
-    UnitView uView2{unitWindow2, 1, *gs, font};
+    logv = make_unique<LogView>(logWindow);
+    CommanderView cView1{gs->getCommander(0), 0, cmdrWindow1};
+    CommanderView cView2{gs->getCommander(1), 1, cmdrWindow2};
+    UnitView uView1{unitWindow1, 0, *gs};
+    UnitView uView2{unitWindow2, 1, *gs};
 
     nextTurn();
     bf->selectHex(gs->getActiveUnit().aHex);

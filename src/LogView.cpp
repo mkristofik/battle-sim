@@ -17,7 +17,7 @@
 // Mouse wheel buttons are SDL_BUTTON_WHEELUP and SDL_BUTTON_WHEELDOWN.  It
 // doesn't take much to generate a lot of events with the wheel.
 
-LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
+LogView::LogView(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
     btnUp_{sdlLoadImage("button-up.png")},
     btnUpPressed_{sdlLoadImage("button-up-pressed.png")},
@@ -30,7 +30,7 @@ LogView::LogView(SDL_Rect dispArea, const SdlFont &f)
     btnDownArea_{},
     downState_{ButtonState::DISABLED},
     textArea_(displayArea_),
-    font_(f),
+    font_(sdlGetFont(FontType::MEDIUM)),
     lineHeight_{sdlLineHeight(font_)},
     maxLines_{textArea_.h / lineHeight_},
     msgs_{},

@@ -22,7 +22,7 @@
 class LogView
 {
 public:
-    LogView(SDL_Rect dispArea, const SdlFont &f);
+    LogView(SDL_Rect dispArea);
     void add(std::string msg);
     void addBlankLine();
 

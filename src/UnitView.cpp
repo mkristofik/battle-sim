@@ -17,12 +17,11 @@
 #include "UnitType.h"
 #include <sstream>
 
-UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs,
-                   const SdlFont &f)
+UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs)
     : displayArea_(std::move(dispArea)),
     team_(team),
     gs_(gs),
-    font_(f)
+    font_(sdlGetFont(FontType::MEDIUM))
 {
 }
 

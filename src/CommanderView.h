@@ -19,8 +19,7 @@ class Commander;
 class CommanderView
 {
 public:
-    CommanderView(const Commander &c, int team, const SdlFont &f,
-                  SDL_Rect dispArea);
+    CommanderView(const Commander &c, int team, SDL_Rect dispArea);
     void draw() const;
 
 private:
