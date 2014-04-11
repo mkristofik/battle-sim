@@ -151,25 +151,6 @@ Dir8 nearEdge(Sint16 x, Sint16 y, const SDL_Rect &rect);
 // Return the bounding box for the given image.
 SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y);
 
-// Draw text to the screen.  Return the number of word-wrapped lines of text.
-enum class Justify {LEFT, CENTER, RIGHT};
-int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
-                const SDL_Color &color, Justify just = Justify::LEFT);
-int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
-                const SDL_Color &color, Justify just = Justify::LEFT);
-
-// Create an image containing some text to be drawn later.  No word-wrapping is
-// done.
-SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
-                        const SDL_Color &color);
-SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
-                        const SDL_Color &color);
-SdlSurface sdlPreRender(const SdlFont &font, int number,
-                        const SDL_Color &color);
-
-// Return the default space between lines of text.
-int sdlLineHeight(const SdlFont &font);
-
 // Play sound files at a reasonable volume.
 void sdlPlayMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);

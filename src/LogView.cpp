@@ -57,6 +57,7 @@ void LogView::add(std::string msg)
     Message m(std::move(msg));
 
     // Render the message off-screen to find out how big it is.
+    // TODO: this won't be necessary if we expose the word wrap function.
     SDL_Rect temp = textArea_;
     temp.x = -temp.w;
     m.lines = sdlDrawText(font_, m.msg, temp, WHITE);

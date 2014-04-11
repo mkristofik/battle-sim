@@ -17,13 +17,33 @@
 #include <memory>
 
 using SdlFont = std::shared_ptr<TTF_Font>;
+using SdlSurface = std::shared_ptr<SDL_Surface>;
 
 enum class FontType {SMALL, MEDIUM, LARGE, _last};
+enum class Justify {LEFT, CENTER, RIGHT};
 
 // Must call this before any other SDL text functions will work.  Return false
 // if there was an error loading fonts.
 bool sdlFontsInit();
 
 const SdlFont & sdlGetFont(FontType size);
+
+// Draw text to the screen.  Return the number of word-wrapped lines of text.
+int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
+                const SDL_Color &color, Justify just = Justify::LEFT);
+int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
+                const SDL_Color &color, Justify just = Justify::LEFT);
+
+// Create an image containing some text to be drawn later.  No word-wrapping is
+// done.
+SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
+                        const SDL_Color &color);
+SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
+                        const SDL_Color &color);
+SdlSurface sdlPreRender(const SdlFont &font, int number,
+                        const SDL_Color &color);
+
+// Return the default space between lines of text.
+int sdlLineHeight(const SdlFont &font);
 
 #endif

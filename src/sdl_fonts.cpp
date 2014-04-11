@@ -11,6 +11,10 @@
     See the COPYING.txt file for more details.
 */
 #include "sdl_fonts.h"
+#include "sdl_helper.h"
+
+#include "boost/lexical_cast.hpp"
+#include "boost/tokenizer.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -26,6 +30,54 @@ namespace
                 << "\n    " << TTF_GetError() << '\n';
         }
         return font;
+    }
+
+    // Break a string into multiple lines based on rendered line length.
+    // Return one string per line.
+    std::vector<std::string> wordWrap(const SdlFont &font,
+                                      const std::string &txt, int lineLen)
+    {
+        assert(lineLen > 0);
+        if (txt.empty()) return {};
+
+        // First try: does it all fit on one line?
+        int width = 0;
+        if (TTF_SizeText(font.get(), txt.c_str(), &width, 0) < 0) {
+            std::cerr << "Warning: problem rendering word wrap - " <<
+                TTF_GetError();
+            return {txt};
+        }
+        if (width <= lineLen) {
+            return {txt};
+        }
+
+        // Break up the string on spaces.
+        boost::char_separator<char> sep{" "};
+        boost::tokenizer<boost::char_separator<char>> tokens{txt, sep};
+
+        // Doesn't matter if the first token fits, render it anyway.
+        auto tok = std::begin(tokens);
+        std::string strSoFar = *tok;
+        ++tok;
+
+        // Test rendering each word until we surpass the line length.
+        std::vector<std::string> lines;
+        while (tok != std::end(tokens)) {
+            std::string nextStr = strSoFar + " " + *tok;
+            TTF_SizeText(font.get(), nextStr.c_str(), &width, 0);
+            if (width > lineLen) {
+                lines.push_back(strSoFar);
+                strSoFar = *tok;
+            }
+            else {
+                strSoFar = nextStr;
+            }
+            ++tok;
+        }
+
+        // Add remaining words.
+        lines.push_back(strSoFar);
+        return lines;
     }
 
     std::vector<SdlFont> fonts;
@@ -49,4 +101,70 @@ bool sdlFontsInit()
 const SdlFont & sdlGetFont(FontType size)
 {
     return fonts[static_cast<int>(size)];
+}
+
+int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
+                const SDL_Color &color, Justify just)
+{
+    auto lines = wordWrap(font, txt, pos.w);
+    if (lines.empty()) return 0;
+
+    int numRendered = 0;
+    SdlSetClipRect(pos, [&]
+    {
+        auto yPos = pos.y;
+        for (const auto &str : lines) {
+            auto textImg = sdlPreRender(font, str.c_str(), color);
+
+            auto xPos = pos.x;
+            if (just == Justify::CENTER) {
+                xPos += (pos.w / 2 - textImg->w / 2);
+            }
+            else if (just == Justify::RIGHT) {
+                xPos += pos.w - textImg->w;
+            }
+
+            sdlBlit(textImg, xPos, yPos);
+            yPos += sdlLineHeight(font);
+            ++numRendered;
+        }
+    });
+
+    return numRendered;
+}
+
+int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
+                const SDL_Color &color, Justify just)
+{
+    return sdlDrawText(font, txt.c_str(), pos, color, just);
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
+                        const SDL_Color &color)
+{
+    auto textImg = make_surface(TTF_RenderText_Blended(font.get(), txt, color));
+    if (textImg == nullptr) {
+        std::cerr << "Warning: error pre-rendering text: " << TTF_GetError() <<
+            '\n';
+    }
+    return textImg;
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
+                        const SDL_Color &color)
+{
+    return sdlPreRender(font, txt.c_str(), color);
+}
+
+SdlSurface sdlPreRender(const SdlFont &font, int number,
+                        const SDL_Color &color)
+{
+    return sdlPreRender(font, boost::lexical_cast<std::string>(number), color);
+}
+
+int sdlLineHeight(const SdlFont &font)
+{
+    // The descender on lowercase g tends to run into the next line.  Increase
+    // the spacing to allow for it.
+    return TTF_FontLineSkip(font.get()) + 1;
 }
