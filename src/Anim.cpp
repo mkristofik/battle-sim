@@ -57,8 +57,8 @@ namespace
 
     void updateSize(Drawable &label, const Unit &unit, int size)
     {
-        assert(label.font);
-        label.img = sdlPreRender(label.font, size, getLabelColor(unit.team));
+        auto &font = sdlGetFont(FontType::SMALL);
+        label.img = sdlPreRender(font, size, getLabelColor(unit.team));
         label.alignBottomCenter();
     }
 }

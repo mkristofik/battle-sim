@@ -149,11 +149,10 @@ bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconFile,
     }
     atexit(IMG_Quit);
 
-    if (TTF_Init() < 0) {
+    if (!sdlFontsInit()) {
         std::cerr << "Error initializing SDL_ttf: " << TTF_GetError();
         return false;
     }
-    atexit(TTF_Quit);
 
     if (Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG) < 0) {
         std::cerr << "Warning: error initializing SDL_mixer: " << Mix_GetError();

@@ -60,7 +60,6 @@ namespace
     SDL_Rect unitWindow1 = {0, 235, 200, pHexSize + 60};
     SDL_Rect unitWindow2 = {498, 235, 200, pHexSize + 60};
     SDL_Rect logWindow = {205, 365, 288, 60};
-    SdlFont labelFont;
     std::unordered_map<std::string, int> mapUnitPos;
     UnitTypeMap unitRef;
     std::deque<std::unique_ptr<Anim>> anims;
@@ -492,10 +491,10 @@ bool parseUnits(const rapidjson::Document &doc)
 // Create a drawable entity for the size of a unit.  Return its id.
 int createUnitLabel(int num, int team, Point hex)
 {
+    auto &labelFont = sdlGetFont(FontType::SMALL);
     auto txt = sdlPreRender(labelFont, num, getLabelColor(team));
     auto id = bf->addEntity(std::move(hex), txt, ZOrder::CREATURE);
     auto &label = bf->getEntity(id);
-    label.font = labelFont;
     label.alignBottomCenter();
     return id;
 }
@@ -703,7 +702,6 @@ extern "C" int SDL_main(int argc, char *argv[])
     gs->setExecFunc(execAnimate);
 
     auto font = sdlLoadFont("../DejaVuSans.ttf", 12);
-    labelFont = sdlLoadFont("../DejaVuSans.ttf", 9);
     logv = make_unique<LogView>(logWindow, font);
 
     if (!initEffectCache("effects.json")) {
@@ -817,6 +815,5 @@ extern "C" int SDL_main(int argc, char *argv[])
     // TODO: can we encapsulate these so this isn't necessary?
     gs.reset();
     bf.reset();
-    labelFont.reset();
     return EXIT_SUCCESS;
 }

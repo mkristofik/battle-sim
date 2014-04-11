@@ -18,6 +18,7 @@
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
 #include "hex_utils.h"
+#include "sdl_fonts.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -25,7 +26,6 @@
 #include <vector>
 
 using SdlSurface = std::shared_ptr<SDL_Surface>;
-using SdlFont = std::shared_ptr<TTF_Font>;
 using SdlMusic = std::shared_ptr<Mix_Music>;
 using SdlSound = std::shared_ptr<Mix_Chunk>;
 
