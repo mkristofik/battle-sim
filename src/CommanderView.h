@@ -14,16 +14,17 @@
 #define COMMANDER_VIEW_H
 
 #include "sdl_helper.h"
-class Commander;
+class GameState;
 
 class CommanderView
 {
 public:
-    CommanderView(const Commander &c, int team, SDL_Rect dispArea);
+    CommanderView(SDL_Rect dispArea, int team, const GameState &gs);
     void draw() const;
 
 private:
-    const Commander &cmdr_;
+    const GameState &gs_;
+    int team_;
     const SdlFont &font_;
     SDL_Rect displayArea_;
     Justify txtAlign_;

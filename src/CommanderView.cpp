@@ -13,11 +13,13 @@
 #include "CommanderView.h"
 
 #include "Commander.h"
+#include "GameState.h"
 #include "boost/lexical_cast.hpp"
 #include <string>
 
-CommanderView::CommanderView(const Commander &c, int team, SDL_Rect dispArea)
-    : cmdr_(c),
+CommanderView::CommanderView(SDL_Rect dispArea, int team, const GameState &gs)
+    : gs_(gs),
+    team_{team},
     font_(sdlGetFont(FontType::MEDIUM)),
     displayArea_(std::move(dispArea)),
     txtAlign_{team == 0 ? Justify::LEFT : Justify::RIGHT}
@@ -28,10 +30,12 @@ void CommanderView::draw() const
 {
     sdlClear(displayArea_);
 
+    const auto &cmdr = gs_.getCommander(team_);
+
     // Draw the portrait.
     auto imgHeight = 200;
-    if (cmdr_.portrait) {
-        auto img = cmdr_.portrait;
+    if (cmdr.portrait) {
+        auto img = cmdr.portrait;
         imgHeight = img->h;
         if (txtAlign_ == Justify::RIGHT) {
             img = sdlFlipH(img);
@@ -46,14 +50,13 @@ void CommanderView::draw() const
     txtArea.y = displayArea_.y + imgHeight;
     txtArea.w = displayArea_.w - 10;
     txtArea.h = lineHeight;
-    auto title = cmdr_.name + " (" + cmdr_.alignment + ")";
+    auto title = cmdr.name + " (" + cmdr.alignment + ")";
     sdlDrawText(font_, title, txtArea, WHITE, txtAlign_);
 
     // Draw the stats below the name.
     txtArea.y += lineHeight;
-    std::string stats = "Attack: " +
-        boost::lexical_cast<std::string>(cmdr_.attack) +
-        "  Defense: " +
-        boost::lexical_cast<std::string>(cmdr_.defense);
-    sdlDrawText(font_, stats, txtArea, WHITE, txtAlign_);
+    std::ostringstream stats;
+    stats << "Att: " << cmdr.attack << "  Def: " << cmdr.defense <<
+        "  Mana: " << gs_.getManaLeft(team_) << "/" << gs_.getMana(team_);
+    sdlDrawText(font_, stats.str(), txtArea, WHITE, txtAlign_);
 }

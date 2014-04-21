@@ -726,8 +726,8 @@ extern "C" int SDL_main(int argc, char *argv[])
     parseScenario(scenario);
 
     logv = make_unique<LogView>(logWindow);
-    CommanderView cView1{gs->getCommander(0), 0, cmdrWindow1};
-    CommanderView cView2{gs->getCommander(1), 1, cmdrWindow2};
+    CommanderView cView1{cmdrWindow1, 0, *gs};
+    CommanderView cView2{cmdrWindow2, 1, *gs};
     UnitView uView1{unitWindow1, 0, *gs};
     UnitView uView2{unitWindow2, 1, *gs};
 
@@ -800,6 +800,8 @@ extern "C" int SDL_main(int argc, char *argv[])
             bf->draw();
             logv->draw();
             if (anims.empty()) {
+                cView1.draw();
+                cView2.draw();
                 uView1.draw();
                 uView2.draw();
             }
