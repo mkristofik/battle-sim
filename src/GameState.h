@@ -111,6 +111,12 @@ public:
     // other action generated.
     void runActionSeq(Action action);
 
+    // Track mana use when casting spells.  One mana is produced per turn per
+    // team.  Turn 1 has 1 mana available for each team, 2 mana on turn 2, 3 on
+    // turn 3, etc.
+    int getMana(int team) const;
+    int getManaLeft(int team) const;
+
 private:
     void nextRound();
 
@@ -147,6 +153,8 @@ private:
     std::function<void (Action)> execFunc_;
     bool simMode_;
     int drawTimer_;  // stalemate if no units killed several rounds in a row
+    std::vector<int> mana_;
+    std::vector<int> manaLeft_;
     static std::vector<Commander> commanders_;
 };
 

@@ -46,7 +46,9 @@ GameState::GameState(const HexGrid &bfGrid)
     roundNum_{0},
     execFunc_{nullExecFunc},
     simMode_{false},
-    drawTimer_{ROUNDS_TO_DRAW}
+    drawTimer_{ROUNDS_TO_DRAW},
+    mana_(2, 0),
+    manaLeft_(2, 0)
 {
     commanders_.resize(2);
 }
@@ -737,6 +739,18 @@ void GameState::runActionSeq(Action action)
     }
 }
 
+int GameState::getMana(int team) const
+{
+    assert(team == 0 || team == 1);
+    return mana_[team];
+}
+
+int GameState::getManaLeft(int team) const
+{
+    assert(team == 0 || team == 1);
+    return manaLeft_[team];
+}
+
 void GameState::nextRound()
 {
     turnOrder_.clear();
@@ -757,6 +771,12 @@ void GameState::nextRound()
              [this] (int id) {getUnit(id).retaliated = false;});
 
     remapUnitPos();
+
+    for (int team = 0; team < 2; ++team) {
+        ++mana_[team];
+        manaLeft_[team] = mana_[team];
+    }
+
     --drawTimer_;
     ++roundNum_;
 }
