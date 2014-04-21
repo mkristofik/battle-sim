@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <vector>
 
 namespace
 {
@@ -30,54 +29,6 @@ namespace
                 << "\n    " << TTF_GetError() << '\n';
         }
         return font;
-    }
-
-    // Break a string into multiple lines based on rendered line length.
-    // Return one string per line.
-    std::vector<std::string> wordWrap(const SdlFont &font,
-                                      const std::string &txt, int lineLen)
-    {
-        assert(lineLen > 0);
-        if (txt.empty()) return {};
-
-        // First try: does it all fit on one line?
-        int width = 0;
-        if (TTF_SizeText(font.get(), txt.c_str(), &width, 0) < 0) {
-            std::cerr << "Warning: problem rendering word wrap - " <<
-                TTF_GetError();
-            return {txt};
-        }
-        if (width <= lineLen) {
-            return {txt};
-        }
-
-        // Break up the string on spaces.
-        boost::char_separator<char> sep{" "};
-        boost::tokenizer<boost::char_separator<char>> tokens{txt, sep};
-
-        // Doesn't matter if the first token fits, render it anyway.
-        auto tok = std::begin(tokens);
-        std::string strSoFar = *tok;
-        ++tok;
-
-        // Test rendering each word until we surpass the line length.
-        std::vector<std::string> lines;
-        while (tok != std::end(tokens)) {
-            std::string nextStr = strSoFar + " " + *tok;
-            TTF_SizeText(font.get(), nextStr.c_str(), &width, 0);
-            if (width > lineLen) {
-                lines.push_back(strSoFar);
-                strSoFar = *tok;
-            }
-            else {
-                strSoFar = nextStr;
-            }
-            ++tok;
-        }
-
-        // Add remaining words.
-        lines.push_back(strSoFar);
-        return lines;
     }
 
     std::vector<SdlFont> fonts;
@@ -106,7 +57,7 @@ const SdlFont & sdlGetFont(FontType size)
 int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
                 const SDL_Color &color, Justify just)
 {
-    auto lines = wordWrap(font, txt, pos.w);
+    auto lines = sdlWordWrap(font, txt, pos.w);
     if (lines.empty()) return 0;
 
     int numRendered = 0;
@@ -167,4 +118,50 @@ int sdlLineHeight(const SdlFont &font)
     // The descender on lowercase g tends to run into the next line.  Increase
     // the spacing to allow for it.
     return TTF_FontLineSkip(font.get()) + 1;
+}
+
+std::vector<std::string> sdlWordWrap(const SdlFont &font,
+                                     const std::string &txt, int lineLen)
+{
+    assert(lineLen > 0);
+    if (txt.empty()) return {};
+
+    // First try: does it all fit on one line?
+    int width = 0;
+    if (TTF_SizeText(font.get(), txt.c_str(), &width, 0) < 0) {
+        std::cerr << "Warning: problem rendering word wrap - " <<
+            TTF_GetError();
+        return {txt};
+    }
+    if (width <= lineLen) {
+        return {txt};
+    }
+
+    // Break up the string on spaces.
+    boost::char_separator<char> sep{" "};
+    boost::tokenizer<boost::char_separator<char>> tokens{txt, sep};
+
+    // Doesn't matter if the first token fits, render it anyway.
+    auto tok = std::begin(tokens);
+    std::string strSoFar = *tok;
+    ++tok;
+
+    // Test rendering each word until we surpass the line length.
+    std::vector<std::string> lines;
+    while (tok != std::end(tokens)) {
+        std::string nextStr = strSoFar + " " + *tok;
+        TTF_SizeText(font.get(), nextStr.c_str(), &width, 0);
+        if (width > lineLen) {
+            lines.push_back(strSoFar);
+            strSoFar = *tok;
+        }
+        else {
+            strSoFar = nextStr;
+        }
+        ++tok;
+    }
+
+    // Add remaining words.
+    lines.push_back(strSoFar);
+    return lines;
 }

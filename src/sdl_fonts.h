@@ -15,6 +15,8 @@
 
 #include "SDL_ttf.h"
 #include <memory>
+#include <string>
+#include <vector>
 
 using SdlFont = std::shared_ptr<TTF_Font>;
 using SdlSurface = std::shared_ptr<SDL_Surface>;
@@ -45,5 +47,10 @@ SdlSurface sdlPreRender(const SdlFont &font, int number,
 
 // Return the default space between lines of text.
 int sdlLineHeight(const SdlFont &font);
+
+// Break a string into multiple lines based on rendered line length.
+// Return one string per line.
+std::vector<std::string> sdlWordWrap(const SdlFont &font,
+                                     const std::string &txt, int lineLen);
 
 #endif
