@@ -37,13 +37,14 @@ void UnitView::draw() const
 
     auto px = displayArea_.x + img->w + 5;
     auto py = displayArea_.y + 5;
-    sdlBlit(renderName(unit), px, py);
+    auto nameSurf = renderName(unit);
+    sdlBlit(nameSurf, px, py);
+    py += nameSurf->h + 5;
 
-    auto lineHeight = sdlLineHeight(font_);
-    py += lineHeight;
-    sdlBlit(renderDamage(unit), px, py);
+    auto damageSurf = renderDamage(unit);
+    sdlBlit(damageSurf, px, py);
+    py += damageSurf->h;
 
-    py += lineHeight;
     sdlBlit(renderHP(unit), px, py);
 
     auto traitSurf = renderTraits(unit);
@@ -51,7 +52,7 @@ void UnitView::draw() const
     py = displayArea_.y + img->h;
     if (traitSurf != nullptr) {
         sdlBlit(traitSurf, px, py);
-        py += lineHeight;
+        py += traitSurf->h;
     }
 
     auto effectSurf = renderEffects(unit);
@@ -62,7 +63,8 @@ void UnitView::draw() const
 
 SdlSurface UnitView::renderName(const Unit &unit) const
 {
-    return sdlPreRender(font_, unit.getName(), WHITE);
+    const auto &nameFont = sdlGetFont(FontType::LARGE);
+    return sdlPreRender(nameFont, unit.getName(), WHITE);
 }
 
 SdlSurface UnitView::renderDamage(const Unit &unit) const
