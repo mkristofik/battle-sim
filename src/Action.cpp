@@ -19,6 +19,7 @@ Action::Action()
     attacker{-1},
     defender{-1},
     aTgt{-1},
+    manaCost{0},
     effect{}
 {
 }

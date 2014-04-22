@@ -28,7 +28,8 @@ Spell::Spell(SpellType t, const rapidjson::Value &json)
     damage{0},
     type{t},
     target{SpellTarget::ENEMY},
-    effect{EffectType::NONE}
+    effect{EffectType::NONE},
+    cost{0}
 {
     if (json.HasMember("name")) {
         name = json["name"].GetString();
@@ -53,6 +54,9 @@ Spell::Spell(SpellType t, const rapidjson::Value &json)
             std::cerr << "Warning: unrecognized effect type for spell " <<
                 " type " << static_cast<int>(type) << '\n';
         }
+    }
+    if (json.HasMember("cost")) {
+        cost = json["cost"].GetInt();
     }
 }
 

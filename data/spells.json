@@ -2,18 +2,21 @@
     "bloodlust": {
         "name": "Bloodlust",
         "target": "friend",
-        "effect": "enraged"
+        "effect": "enraged",
+        "cost": 1
     },
     "cure": {
         "name": "Cure",
         "target": "friend",
         "damage": -6,
-        "effect": "heal"
+        "effect": "heal",
+        "cost": 1
     },
     "lightning": {
         "name": "Lightning Bolt",
         "target": "enemy",
         "damage": 10,
-        "effect": "lightning"
+        "effect": "lightning",
+        "cost": 1
     }
 }

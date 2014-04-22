@@ -35,6 +35,7 @@ struct Action
     int attacker;
     int defender;
     int aTgt;  // hex the defender is standing in
+    int manaCost;
     Effect effect;
 
     Action();

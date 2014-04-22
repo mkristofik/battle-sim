@@ -40,6 +40,7 @@ struct Spell
     SpellType type;
     SpellTarget target;
     EffectType effect;
+    int cost;
 
     Spell(SpellType t, const rapidjson::Value &json);
 };

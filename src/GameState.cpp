@@ -307,8 +307,10 @@ bool GameState::canUseSpell(int attId) const
 {
     const auto &att = getUnit(attId);
     if (!att.isAlive()) return false;
+    if (att.type->spell == nullptr) return false;
+    if (!att.hasTrait(Trait::SPELLCASTER)) return false;
 
-    return att.type->spell != nullptr && att.hasTrait(Trait::SPELLCASTER);
+    return att.type->spell->cost <= manaLeft_[att.team];
 }
 
 bool GameState::isSpellAllowed(int attId, int defId) const
@@ -461,6 +463,7 @@ Action GameState::makeAttack(int attId, int defId, int aMoveTgt) const
         action.type = ActionType::EFFECT;
         action.damage = attacker.num * attacker.type->spell->damage;
         action.effect = Effect(*this, action, attacker.type->spell->effect);
+        action.manaCost = attacker.type->spell->cost;
         return action;
     }
 
@@ -575,6 +578,8 @@ void GameState::execute(const Action &action)
     }
     else if (action.type == ActionType::EFFECT) {
         assert(def.isAlive());
+        assert(action.manaCost == 0 || action.manaCost <= manaLeft_[att.team]);
+
         auto effect = action.effect;
         if (!effect.isDone()) {
             // Effects with duration stay with the defending unit.
@@ -582,6 +587,7 @@ void GameState::execute(const Action &action)
         }
 
         assignDamage(action.defender, action.damage);
+        manaLeft_[att.team] -= action.manaCost;
     }
 
     if (action.type == ActionType::RETALIATE &&
