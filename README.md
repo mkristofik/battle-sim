@@ -18,9 +18,11 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - Initiative stat determines the order in which units get to act.
 - Commanders have influence over the strength of their units.
 - Units can retaliate against melee attacks once per round.
-- Ranged units cannot retaliate.
+- Ranged units and spellcasters cannot retaliate.
 - A unit cannot retaliate against flying units unless it can fly too.
 - Pressing the 'S' key will skip a unit's turn.
+- Commanders and their units share a mana pool for casting spells.
+- Available mana per side starts at 1 and increases by 1 each round.
 
 ## Core Principles
 
@@ -29,15 +31,15 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 - All attacks must do at least *some* damage.  No abilities may cause an attack to miss entirely.
 - Most creatures should have a special ability.  Special attacks take the place of a normal (boring) attack.
 - Special abilities must be **special**.  Anything that reduces to a numerical increase in damage or hit points is not special.
-- Magic should be **magical**.  Direct-damage spells (e.g., Fireball, Lightning) are boring when cast by the commander, and not very effective as stack sizes get larger.
-- Good spells should have a large-scale effect.  Spells that affect the entire battlefield indiscriminantly are even better.
+- Magic should be **magical**.  Good spells should have a large-scale effect.  Spells that affect the entire battlefield indiscriminantly are even better.
+- Units should cast the direct-damage spells so their damage scales with unit size.
 
 ## Artwork Notes
 
 Here are the decisions I've made to simplify the code that deals with art assets.
 
 - Hexes are 72x72 pixels.  Anything designed to fit in one hex should use the same size.
-- Animated images are stored in a sprite sheet with the first frame on the left and no padding between frames.  Frames are assumed to be 72x72.
+- Animated images are stored in a sprite sheet with the first frame on the left and no padding between frames.
 - Projectiles are drawn with their trailing edges in the center of the hex and facing East.  The image rotation code goes counter-clockwise, like angles on the Unit Circle.
 - Commander portraits are 200x200 pixels.
 
