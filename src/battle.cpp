@@ -616,6 +616,23 @@ void drawBorders()
     }
 }
 
+void drawUnitDetails()
+{
+    sdlClear(unitWindow1);
+    sdlClear(unitWindow2);
+
+    UnitView uView{SDL_Rect(), 0, *gs};  // TODO: not needed
+    auto unitDisplay = uView.render(gs->getActiveUnit());
+    if (!unitDisplay) return;
+
+    if (gs->getActiveTeam() == 0) {
+        sdlBlit(unitDisplay, unitWindow1.x, unitWindow1.y);
+    }
+    else {
+        sdlBlit(unitDisplay, unitWindow2.x, unitWindow2.y);
+    }
+}
+
 bool checkWinner(int score1, int score2)
 {
     if (score1 == 0 && score2 == 0) {
@@ -728,8 +745,6 @@ extern "C" int SDL_main(int argc, char *argv[])
     logv = make_unique<LogView>(logWindow);
     CommanderView cView1{cmdrWindow1, 0, *gs};
     CommanderView cView2{cmdrWindow2, 1, *gs};
-    UnitView uView1{unitWindow1, 0, *gs};
-    UnitView uView2{unitWindow2, 1, *gs};
 
     nextTurn();
     bf->selectHex(gs->getActiveUnit().aHex);
@@ -738,8 +753,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     logv->draw();
     cView1.draw();
     cView2.draw();
-    uView1.draw();
-    uView2.draw();
+    drawUnitDetails();
     drawBorders();
 
     auto screen = SDL_GetVideoSurface();
@@ -802,15 +816,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             if (anims.empty()) {
                 cView1.draw();
                 cView2.draw();
-                //uView1.draw();
-                sdlClear(unitWindow1);
-                if (gs->getActiveTeam() == 0) {
-                    auto unitDisplay = uView1.render(gs->getActiveUnit());
-                    if (unitDisplay) {
-                        SDL_BlitSurface(unitDisplay.get(), nullptr, screen, &unitWindow1);
-                    }
-                }
-                uView2.draw();
+                drawUnitDetails();
             }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
         }
