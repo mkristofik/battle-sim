@@ -33,6 +33,7 @@ class UnitView
 public:
     UnitView(SDL_Rect dispArea, int team, const GameState &gs);
     void draw() const;
+    SdlSurface render(const Unit &unit) const;
 
 private:
     SdlSurface renderName(const Unit &unit) const;

@@ -15,7 +15,31 @@
 #include "Effects.h"
 #include "GameState.h"
 #include "UnitType.h"
+#include <algorithm>
+#include <cassert>
 #include <sstream>
+
+namespace
+{
+    int maxWidth(const SdlSurface &a, const SdlSurface &b)
+    {
+        if (!a && !b) return 0;
+        if (!a) return b->w;
+        if (!b) return a->w;
+        return std::max(a->w, b->w);
+    }
+
+    int maxWidth(const SdlSurface &a, int maxSoFar)
+    {
+        if (!a) return maxSoFar;
+        return std::max(a->w, maxSoFar);
+    }
+
+    int maxWidth(const SdlSurface &a, const SdlSurface &b, const SdlSurface &c)
+    {
+        return maxWidth(a, maxWidth(b, c));
+    }
+}
 
 UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs)
     : displayArea_(std::move(dispArea)),
@@ -50,15 +74,59 @@ void UnitView::draw() const
     auto traitSurf = renderTraits(unit);
     px = displayArea_.x + 5;
     py = displayArea_.y + img->h;
-    if (traitSurf != nullptr) {
+    if (traitSurf) {
         sdlBlit(traitSurf, px, py);
         py += traitSurf->h;
     }
 
     auto effectSurf = renderEffects(unit);
-    if (effectSurf != nullptr) {
+    if (effectSurf) {
         sdlBlit(effectSurf, px, py);
     }
+}
+
+SdlSurface UnitView::render(const Unit &unit) const
+{
+    assert(unit.isAlive());
+
+    // Render all the pieces to determine overall window size.
+    const auto &img = unit.type->baseImg[team_];
+    auto nameSurf = renderName(unit);
+    auto damageSurf = renderDamage(unit);
+    auto hpSurf = renderHP(unit);
+    auto traitSurf = renderTraits(unit);
+    auto effectSurf = renderEffects(unit);
+
+    int topWidth = img->w + maxWidth(nameSurf, damageSurf, hpSurf);
+    int bottomWidth = maxWidth(traitSurf, effectSurf);
+    int width = std::max(topWidth, bottomWidth) + 5;  // allow buffer space
+
+    int height = img->h;
+    if (traitSurf) height += traitSurf->h;
+    if (effectSurf) height += effectSurf->h;
+
+    auto surf = sdlCreate(width, height);
+    SDL_Rect dest = {0};
+
+    SDL_BlitSurface(img.get(), nullptr, surf.get(), nullptr);
+    dest.x = img->w + 5;
+    dest.y = 5;
+    SDL_BlitSurface(nameSurf.get(), nullptr, surf.get(), &dest);
+    dest.y += nameSurf->h + 5;
+    SDL_BlitSurface(damageSurf.get(), nullptr, surf.get(), &dest);
+    dest.y += damageSurf->h;
+    SDL_BlitSurface(hpSurf.get(), nullptr, surf.get(), &dest);
+    dest.x = 5;
+    dest.y = img->h;
+    if (traitSurf) {
+        SDL_BlitSurface(traitSurf.get(), nullptr, surf.get(), &dest);
+        dest.y += traitSurf->h;
+    }
+    if (effectSurf) {
+        SDL_BlitSurface(effectSurf.get(), nullptr, surf.get(), &dest);
+    }
+
+    return surf;
 }
 
 SdlSurface UnitView::renderName(const Unit &unit) const

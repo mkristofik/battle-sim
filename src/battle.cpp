@@ -802,7 +802,14 @@ extern "C" int SDL_main(int argc, char *argv[])
             if (anims.empty()) {
                 cView1.draw();
                 cView2.draw();
-                uView1.draw();
+                //uView1.draw();
+                sdlClear(unitWindow1);
+                if (gs->getActiveTeam() == 0) {
+                    auto unitDisplay = uView1.render(gs->getActiveUnit());
+                    if (unitDisplay) {
+                        SDL_BlitSurface(unitDisplay.get(), nullptr, screen, &unitWindow1);
+                    }
+                }
                 uView2.draw();
             }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
