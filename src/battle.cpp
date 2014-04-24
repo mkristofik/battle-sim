@@ -621,8 +621,7 @@ void drawUnitDetails()
     sdlClear(unitWindow1);
     sdlClear(unitWindow2);
 
-    UnitView uView;  // TODO: not needed
-    auto unitDisplay = uView.render(gs->getActiveUnit());
+    auto unitDisplay = renderUnitView(gs->getActiveUnit());
     if (!unitDisplay) return;
 
     if (gs->getActiveTeam() == 0) {
