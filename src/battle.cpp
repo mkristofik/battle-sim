@@ -818,6 +818,7 @@ extern "C" int SDL_main(int argc, char *argv[])
                 drawUnitDetails();
             }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
+            needRedraw = false;
         }
 
         SDL_Delay(1);
