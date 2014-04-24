@@ -621,7 +621,7 @@ void drawUnitDetails()
     sdlClear(unitWindow1);
     sdlClear(unitWindow2);
 
-    UnitView uView{SDL_Rect(), 0, *gs};  // TODO: not needed
+    UnitView uView;  // TODO: not needed
     auto unitDisplay = uView.render(gs->getActiveUnit());
     if (!unitDisplay) return;
 

@@ -41,48 +41,8 @@ namespace
     }
 }
 
-UnitView::UnitView(SDL_Rect dispArea, int team, const GameState &gs)
-    : displayArea_(std::move(dispArea)),
-    team_(team),
-    gs_(gs),
-    font_(sdlGetFont(FontType::MEDIUM))
+UnitView::UnitView()
 {
-}
-
-void UnitView::draw() const
-{
-    sdlClear(displayArea_);
-
-    const auto &unit = gs_.getActiveUnit();
-    if (!unit.isAlive() || unit.team != team_) return;
-
-    const auto &img = unit.type->baseImg[team_];
-    sdlBlit(img, displayArea_.x, displayArea_.y);
-
-    auto px = displayArea_.x + img->w + 5;
-    auto py = displayArea_.y + 5;
-    auto nameSurf = renderName(unit);
-    sdlBlit(nameSurf, px, py);
-    py += nameSurf->h + 5;
-
-    auto damageSurf = renderDamage(unit);
-    sdlBlit(damageSurf, px, py);
-    py += damageSurf->h;
-
-    sdlBlit(renderHP(unit), px, py);
-
-    auto traitSurf = renderTraits(unit);
-    px = displayArea_.x + 5;
-    py = displayArea_.y + img->h;
-    if (traitSurf) {
-        sdlBlit(traitSurf, px, py);
-        py += traitSurf->h;
-    }
-
-    auto effectSurf = renderEffects(unit);
-    if (effectSurf) {
-        sdlBlit(effectSurf, px, py);
-    }
 }
 
 SdlSurface UnitView::render(const Unit &unit) const
@@ -90,7 +50,7 @@ SdlSurface UnitView::render(const Unit &unit) const
     assert(unit.isAlive());
 
     // Render all the pieces to determine overall window size.
-    const auto &img = unit.type->baseImg[team_];
+    const auto &img = unit.type->baseImg[unit.team];
     auto nameSurf = renderName(unit);
     auto damageSurf = renderDamage(unit);
     auto hpSurf = renderHP(unit);
@@ -145,12 +105,13 @@ SdlSurface UnitView::renderDamage(const Unit &unit) const
         dmg << unit.type->minDmg << '-' << unit.type->maxDmg;
     }
 
-    return sdlPreRender(font_, dmg.str(), WHITE);
+    return sdlPreRender(sdlGetFont(FontType::MEDIUM), dmg.str(), WHITE);
 }
 
 SdlSurface UnitView::renderHP(const Unit &unit) const
 {
-    auto lblHP = sdlPreRender(font_, "HP ", WHITE);
+    const auto &font = sdlGetFont(FontType::MEDIUM);
+    auto lblHP = sdlPreRender(font, "HP ", WHITE);
 
     auto hpColor = WHITE;
     if (static_cast<double>(unit.hpLeft) / unit.type->hp < 0.25) {
@@ -159,15 +120,15 @@ SdlSurface UnitView::renderHP(const Unit &unit) const
     else if (static_cast<double>(unit.hpLeft) / unit.type->hp < 0.5) {
         hpColor = YELLOW;
     }
-    auto lblHpLeft = sdlPreRender(font_, unit.hpLeft, hpColor);
+    auto lblHpLeft = sdlPreRender(font, unit.hpLeft, hpColor);
 
     std::ostringstream ostr{" / ", std::ios::app};
     ostr << unit.type->hp;
-    auto lblHpTot = sdlPreRender(font_, ostr.str(), WHITE);
+    auto lblHpTot = sdlPreRender(font, ostr.str(), WHITE);
 
     SDL_Rect dest = {0};
     auto width = lblHP->w + lblHpLeft->w + lblHpTot->w;
-    auto hpSurf = sdlCreate(width, sdlLineHeight(font_));
+    auto hpSurf = sdlCreate(width, sdlLineHeight(font));
     SDL_BlitSurface(lblHP.get(), nullptr, hpSurf.get(), nullptr);
     dest.x = lblHP->w;
     SDL_BlitSurface(lblHpLeft.get(), nullptr, hpSurf.get(), &dest);
@@ -183,11 +144,12 @@ SdlSurface UnitView::renderTraits(const Unit &unit) const
     if (str.empty()) return {};
 
     // TODO: need something for spellcasters
-    return sdlPreRender(font_, str, WHITE);
+    return sdlPreRender(sdlGetFont(FontType::MEDIUM), str, WHITE);
 }
 
 SdlSurface UnitView::renderEffects(const Unit &unit) const
 {
     if (unit.effect.type == EffectType::NONE) return {};
-    return sdlPreRender(font_, unit.effect.getText(), YELLOW);
+    return sdlPreRender(sdlGetFont(FontType::MEDIUM), unit.effect.getText(),
+                        YELLOW);
 }

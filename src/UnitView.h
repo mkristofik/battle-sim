@@ -31,8 +31,7 @@ class Unit;
 class UnitView
 {
 public:
-    UnitView(SDL_Rect dispArea, int team, const GameState &gs);
-    void draw() const;
+    UnitView();
     SdlSurface render(const Unit &unit) const;
 
 private:
@@ -41,11 +40,6 @@ private:
     SdlSurface renderHP(const Unit &unit) const;
     SdlSurface renderTraits(const Unit &unit) const;
     SdlSurface renderEffects(const Unit &unit) const;
-
-    SDL_Rect displayArea_;
-    int team_;
-    const GameState &gs_;
-    const SdlFont &font_;
 };
 
 #endif
