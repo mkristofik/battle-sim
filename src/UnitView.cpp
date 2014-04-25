@@ -21,24 +21,13 @@
 
 namespace
 {
-    // TODO: std::max supports an initializer list and a comparator.
-    int maxWidth(const SdlSurface &a, const SdlSurface &b)
+    // Return true if lhs is narrower than rhs.  A null surface is treated like
+    // it has infinite width.
+    bool compareWidth(const SdlSurface &lhs, const SdlSurface &rhs)
     {
-        if (!a && !b) return 0;
-        if (!a) return b->w;
-        if (!b) return a->w;
-        return std::max(a->w, b->w);
-    }
-
-    int maxWidth(const SdlSurface &a, int maxSoFar)
-    {
-        if (!a) return maxSoFar;
-        return std::max(a->w, maxSoFar);
-    }
-
-    int maxWidth(const SdlSurface &a, const SdlSurface &b, const SdlSurface &c)
-    {
-        return maxWidth(a, maxWidth(b, c));
+        if (!lhs) return false;
+        if (!rhs) return true;
+        return lhs->w < rhs->w;
     }
 
     SdlSurface renderName(const Unit &unit)
@@ -119,10 +108,14 @@ SdlSurface renderUnitView(const Unit &unit)
     auto traitSurf = renderTraits(unit);
     auto effectSurf = renderEffects(unit);
 
-    int topWidth = img->w + maxWidth(nameSurf, damageSurf, hpSurf);
-    int bottomWidth = maxWidth(traitSurf, effectSurf);
+    // How wide do we need to be?
+    auto widest = std::max({nameSurf, damageSurf, hpSurf}, compareWidth);
+    int topWidth = img->w + widest->w;
+    widest = std::max(traitSurf, effectSurf, compareWidth);
+    int bottomWidth = (widest ? widest->w : 0);
     int width = std::max(topWidth, bottomWidth) + 5;  // allow buffer space
 
+    // How tall?
     int height = img->h;
     if (traitSurf) height += traitSurf->h;
     if (effectSurf) height += effectSurf->h;
