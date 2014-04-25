@@ -68,9 +68,11 @@ void LogView::addBlankLine()
 
 void LogView::draw()
 {
+    /* TODO: isDirty_ isn't needed now that we're refreshing the whole screen.
     if (!isDirty_) {
         return;
     }
+    */
 
     sdlClear(displayArea_);
     drawButtons();

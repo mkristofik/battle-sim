@@ -49,6 +49,7 @@ namespace
     std::unique_ptr<LogView> logv;
     Uint16 winWidth = 698;
     Uint16 winHeight = 425;
+    SDL_Rect mainWindow = {0, 0, winWidth, winHeight};
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
     SDL_Rect borders[] = {{200, 0, 5, winHeight},  // left side vertical
@@ -70,6 +71,8 @@ namespace
     enum class AiState {IDLE, RUNNING, COMPLETE};
     AiState aiState = AiState::IDLE;
     boost::future<Action> aiAction;
+    SdlSurface unitPopup;
+    SDL_Rect popupWindow;
 
     // Unit placement on the grid.
     // team 1 on the left, team 2 on the right
@@ -380,6 +383,34 @@ bool isHumanTurn()
     //return true;
 }
 
+void drawUnitDetails()
+{
+    sdlClear(unitWindow1);
+    sdlClear(unitWindow2);
+
+    auto unitDisplay = renderUnitView(gs->getActiveUnit());
+    if (!unitDisplay) return;
+
+    if (gs->getActiveTeam() == 0) {
+        sdlBlit(unitDisplay, unitWindow1.x, unitWindow1.y);
+    }
+    else {
+        sdlBlit(unitDisplay, unitWindow2.x, unitWindow2.y);
+    }
+
+    if (unitPopup) {
+        sdlClear(popupWindow);
+        sdlBlit(unitPopup, popupWindow.x, popupWindow.y);
+        // TODO: add a border around this
+    }
+}
+
+void hideUnitPopup()
+{
+    unitPopup.reset();
+    popupWindow = {0};
+}
+
 void handleMouseMotion(const SDL_MouseMotionEvent &event)
 {
     if (!insideRect(event.x, event.y, bfWindow) ||
@@ -432,6 +463,19 @@ void handleMouseDown(const SDL_MouseButtonEvent &event)
         logv->handleMouseDown(event);
         logHasFocus = true;
     }
+    else if (event.button == SDL_BUTTON_RIGHT &&
+             insideRect(event.x, event.y, bfWindow))
+    {
+        auto aIndex = bf->aryFromPixel(event.x, event.y);
+        const auto &selectedUnit = gs->getUnitAt(aIndex);
+        if (selectedUnit.isAlive()) {
+            unitPopup = renderUnitView(selectedUnit);
+            popupWindow.x = event.x;
+            popupWindow.y = event.y;
+            popupWindow.w = unitPopup->w + 5;
+            popupWindow.h = unitPopup->h + 5;
+        }
+    }
 }
 
 void handleMouseUp(const SDL_MouseButtonEvent &event)
@@ -451,6 +495,8 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             actionTaken = true;
         }
     }
+
+    hideUnitPopup();
 }
 
 void handleKeyPress(const SDL_KeyboardEvent &event)
@@ -616,22 +662,6 @@ void drawBorders()
     }
 }
 
-void drawUnitDetails()
-{
-    sdlClear(unitWindow1);
-    sdlClear(unitWindow2);
-
-    auto unitDisplay = renderUnitView(gs->getActiveUnit());
-    if (!unitDisplay) return;
-
-    if (gs->getActiveTeam() == 0) {
-        sdlBlit(unitDisplay, unitWindow1.x, unitWindow1.y);
-    }
-    else {
-        sdlBlit(unitDisplay, unitWindow2.x, unitWindow2.y);
-    }
-}
-
 bool checkWinner(int score1, int score2)
 {
     if (score1 == 0 && score2 == 0) {
@@ -776,9 +806,11 @@ extern "C" int SDL_main(int argc, char *argv[])
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 handleMouseDown(event.button);
+                needRedraw = true;
             }
             else if (event.type == SDL_MOUSEBUTTONUP) {
                 handleMouseUp(event.button);
+                needRedraw = true;
             }
             else if (event.type == SDL_KEYUP) {
                 handleKeyPress(event.key);
@@ -810,12 +842,17 @@ extern "C" int SDL_main(int argc, char *argv[])
         }
 
         if (needRedraw) {
+            sdlClear(mainWindow);
             bf->draw();
             logv->draw();
+            drawBorders();
+            cView1.draw();
+            cView2.draw();
             if (anims.empty()) {
-                cView1.draw();
-                cView2.draw();
                 drawUnitDetails();
+            }
+            else {
+                hideUnitPopup();
             }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
             needRedraw = false;

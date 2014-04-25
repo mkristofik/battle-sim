@@ -21,6 +21,7 @@
 
 namespace
 {
+    // TODO: std::max supports an initializer list and a comparator.
     int maxWidth(const SdlSurface &a, const SdlSurface &b)
     {
         if (!a && !b) return 0;
