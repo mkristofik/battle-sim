@@ -25,6 +25,10 @@ bool jsonParse(const char *filename, rapidjson::Document &doc)
     boost::filesystem::path dataPath{"../data"};
     dataPath /= filename;
     std::shared_ptr<FILE> fp{fopen(dataPath.string().c_str(), "r"), fclose};
+    if (!fp) {
+        std::cerr << "Couldn't find file " << dataPath.string() << '\n';
+        return false;
+    }
 
     rapidjson::FileStream file(fp.get());
     if (doc.ParseStream<0>(file).HasParseError()) {

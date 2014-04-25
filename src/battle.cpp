@@ -39,8 +39,6 @@
 #include <unordered_map>
 #include <vector>
 
-// TODO: leave space to write unit stats for the highlighted hex
-
 namespace
 {
     std::unique_ptr<HexGrid> grid;
@@ -743,9 +741,14 @@ extern "C" int SDL_main(int argc, char *argv[])
     initBattleGrid();
     bf = make_unique<Battlefield>(bfWindow, *grid);
     Anim::setBattlefield(*bf);
+    atexit([] {bf.reset();});
 
     gs = make_unique<GameState>(*grid);
     gs->setExecFunc(execAnimate);
+    atexit([] {gs.reset();});
+
+    // Note: atexits ensure SDL resources are cleaned up before the subsystems
+    // are torn down.
 
     if (!initEffectCache("effects.json")) {
         std::cerr << "Warning: no effect definitions loaded" << std::endl;
@@ -861,9 +864,5 @@ extern "C" int SDL_main(int argc, char *argv[])
         SDL_Delay(1);
     }
 
-    // Ensure SDL resources are cleaned up before the subsystems are torn down.
-    // TODO: can we encapsulate these so this isn't necessary?
-    gs.reset();
-    bf.reset();
     return EXIT_SUCCESS;
 }
