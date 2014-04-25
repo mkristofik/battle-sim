@@ -66,7 +66,6 @@ private:
     std::vector<Message> msgs_;
     int beginMsg_;  // first visible message
     int endMsg_;    // one past the last visible message (like an iterator)
-    bool isDirty_;
 };
 
 #endif
