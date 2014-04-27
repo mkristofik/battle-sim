@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <deque>
+#include <initializer_list>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -50,11 +51,11 @@ namespace
     SDL_Rect mainWindow = {0, 0, winWidth, winHeight};
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
-    SDL_Rect borders[] = {{200, 0, 5, winHeight},  // left side vertical
-                          {493, 0, 5, winHeight},  // right side vertical
-                          {203, 360, 292, 5},  // above log window
-                          {0, 230, 202, 5},  // beneath cmdr1
-                          {496, 230, 200, 5}};  // beneath cmdr2
+    auto mainBorders = {SDL_Rect{200, 0, 5, winHeight},  // left side vertical
+                        SDL_Rect{493, 0, 5, winHeight},  // right side vertical
+                        SDL_Rect{203, 360, 292, 5},  // above log window
+                        SDL_Rect{0, 230, 202, 5},  // beneath cmdr1
+                        SDL_Rect{496, 230, 200, 5}};  // beneath cmdr2
     SDL_Rect bfWindow = {205, 0, 288, 360};
     SDL_Rect unitWindow1 = {0, 235, 200, pHexSize + 60};
     SDL_Rect unitWindow2 = {498, 235, 200, pHexSize + 60};
@@ -381,6 +382,37 @@ bool isHumanTurn()
     //return true;
 }
 
+SDL_Rect getBorderFgLine(const SDL_Rect &border)
+{
+    auto line = border;
+    if (border.h > border.w) {
+        line.x += border.w / 2;
+        line.w = 1;
+    }
+    else {
+        line.y += border.h / 2;
+        line.h = 1;
+    }
+    return line;
+}
+
+void drawBorders(const std::initializer_list<SDL_Rect> &borders)
+{
+    auto screen = SDL_GetVideoSurface();
+    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
+                               BORDER_BG.b);
+    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
+                               BORDER_FG.b);
+
+    for (auto b : borders) {
+        SDL_FillRect(screen, &b, bgColor);
+    }
+    for (auto b : borders) {
+        SDL_Rect line = getBorderFgLine(b);
+        SDL_FillRect(screen, &line, fgColor);
+    }
+}
+
 void drawUnitDetails()
 {
     sdlClear(unitWindow1);
@@ -398,8 +430,25 @@ void drawUnitDetails()
 
     if (unitPopup) {
         sdlClear(popupWindow);
-        sdlBlit(unitPopup, popupWindow.x, popupWindow.y);
-        // TODO: add a border around this
+        sdlBlit(unitPopup, popupWindow.x + 5, popupWindow.y + 5);
+        // TODO: this is hacky and ugly.  We can do better by returning the
+        // mainBorders array back to normal and adding a renderBorder()
+        // function to sdl_helper.
+        auto top = popupWindow;
+        top.h = 5;
+        auto bottom = popupWindow;
+        bottom.y += popupWindow.h - 5;
+        bottom.h = 5;
+        auto left = popupWindow;
+        left.y += 3;
+        left.w = 5;
+        left.h -= 6;
+        auto right = popupWindow;
+        right.x += popupWindow.w - 5;
+        right.y += 3;
+        right.w = 5;
+        right.h -= 6;
+        drawBorders({top, left, bottom, right});
     }
 }
 
@@ -470,8 +519,8 @@ void handleMouseDown(const SDL_MouseButtonEvent &event)
             unitPopup = renderUnitView(selectedUnit);
             popupWindow.x = event.x;
             popupWindow.y = event.y;
-            popupWindow.w = unitPopup->w + 5;
-            popupWindow.h = unitPopup->h + 5;
+            popupWindow.w = unitPopup->w + 15;  // leave space for borders
+            popupWindow.h = unitPopup->h + 15;
         }
     }
 }
@@ -631,35 +680,6 @@ const char * getScenario(int argc, char *argv[])
     return argv[1];
 }
 
-SDL_Rect getBorderFgLine(const SDL_Rect &border)
-{
-    auto line = border;
-    if (border.h > border.w) {
-        line.x += border.w / 2;
-        line.w = 1;
-    }
-    else {
-        line.y += border.h / 2;
-        line.h = 1;
-    }
-    return line;
-}
-
-void drawBorders()
-{
-    auto screen = SDL_GetVideoSurface();
-    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
-                               BORDER_BG.b);
-    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
-                               BORDER_FG.b);
-
-    for (auto &b : borders) {
-        SDL_FillRect(screen, &b, bgColor);
-        SDL_Rect line = getBorderFgLine(b);
-        SDL_FillRect(screen, &line, fgColor);
-    }
-}
-
 bool checkWinner(int score1, int score2)
 {
     if (score1 == 0 && score2 == 0) {
@@ -786,7 +806,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     cView1.draw();
     cView2.draw();
     drawUnitDetails();
-    drawBorders();
+    drawBorders(mainBorders);
 
     auto screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -848,7 +868,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             sdlClear(mainWindow);
             bf->draw();
             logv->draw();
-            drawBorders();
+            drawBorders(mainBorders);
             cView1.draw();
             cView2.draw();
             if (anims.empty()) {
