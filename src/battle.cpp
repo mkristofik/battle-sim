@@ -51,11 +51,11 @@ namespace
     SDL_Rect mainWindow = {0, 0, winWidth, winHeight};
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
-    auto mainBorders = {SDL_Rect{200, 0, 5, winHeight},  // left side vertical
-                        SDL_Rect{493, 0, 5, winHeight},  // right side vertical
-                        SDL_Rect{203, 360, 292, 5},  // above log window
-                        SDL_Rect{0, 230, 202, 5},  // beneath cmdr1
-                        SDL_Rect{496, 230, 200, 5}};  // beneath cmdr2
+    SDL_Rect mainBorders[] = {{200, 0, 5, winHeight},  // left side vertical
+                              {493, 0, 5, winHeight},  // right side vertical
+                              {203, 360, 292, 5},  // above log window
+                              {0, 230, 202, 5},  // beneath cmdr1
+                              {496, 230, 200, 5}};  // beneath cmdr2
     SDL_Rect bfWindow = {205, 0, 288, 360};
     SDL_Rect unitWindow1 = {0, 235, 200, pHexSize + 60};
     SDL_Rect unitWindow2 = {498, 235, 200, pHexSize + 60};
@@ -396,7 +396,7 @@ SDL_Rect getBorderFgLine(const SDL_Rect &border)
     return line;
 }
 
-void drawBorders(const std::initializer_list<SDL_Rect> &borders)
+void drawBorders()
 {
     auto screen = SDL_GetVideoSurface();
     auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
@@ -404,10 +404,8 @@ void drawBorders(const std::initializer_list<SDL_Rect> &borders)
     auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
                                BORDER_FG.b);
 
-    for (auto b : borders) {
+    for (auto b : mainBorders) {
         SDL_FillRect(screen, &b, bgColor);
-    }
-    for (auto b : borders) {
         SDL_Rect line = getBorderFgLine(b);
         SDL_FillRect(screen, &line, fgColor);
     }
@@ -790,7 +788,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     cView1.draw();
     cView2.draw();
     drawUnitDetails();
-    drawBorders(mainBorders);
+    drawBorders();
 
     auto screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -852,7 +850,7 @@ extern "C" int SDL_main(int argc, char *argv[])
             sdlClear(mainWindow);
             bf->draw();
             logv->draw();
-            drawBorders(mainBorders);
+            drawBorders();
             cView1.draw();
             cView2.draw();
             if (anims.empty()) {
