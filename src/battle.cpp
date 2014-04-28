@@ -567,7 +567,7 @@ bool parseUnits(const rapidjson::Document &doc)
 int createUnitLabel(int num, int team, Point hex)
 {
     auto &labelFont = sdlGetFont(FontType::SMALL);
-    auto txt = sdlPreRender(labelFont, num, getLabelColor(team));
+    auto txt = sdlRenderText(labelFont, num, getLabelColor(team));
     auto id = bf->addEntity(std::move(hex), txt, ZOrder::CREATURE);
     auto &label = bf->getEntity(id);
     label.alignBottomCenter();

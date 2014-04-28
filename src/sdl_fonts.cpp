@@ -65,7 +65,7 @@ int sdlDrawText(const SdlFont &font, const char *txt, SDL_Rect pos,
     {
         auto yPos = pos.y;
         for (const auto &str : lines) {
-            auto textImg = sdlPreRender(font, str.c_str(), color);
+            auto textImg = sdlRenderText(font, str.c_str(), color);
 
             auto xPos = pos.x;
             if (just == Justify::CENTER) {
@@ -90,8 +90,8 @@ int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
     return sdlDrawText(font, txt.c_str(), pos, color, just);
 }
 
-SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
-                        const SDL_Color &color)
+SdlSurface sdlRenderText(const SdlFont &font, const char *txt,
+                         const SDL_Color &color)
 {
     auto textImg = make_surface(TTF_RenderText_Blended(font.get(), txt, color));
     if (textImg == nullptr) {
@@ -101,16 +101,16 @@ SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
     return textImg;
 }
 
-SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
-                        const SDL_Color &color)
+SdlSurface sdlRenderText(const SdlFont &font, const std::string &txt,
+                         const SDL_Color &color)
 {
-    return sdlPreRender(font, txt.c_str(), color);
+    return sdlRenderText(font, txt.c_str(), color);
 }
 
-SdlSurface sdlPreRender(const SdlFont &font, int number,
-                        const SDL_Color &color)
+SdlSurface sdlRenderText(const SdlFont &font, int number,
+                         const SDL_Color &color)
 {
-    return sdlPreRender(font, boost::lexical_cast<std::string>(number), color);
+    return sdlRenderText(font, boost::lexical_cast<std::string>(number), color);
 }
 
 int sdlLineHeight(const SdlFont &font)

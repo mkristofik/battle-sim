@@ -38,12 +38,12 @@ int sdlDrawText(const SdlFont &font, const std::string &txt, SDL_Rect pos,
 
 // Create an image containing some text to be drawn later.  No word-wrapping is
 // done.
-SdlSurface sdlPreRender(const SdlFont &font, const char *txt,
-                        const SDL_Color &color);
-SdlSurface sdlPreRender(const SdlFont &font, const std::string &txt,
-                        const SDL_Color &color);
-SdlSurface sdlPreRender(const SdlFont &font, int number,
-                        const SDL_Color &color);
+SdlSurface sdlRenderText(const SdlFont &font, const char *txt,
+                         const SDL_Color &color);
+SdlSurface sdlRenderText(const SdlFont &font, const std::string &txt,
+                         const SDL_Color &color);
+SdlSurface sdlRenderText(const SdlFont &font, int number,
+                         const SDL_Color &color);
 
 // Return the default space between lines of text.
 int sdlLineHeight(const SdlFont &font);

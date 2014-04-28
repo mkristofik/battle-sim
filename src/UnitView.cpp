@@ -34,7 +34,7 @@ namespace
     SdlSurface renderName(const Unit &unit)
     {
         const auto &nameFont = sdlGetFont(FontType::LARGE);
-        return sdlPreRender(nameFont, unit.getName(), WHITE);
+        return sdlRenderText(nameFont, unit.getName(), WHITE);
     }
 
     SdlSurface renderDamage(const Unit &unit)
@@ -47,13 +47,13 @@ namespace
             dmg << unit.type->minDmg << '-' << unit.type->maxDmg;
         }
 
-        return sdlPreRender(sdlGetFont(FontType::MEDIUM), dmg.str(), WHITE);
+        return sdlRenderText(sdlGetFont(FontType::MEDIUM), dmg.str(), WHITE);
     }
 
     SdlSurface renderHP(const Unit &unit)
     {
         const auto &font = sdlGetFont(FontType::MEDIUM);
-        auto lblHP = sdlPreRender(font, "HP ", WHITE);
+        auto lblHP = sdlRenderText(font, "HP ", WHITE);
 
         auto hpColor = WHITE;
         if (static_cast<double>(unit.hpLeft) / unit.type->hp < 0.25) {
@@ -62,11 +62,11 @@ namespace
         else if (static_cast<double>(unit.hpLeft) / unit.type->hp < 0.5) {
             hpColor = YELLOW;
         }
-        auto lblHpLeft = sdlPreRender(font, unit.hpLeft, hpColor);
+        auto lblHpLeft = sdlRenderText(font, unit.hpLeft, hpColor);
 
         std::ostringstream ostr{" / ", std::ios::app};
         ostr << unit.type->hp;
-        auto lblHpTot = sdlPreRender(font, ostr.str(), WHITE);
+        auto lblHpTot = sdlRenderText(font, ostr.str(), WHITE);
 
         SDL_Rect dest = {0};
         auto width = lblHP->w + lblHpLeft->w + lblHpTot->w;
@@ -85,14 +85,13 @@ namespace
         assert(contains(unit.type->traits, Trait::SPELLCASTER));
 
         // TODO: building up text like this is awkward.
-        // TODO: rename sdlPreRender to sdlRenderText
         auto str = strFromTraits(unit.type->traits);
-        auto line1 = sdlPreRender(sdlGetFont(FontType::MEDIUM), str, WHITE);
+        auto line1 = sdlRenderText(sdlGetFont(FontType::MEDIUM), str, WHITE);
         std::ostringstream spellStr;
         spellStr << "1. " << unit.type->spell->name << " (" <<
             unit.type->spell->cost << ')';
-        auto line2 = sdlPreRender(sdlGetFont(FontType::MEDIUM), spellStr.str(),
-                                  WHITE);
+        auto line2 = sdlRenderText(sdlGetFont(FontType::MEDIUM), spellStr.str(),
+                                   WHITE);
         auto width = std::max(line1, line2, compareWidth)->w;
         auto height = line1->h + line2->h;
 
@@ -113,14 +112,14 @@ namespace
         }
 
         auto str = strFromTraits(traits);
-        return sdlPreRender(sdlGetFont(FontType::MEDIUM), str, WHITE);
+        return sdlRenderText(sdlGetFont(FontType::MEDIUM), str, WHITE);
     }
 
     SdlSurface renderEffects(const Unit &unit)
     {
         if (unit.effect.type == EffectType::NONE) return {};
-        return sdlPreRender(sdlGetFont(FontType::MEDIUM), unit.effect.getText(),
-                            YELLOW);
+        return sdlRenderText(sdlGetFont(FontType::MEDIUM),
+                             unit.effect.getText(), YELLOW);
     }
 }
 
