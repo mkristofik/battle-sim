@@ -430,25 +430,9 @@ void drawUnitDetails()
 
     if (unitPopup) {
         sdlClear(popupWindow);
+        auto border = sdlRenderBorder(popupWindow.w, popupWindow.h);
+        sdlBlit(border, popupWindow.x, popupWindow.y);
         sdlBlit(unitPopup, popupWindow.x + 5, popupWindow.y + 5);
-        // TODO: this is hacky and ugly.  We can do better by returning the
-        // mainBorders array back to normal and adding a renderBorder()
-        // function to sdl_helper.
-        auto top = popupWindow;
-        top.h = 5;
-        auto bottom = popupWindow;
-        bottom.y += popupWindow.h - 5;
-        bottom.h = 5;
-        auto left = popupWindow;
-        left.y += 3;
-        left.w = 5;
-        left.h -= 6;
-        auto right = popupWindow;
-        right.x += popupWindow.w - 5;
-        right.y += 3;
-        right.w = 5;
-        right.h -= 6;
-        drawBorders({top, left, bottom, right});
     }
 }
 

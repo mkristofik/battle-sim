@@ -77,6 +77,9 @@ void sdlBlitFrame(const SdlSurface &surf, int frame, int numFrames,
 // Clear the given region of the screen.
 void sdlClear(SDL_Rect region);
 
+// Create a surface of width x height, draw a nice border on its outside edges.
+SdlSurface sdlRenderBorder(int width, int height);
+
 // Set the clipping region for the duration of a lambda or other function call.
 struct SdlSetClipRect
 {
@@ -131,7 +134,6 @@ struct SdlLock
 // Load a resource from disk.  Returns null on failure.
 SdlSurface sdlLoadImage(const char *filename);
 SdlSurface sdlLoadImage(const std::string &filename);
-SdlFont sdlLoadFont(const char *filename, int ptSize);
 SdlMusic sdlLoadMusic(const char *filename);
 SdlMusic sdlLoadMusic(const std::string &filename);
 SdlSound sdlLoadSound(const char *filename);

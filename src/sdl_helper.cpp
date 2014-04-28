@@ -317,6 +317,59 @@ void sdlClear(SDL_Rect region)
     }
 }
 
+SdlSurface sdlRenderBorder(int width, int height)
+{
+    auto surf = sdlCreate(width, height);
+    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
+                               BORDER_BG.b);
+    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
+                               BORDER_FG.b);
+
+    // Draw a dark border 5 pixels wide around the outside edge.
+    SDL_Rect top = {0};
+    top.w = width;
+    top.h = 5;
+    SDL_FillRect(surf.get(), &top, bgColor);
+    SDL_Rect left = {0};
+    left.w = 5;
+    left.h = height;
+    SDL_FillRect(surf.get(), &left, bgColor);
+    SDL_Rect bottom = {0};
+    bottom.y = height - 5;
+    bottom.w = width;
+    bottom.h = 5;
+    SDL_FillRect(surf.get(), &bottom, bgColor);
+    SDL_Rect right = {0};
+    right.x = width - 5;
+    right.w = 5;
+    right.h = height;
+    SDL_FillRect(surf.get(), &right, bgColor);
+
+    // Inlay a lighter line in the center of the border.
+    top.x = 2;
+    top.y = 2;
+    top.w = width - 4;
+    top.h = 1;
+    SDL_FillRect(surf.get(), &top, fgColor);
+    left.x = 2;
+    left.y = 2;
+    left.w = 1;
+    left.h = height - 4;
+    SDL_FillRect(surf.get(), &left, fgColor);
+    bottom.x = 2;
+    bottom.y = height - 3;
+    bottom.w = width - 4;
+    bottom.h = 1;
+    SDL_FillRect(surf.get(), &bottom, fgColor);
+    right.x = width - 3;
+    right.y = 2;
+    right.w = 1;
+    right.h = height - 4;
+    SDL_FillRect(surf.get(), &right, fgColor);
+
+    return surf;
+}
+
 SdlSurface sdlLoadImage(const char *filename)
 {
     assert(SDL_WasInit(SDL_INIT_VIDEO) != 0);
@@ -333,16 +386,6 @@ SdlSurface sdlLoadImage(const char *filename)
 SdlSurface sdlLoadImage(const std::string &filename)
 {
     return sdlLoadImage(filename.c_str());
-}
-
-SdlFont sdlLoadFont(const char *filename, int ptSize)
-{
-    SdlFont font(TTF_OpenFont(filename, ptSize), TTF_CloseFont);
-    if (!font) {
-        std::cerr << "Error loading font " << filename << " size " << ptSize
-            << "\n    " << TTF_GetError() << '\n';
-    }
-    return font;
 }
 
 SdlMusic sdlLoadMusic(const char *filename)
