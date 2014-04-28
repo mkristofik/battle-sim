@@ -15,6 +15,7 @@
 #include "Effects.h"
 #include "GameState.h"
 #include "UnitType.h"
+#include "algo.h"
 #include <algorithm>
 #include <cassert>
 #include <sstream>
@@ -79,12 +80,39 @@ namespace
         return hpSurf;
     }
 
+    SdlSurface renderSpellTraits(const Unit &unit)
+    {
+        assert(contains(unit.type->traits, Trait::SPELLCASTER));
+
+        // TODO: building up text like this is awkward.
+        // TODO: rename sdlPreRender to sdlRenderText
+        auto str = strFromTraits(unit.type->traits);
+        auto line1 = sdlPreRender(sdlGetFont(FontType::MEDIUM), str, WHITE);
+        std::ostringstream spellStr;
+        spellStr << "1. " << unit.type->spell->name << " (" <<
+            unit.type->spell->cost << ')';
+        auto line2 = sdlPreRender(sdlGetFont(FontType::MEDIUM), spellStr.str(),
+                                  WHITE);
+        auto width = std::max(line1, line2, compareWidth)->w;
+        auto height = line1->h + line2->h;
+
+        auto surf = sdlCreate(width, height);
+        SDL_BlitSurface(line1.get(), nullptr, surf.get(), nullptr);
+        SDL_Rect dest2 = {0};
+        dest2.y = line1->h;
+        SDL_BlitSurface(line2.get(), nullptr, surf.get(), &dest2);
+        return surf;
+    }
+
     SdlSurface renderTraits(const Unit &unit)
     {
-        auto str = strFromTraits(unit.type->traits);
-        if (str.empty()) return {};
+        const auto &traits = unit.type->traits;
+        if (traits.empty()) return {};
+        if (contains(traits, Trait::SPELLCASTER)) {
+            return renderSpellTraits(unit);
+        }
 
-        // TODO: need something for spellcasters
+        auto str = strFromTraits(traits);
         return sdlPreRender(sdlGetFont(FontType::MEDIUM), str, WHITE);
     }
 
