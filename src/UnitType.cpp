@@ -11,6 +11,7 @@
     See the COPYING.txt file for more details.
 */
 #include "UnitType.h"
+#include "algo.h"
 #include <algorithm>
 #include <iostream>
 
@@ -82,9 +83,6 @@ UnitType::UnitType(const rapidjson::Value &json)
     if (json.HasMember("plural")) {
         plural = json["plural"].GetString();
     }
-    if (json.HasMember("moves")) {
-        moves = json["moves"].GetInt();
-    }
     if (json.HasMember("initiative")) {
         initiative = json["initiative"].GetInt();
     }
@@ -151,6 +149,10 @@ UnitType::UnitType(const rapidjson::Value &json)
                 name << '\n';
             projectile = sdlLoadImage("missile.png");
         }
+    }
+
+    if (contains(traits, Trait::MOUNTED)) {
+        moves = 2;
     }
 
     sort(std::begin(traits), std::end(traits));

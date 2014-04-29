@@ -23,6 +23,7 @@
     X(FIRST_STRIKE) \
     X(FLYING) \
     X(LIFE_DRAIN) \
+    X(MOUNTED) \
     X(RANGED) \
     X(REGENERATE) \
     X(SPELLCASTER) \
