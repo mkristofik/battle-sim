@@ -1,21 +1,17 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "LogView.h"
 #include <cassert>
-
-// TODO: future ideas
-// Mouse wheel buttons are SDL_BUTTON_WHEELUP and SDL_BUTTON_WHEELDOWN.  It
-// doesn't take much to generate a lot of events with the wheel.
 
 LogView::LogView(SDL_Rect dispArea)
     : displayArea_(std::move(dispArea)),
