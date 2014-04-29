@@ -8,6 +8,7 @@ This game was inspired by the turn-based combat of the Heroes of Might and Magic
 
 ## Gameplay Videos
 
+[Human vs. AI](https://www.youtube.com/watch?v=BpDwoxhkbGw)
 [Two-player hotseat battle](https://www.youtube.com/watch?v=2TbIJfgpM-o)  
 [Naive AI vs. Smarter AI](https://www.youtube.com/watch?v=H4_xgKOuAAY)  
 [New unit abilities](https://www.youtube.com/watch?v=UO2qukIEbEM)
