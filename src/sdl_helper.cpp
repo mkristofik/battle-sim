@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "sdl_helper.h"
@@ -185,7 +185,6 @@ SdlSurface sdlFlipH(const SdlSurface &src)
 SdlSurface sdlFlipSheetH(const SdlSurface &src, int numFrames)
 {
     assert(src->w % numFrames == 0);  // verify each frame is the same size
-    // TODO: throwing an exception here might be better.
 
     auto surf = sdlDeepCopy(src);
     if (!surf) {
@@ -425,8 +424,6 @@ void sdlDashedLineH(Sint16 px, Sint16 py, Uint16 len, Uint32 color)
                 << SDL_GetError() << '\n';
             return;
         }
-        // TODO: this could be a unit test.
-        //std::cout << 'H' << r.x << ',' << r.y << 'x' << r.w << '\n';
     }
 }
 
@@ -442,8 +439,6 @@ void sdlDashedLineV(Sint16 px, Sint16 py, Uint16 len, Uint32 color)
                 << SDL_GetError() << '\n';
             return;
         }
-        // TODO: this could be a unit test.
-        //std::cout << 'V' << r.x << ',' << r.y << 'x' << r.h << '\n';
     }
 }
 
