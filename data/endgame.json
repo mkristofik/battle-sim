@@ -1,0 +1,18 @@
+{
+    "t1p5": {
+        "id": "swordsman",
+        "num": 3
+    },
+    "t1p6": {
+        "id": "paladin",
+        "num": 1
+    },
+    "t1p7": {
+        "id": "pikeman",
+        "num": 5
+    },
+    "t2p6": {
+        "id": "wolf",
+        "num": 3
+    }
+}
