@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "Action.h"
@@ -378,10 +378,11 @@ void execAnimate(Action action)
 
 bool isHumanTurn()
 {
-    return gs->getActiveTeam() == 0;
-    //return true;
+    // TODO: accept command line argument or scenario setting for this
+    return false;
 }
 
+// TODO: the main border drawing can move to sdl_helper
 SDL_Rect getBorderFgLine(const SDL_Rect &border)
 {
     auto line = border;
@@ -416,7 +417,10 @@ void drawUnitDetails()
     sdlClear(unitWindow1);
     sdlClear(unitWindow2);
 
-    auto unitDisplay = renderUnitView(gs->getActiveUnit());
+    const auto &unit = gs->getActiveUnit();
+    if (!unit.isAlive()) return;
+
+    auto unitDisplay = renderUnitView(unit);
     if (!unitDisplay) return;
 
     if (gs->getActiveTeam() == 0) {
@@ -716,12 +720,8 @@ Action callBestAI()
 void runAiTurn()
 {
     if (aiState == AiState::IDLE) {
-        if (gs->getActiveTeam() == 0) {
-            aiAction = boost::async(callNaiveAI);
-        }
-        else {
-            aiAction = boost::async(callBestAI);
-        }
+        // TODO: configurable which AI gets called.
+        aiAction = boost::async(callBestAI);
         aiState = AiState::RUNNING;
     }
 
