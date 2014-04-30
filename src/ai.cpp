@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 
@@ -16,6 +16,7 @@
 #include "Action.h"
 #include "GameState.h"
 #include <array>
+#include <iostream>
 #include <limits>
 
 /*
@@ -55,7 +56,7 @@ int alphaBeta(const GameState &gs, int depth, int alpha, int beta)
     // If we've run out of search time or the game has ended, stop.
     auto score = gs.getScore();
     if (score[0] == 0 || score[1] == 0) {
-        return (score[0] - score[1]) * 4;  // Place an emphasis on winning.
+        return (score[0] - score[1]) * 10;  // Place an emphasis on winning.
     }
     else if (depth <= 0) {
         return score[0] - score[1];
@@ -131,14 +132,19 @@ Action aiNaive(GameState gs)
 Action aiBetter(GameState gs)
 {
     gs.setSimMode();
-    return minimax(gs, 3);
+    return minimax(gs, 4);
 }
 
 Action aiBest(GameState gs)
 {
-    // TODO: can we do this with iterative deepening?  Run successively longer
-    // search depths up to 10 seconds perhaps?  We might consider stopping if
-    // the first few runs all produce the same move.
     gs.setSimMode();
-    return minimax(gs, 7);
+    auto action = minimax(gs, 6);
+
+    // You're winning and the best you could do was skip your turn?  You need
+    // to try harder.
+    if (action.type == ActionType::NONE && gs.isActiveTeamWinning()) {
+        action = minimax(gs, 8);
+    }
+
+    return action;
 }
