@@ -20,15 +20,15 @@
     },
     "t1p4": {
         "id": "pikeman",
-        "num": 5
+        "num": 7
     },
     "t1p5": {
         "id": "archer",
-        "num": 8
+        "num": 10
     },
     "t1p6": {
         "id": "peasant",
-        "num": 22
+        "num": 50
     },
     "t1p7": {
         "id": "mage",
@@ -47,11 +47,11 @@
     },
     "t2p2": {
         "id": "goblin",
-        "num": 12
+        "num": 24
     },
     "t2p3": {
         "id": "orc1",
-        "num": 4
+        "num": 5
     },
     "t2p4": {
         "id": "wolf",
@@ -67,6 +67,6 @@
     },
     "t2p7": {
         "id": "orc2",
-        "num": 12
+        "num": 8
     }
 }
