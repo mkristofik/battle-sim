@@ -330,6 +330,12 @@ bool GameState::isSpellAllowed(int attId, int defId) const
     if (!def.isAlive()) return false;
 
     const Spell *spell = att.type->spell;
+
+    // Healing spells can't target units at full health.
+    if (spell->damage < 0 && def.hpLeft == def.type->hp) {
+        return false;
+    }
+
     return (spell->target == SpellTarget::ENEMY && att.isEnemy(def)) ||
         (spell->target == SpellTarget::FRIEND && !att.isEnemy(def));
 }
