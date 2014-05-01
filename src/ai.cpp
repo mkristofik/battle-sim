@@ -15,9 +15,12 @@
 
 #include "Action.h"
 #include "GameState.h"
+#include "algo.h"
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <limits>
+#include <vector>
 
 /*
  * source: http://en.wikipedia.org/wiki/Alpha-beta_pruning
@@ -85,7 +88,7 @@ template <typename F>
 Action bestAction(const GameState &gs, F aiFunc)
 {
     auto possibleActions = gs.getPossibleActions();
-    Action *best = nullptr;
+    std::vector<Action> bestActions;
     int bestScore = std::numeric_limits<int>::min();
 
     for (auto &action : possibleActions) {
@@ -98,18 +101,32 @@ Action bestAction(const GameState &gs, F aiFunc)
 
         if (scoreDiff > bestScore) {
             bestScore = scoreDiff;
-            best = &action;
+            std::vector<Action> betterAction(1, action);
+            bestActions.swap(betterAction);
+        }
+        else if (scoreDiff == bestScore) {
+            bestActions.push_back(action);
         }
     }
+    assert(!bestActions.empty());
 
-    if (!best) {
-        std::cout << "    No action is good, skipping turn.\n";
-        return {};
+    // Possible actions are ordered such that Skip Turn comes before Move.
+    // When skips and moves are valued equally, we usually want the winning
+    // team to move but the losing team to skip.
+    Action best;
+    if (gs.isActiveTeamWinning() && bestActions[0].type == ActionType::NONE) {
+        best = *randomElem(bestActions);
     }
-    if (best->type != ActionType::EFFECT) {
-        best->damage = 0;  // clear simulated damage
+    else {
+        best = bestActions[0];
     }
-    return *best;
+
+    // Clear simulated damage for everything but effects.  Effect damage is
+    // deterministic.
+    if (best.type != ActionType::EFFECT) {
+        best.damage = 0;
+    }
+    return best;
 }
 
 Action minimax(const GameState &gs, int searchDepth)
@@ -137,6 +154,8 @@ Action aiBetter(GameState gs)
 
 Action aiBest(GameState gs)
 {
+    // TODO: can we try some simple iterative deepening here?  If we get a
+    // result in less than half a second, increase search depth and run again?
     gs.setSimMode();
     auto action = minimax(gs, 6);
 
