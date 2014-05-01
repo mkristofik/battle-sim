@@ -11,6 +11,10 @@
         "id": "pikeman",
         "num": 5
     },
+    "t2p5": {
+        "id": "goblin",
+        "num": 3
+    },
     "t2p6": {
         "id": "wolf",
         "num": 3
