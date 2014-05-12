@@ -1,4 +1,7 @@
 {
+    "options": {
+        "players": ["ai", "ai"]
+    },
     "t1p5": {
         "id": "swordsman",
         "num": 3

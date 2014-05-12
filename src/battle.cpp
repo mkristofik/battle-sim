@@ -70,6 +70,7 @@ namespace
     enum class AiState {IDLE, RUNNING, COMPLETE};
     AiState aiState = AiState::IDLE;
     boost::future<Action> aiAction;
+    bool playerIsHuman[] = {true, true};
     SdlSurface unitPopup;
     SDL_Rect popupWindow;
 
@@ -378,8 +379,7 @@ void execAnimate(Action action)
 
 bool isHumanTurn()
 {
-    // TODO: accept command line argument or scenario setting for this
-    return false;
+    return playerIsHuman[gs->getActiveTeam()];
 }
 
 void drawBorders()
@@ -560,6 +560,18 @@ int createUnitLabel(int num, int team, Point hex)
     return id;
 }
 
+void parseOptions(const rapidjson::Value &json)
+{
+    if (json.HasMember("players")) {
+        const rapidjson::Value &players = json["players"];
+        for (auto i = 0u; i < players.Size(); ++i) {
+            if (to_lower(players[i].GetString()) == "ai") {
+                playerIsHuman[i] = false;
+            }
+        }
+    }
+}
+
 void parseScenario(const rapidjson::Document &doc)
 {
     for (auto i = doc.MemberBegin(); i != doc.MemberEnd(); ++i) {
@@ -573,7 +585,10 @@ void parseScenario(const rapidjson::Document &doc)
         std::string posStr = i->name.GetString();
         auto posIter = mapUnitPos.find(posStr);
         if (posIter == std::end(mapUnitPos)) {
-            if (posStr == "cmdr1") {
+            if (posStr == "options") {
+                parseOptions(i->value);
+            }
+            else if (posStr == "cmdr1") {
                 gs->setCommander(Commander(i->value), 0);
             }
             else if (posStr == "cmdr2") {
@@ -702,7 +717,6 @@ Action callBestAI()
 void runAiTurn()
 {
     if (aiState == AiState::IDLE) {
-        // TODO: configurable which AI gets called.
         aiAction = boost::async(callBestAI);
         aiState = AiState::RUNNING;
     }
