@@ -51,11 +51,11 @@ namespace
     SDL_Rect mainWindow = {0, 0, winWidth, winHeight};
     SDL_Rect cmdrWindow1 = {0, 0, 200, 230};
     SDL_Rect cmdrWindow2 = {498, 0, 200, 230};
-    SDL_Rect mainBorders[] = {{200, 0, 5, winHeight},  // left side vertical
-                              {493, 0, 5, winHeight},  // right side vertical
-                              {203, 360, 292, 5},  // above log window
-                              {0, 230, 202, 5},  // beneath cmdr1
-                              {496, 230, 200, 5}};  // beneath cmdr2
+    SDL_Rect vertBorders[] = {{200, 0, 0, winHeight},  // left side vertical
+                              {493, 0, 0, winHeight}};  // right side vertical
+    SDL_Rect horizBorders[] = {{203, 360, 292, 0},  // above log window
+                               {0, 230, 202, 0},  // beneath cmdr1
+                               {496, 230, 200, 0}};  // beneath cmdr2
     SDL_Rect bfWindow = {205, 0, 288, 360};
     SDL_Rect unitWindow1 = {0, 235, 200, pHexSize + 60};
     SDL_Rect unitWindow2 = {498, 235, 200, pHexSize + 60};
@@ -382,33 +382,15 @@ bool isHumanTurn()
     return false;
 }
 
-// TODO: the main border drawing can move to sdl_helper
-SDL_Rect getBorderFgLine(const SDL_Rect &border)
-{
-    auto line = border;
-    if (border.h > border.w) {
-        line.x += border.w / 2;
-        line.w = 1;
-    }
-    else {
-        line.y += border.h / 2;
-        line.h = 1;
-    }
-    return line;
-}
-
 void drawBorders()
 {
-    auto screen = SDL_GetVideoSurface();
-    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
-                               BORDER_BG.b);
-    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
-                               BORDER_FG.b);
-
-    for (auto b : mainBorders) {
-        SDL_FillRect(screen, &b, bgColor);
-        SDL_Rect line = getBorderFgLine(b);
-        SDL_FillRect(screen, &line, fgColor);
+    for (auto border : vertBorders) {
+        sdlBorderLineV(border.x, border.y, border.h);
+    }
+    // Note: horizontal borders are carefully chosen to overlap nicely with the
+    // vertical borders.
+    for (auto border : horizBorders) {
+        sdlBorderLineH(border.x, border.y, border.w);
     }
 }
 

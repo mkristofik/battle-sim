@@ -145,6 +145,10 @@ SdlSound sdlLoadSound(const char *filename);
 void sdlDashedLineH(Sint16 px, Sint16 py, Uint16 len, Uint32 color);
 void sdlDashedLineV(Sint16 px, Sint16 py, Uint16 len, Uint32 color);
 
+// Draw a line in the border style starting at (px, py).
+void sdlBorderLineH(Sint16 px, Sint16 py, Uint16 len);
+void sdlBorderLineV(Sint16 px, Sint16 py, Uint16 len);
+
 // Rectangle functions.
 bool insideRect(Sint16 x, Sint16 y, const SDL_Rect &rect);
 std::pair<double, double> rectPct(Sint16 x, Sint16 y, const SDL_Rect &rect);

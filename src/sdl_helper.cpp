@@ -22,6 +22,8 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 namespace
@@ -48,6 +50,30 @@ namespace
         }
 
         return dashes;
+    }
+
+    SDL_Rect getBorderFgLine(const SDL_Rect &border)
+    {
+        auto line = border;
+        if (border.h > border.w) {
+            line.x += border.w / 2;
+            line.w = 1;
+        }
+        else {
+            line.y += border.h / 2;
+            line.h = 1;
+        }
+        return line;
+    }
+
+    std::pair<Uint32, Uint32> getBorderColors()
+    {
+        assert(screen != nullptr);
+        Uint32 bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
+                                    BORDER_BG.b);
+        Uint32 fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
+                                    BORDER_FG.b);
+        return {bgColor, fgColor};
     }
 
     // source: Battle for Wesnoth, flip_surface() in sdl_utils.cpp.
@@ -319,10 +345,9 @@ void sdlClear(SDL_Rect region)
 SdlSurface sdlRenderBorder(int width, int height)
 {
     auto surf = sdlCreate(width, height);
-    auto bgColor = SDL_MapRGB(screen->format, BORDER_BG.r, BORDER_BG.g,
-                               BORDER_BG.b);
-    auto fgColor = SDL_MapRGB(screen->format, BORDER_FG.r, BORDER_FG.g,
-                               BORDER_FG.b);
+    Uint32 bgColor = 0;
+    Uint32 fgColor = 0;
+    std::tie(bgColor, fgColor) = getBorderColors();
 
     // Draw a dark border 5 pixels wide around the outside edge.
     SDL_Rect top = {0};
@@ -440,6 +465,32 @@ void sdlDashedLineV(Sint16 px, Sint16 py, Uint16 len, Uint32 color)
             return;
         }
     }
+}
+
+void sdlBorderLineH(Sint16 px, Sint16 py, Uint16 len)
+{
+    auto screen = SDL_GetVideoSurface();
+    Uint32 bgColor = 0;
+    Uint32 fgColor = 0;
+    std::tie(bgColor, fgColor) = getBorderColors();
+
+    SDL_Rect border = {px, py, len, 5};
+    SDL_FillRect(screen, &border, bgColor);
+    auto line = getBorderFgLine(border);
+    SDL_FillRect(screen, &line, fgColor);
+}
+
+void sdlBorderLineV(Sint16 px, Sint16 py, Uint16 len)
+{
+    auto screen = SDL_GetVideoSurface();
+    Uint32 bgColor = 0;
+    Uint32 fgColor = 0;
+    std::tie(bgColor, fgColor) = getBorderColors();
+
+    SDL_Rect border = {px, py, 5, len};
+    SDL_FillRect(screen, &border, bgColor);
+    auto line = getBorderFgLine(border);
+    SDL_FillRect(screen, &line, fgColor);
 }
 
 bool insideRect(Sint16 x, Sint16 y, const SDL_Rect &rect)
