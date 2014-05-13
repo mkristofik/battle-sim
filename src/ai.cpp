@@ -18,6 +18,7 @@
 #include "algo.h"
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <vector>
@@ -130,6 +131,7 @@ Action bestAction(const GameState &gs, F aiFunc)
 }
 
 Action minimax(const GameState &gs, int searchDepth)
+
 {
     auto abSearch = [&] (const GameState &gs) {
         return alphaBeta(gs,
@@ -154,14 +156,16 @@ Action aiBetter(GameState gs)
 
 Action aiBest(GameState gs)
 {
-    // TODO: can we try some simple iterative deepening here?  If we get a
-    // result in less than half a second, increase search depth and run again?
     gs.setSimMode();
-    auto action = minimax(gs, 6);
 
-    // You're winning and the best you could do was skip your turn?  You need
-    // to try harder.
-    if (action.type == ActionType::NONE && gs.isActiveTeamWinning()) {
+    auto start_sec = std::chrono::system_clock::now();
+    auto action = minimax(gs, 6);
+    auto end_sec = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_sec = end_sec - start_sec;
+
+    // Increasing the search depth causes a ~10x increase in runtime.
+    // TODO: research the killer heuristic
+    if (elapsed_sec.count() < 0.25) {
         action = minimax(gs, 8);
     }
 
