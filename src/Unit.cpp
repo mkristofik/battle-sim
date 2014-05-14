@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "Unit.h"
@@ -114,16 +114,6 @@ int Unit::takeDamage(int dmg)
 int Unit::simulateDamage(int dmg) const
 {
     return Unit(*this).takeDamage(dmg);
-}
-
-bool Unit::isValid() const
-{
-    return entityId >= 0 && team >= 0 && type;
-}
-
-bool Unit::isAlive() const
-{
-    return isValid() && num > 0;
 }
 
 std::string Unit::getName(int number) const

@@ -60,7 +60,6 @@ void GameState::nextTurn()
         return;
     }
 
-    if (isGameOver()) return;
     if (turnOrder_.empty()) return;
 
     ++curTurn_;
