@@ -12,6 +12,7 @@
         "attack-frames": [50, 150, 250, 350, 450, 500],
         "anim-ranged": "bowman-attack-ranged.png",
         "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "sound-ranged": "bow.ogg",
         "img-defend": "bowman-defend-ranged.png",
         "projectile": "missile.png"
     },
@@ -26,6 +27,7 @@
         "img": "cavalier.png",
         "anim-attack": "cavalier-attack-melee.png",
         "attack-frames": [25, 75, 375, 425, 450],
+        "sound-attack": "sword.ogg",
         "img-defend": "cavalier-defend.png",
         "img-move": "cavalier-move.png"
     },
@@ -93,6 +95,7 @@
         "img": "elf.png",
         "anim-ranged": "elf-attack-ranged.png",
         "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "sound-ranged": "bow.ogg",
         "img-defend": "elf-defend.png",
         "anim-die": "elf-die.png",
         "die-frames": [120, 240, 360, 480],
@@ -162,6 +165,7 @@
         "img": "ogre.png",
         "anim-attack": "ogre-attack-melee.png",
         "attack-frames": [75, 175, 250, 425, 525],
+        "sound-attack": "sword.ogg",
         "img-defend": "ogre-defend.png"
     },
     "orc1": {
@@ -174,6 +178,7 @@
         "img": "orc-grunt.png",
         "anim-attack": "orc-grunt-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
+        "sound-attack": "sword.ogg",
         "img-defend": "orc-grunt-defend.png",
         "anim-die": "orc-grunt-die.png",
         "die-frames": [120, 240, 360, 480, 600, 720, 840, 960]
@@ -191,6 +196,7 @@
         "attack-frames": [50, 150, 250, 325, 425, 525, 600],
         "anim-ranged": "orc-archer-attack-ranged.png",
         "ranged-frames": [65, 140, 215, 315, 445, 510],
+        "sound-ranged": "bow.ogg",
         "img-defend": "orc-archer-defend.png",
         "projectile": "missile.png"
     },
@@ -205,6 +211,7 @@
         "img": "marshal.png",
         "anim-attack": "marshal-attack-melee.png",
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
+        "sound-attack": "sword.ogg",
         "img-defend": "marshal-defend.png",
         "anim-die": "marshal-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 875, 1000]
@@ -312,6 +319,7 @@
         "img": "swordsman.png",
         "anim-attack": "swordsman-attack-melee.png",
         "attack-frames": [75, 150, 300, 400],
+        "sound-attack": "sword.ogg",
         "img-defend": "swordsman-defend.png",
         "anim-die": "swordsman-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 675]

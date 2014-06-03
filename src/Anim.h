@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #ifndef ANIM_H
@@ -48,7 +48,7 @@ private:
 
     bool done_;
     Uint32 startTime_;
-}; 
+};
 
 
 class AnimMove : public Anim
@@ -85,9 +85,11 @@ private:
     // other half.
     void setPosition(Uint32 elapsed);
     void setFrame(Uint32 elapsed);
+    void playSound(Uint32 elapsed);
 
     Unit unit_;
     Point hTarget_;
+    bool soundPlayed_;
 };
 
 
@@ -119,8 +121,10 @@ private:
     void run(Uint32 elapsed) override;
     void stop() override;
     void setFrame(Uint32 elapsed);
+    void playSound(Uint32 elapsed);
 
     Unit unit_;
+    bool soundPlayed_;
 };
 
 

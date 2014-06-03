@@ -108,6 +108,14 @@ namespace
         imagePath /= filename;
         return imagePath.string();
     }
+
+    // Get the full path to sound and music files.
+    std::string getSoundPath(const char *filename)
+    {
+        boost::filesystem::path soundPath{"../sounds"};
+        soundPath /= filename;
+        return soundPath.string();
+    }
 }
 
 bool sdlInit(Sint16 winWidth, Sint16 winHeight, const char *iconFile,
@@ -414,7 +422,7 @@ SdlSurface sdlLoadImage(const std::string &filename)
 
 SdlMusic sdlLoadMusic(const char *filename)
 {
-    SdlMusic music(Mix_LoadMUS(filename), Mix_FreeMusic);
+    SdlMusic music(Mix_LoadMUS(getSoundPath(filename).c_str()), Mix_FreeMusic);
     if (!music) {
         std::cerr << "Error loading music " << filename << "\n    "
             << Mix_GetError() << '\n';
@@ -429,7 +437,7 @@ SdlMusic sdlLoadMusic(const std::string &filename)
 
 SdlSound sdlLoadSound(const char *filename)
 {
-    SdlSound sound{Mix_LoadWAV(filename), Mix_FreeChunk};
+    SdlSound sound{Mix_LoadWAV(getSoundPath(filename).c_str()), Mix_FreeChunk};
     if (!sound) {
         std::cerr << "Error loading sound " << filename << "\n    "
             << Mix_GetError() << '\n';

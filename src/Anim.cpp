@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "Anim.h"
@@ -174,7 +174,8 @@ void AnimMove::stop()
 AnimAttack::AnimAttack(Unit unit, Point hTgt)
     : Anim(),
     unit_{std::move(unit)},
-    hTarget_{std::move(hTgt)}
+    hTarget_{std::move(hTgt)},
+    soundPlayed_{false}
 {
     runTime_ = 600;
 }
@@ -194,6 +195,7 @@ void AnimAttack::run(Uint32 elapsed)
 {
     setPosition(elapsed);
     setFrame(elapsed);
+    playSound(elapsed);
 }
 
 void AnimAttack::stop()
@@ -247,6 +249,15 @@ void AnimAttack::setFrame(Uint32 elapsed)
     }
 }
 
+void AnimAttack::playSound(Uint32 elapsed)
+{
+    // TODO: magic number
+    if (!soundPlayed_ && unit_.type->sndAttack && elapsed > 100) {
+        sdlPlaySound(unit_.type->sndAttack);
+        soundPlayed_ = true;
+    }
+}
+
 
 AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
     : Anim(),
@@ -286,7 +297,8 @@ void AnimDefend::stop()
 
 AnimRanged::AnimRanged(Unit unit)
     : Anim(),
-    unit_{std::move(unit)}
+    unit_{std::move(unit)},
+    soundPlayed_{false}
 {
     runTime_ = 600;
 }
@@ -299,6 +311,7 @@ Uint32 AnimRanged::getShotTime() const
 void AnimRanged::run(Uint32 elapsed)
 {
     setFrame(elapsed);
+    playSound(elapsed);
 }
 
 void AnimRanged::stop()
@@ -333,6 +346,16 @@ void AnimRanged::setFrame(Uint32 elapsed)
     }
 }
 
+void AnimRanged::playSound(Uint32 elapsed)
+{
+    // TODO: magic number
+    Uint32 soundTime = getShotTime() - 150;
+
+    if (!soundPlayed_ && unit_.type->sndRanged && elapsed > soundTime) {
+        sdlPlaySound(unit_.type->sndRanged);
+        soundPlayed_ = true;
+    }
+}
 
 AnimProjectile::AnimProjectile(SdlSurface img, Point hSrc, Point hTgt,
                                Uint32 shotTime)

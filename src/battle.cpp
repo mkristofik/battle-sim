@@ -789,7 +789,7 @@ extern "C" int SDL_main(int argc, char *argv[])
     auto screen = SDL_GetVideoSurface();
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
-    auto music = sdlLoadMusic("../sounds/battle-theme.ogg");
+    auto music = sdlLoadMusic("battle-theme.ogg");
     sdlPlayMusic(music);
 
     bool isDone = false;

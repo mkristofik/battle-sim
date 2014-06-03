@@ -1,13 +1,13 @@
 /*
     Copyright (C) 2013-2014 by Michael Kristofik <kristo605@gmail.com>
     Part of the battle-sim project.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License version 2
     or at your option any later version.
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
- 
+
     See the COPYING.txt file for more details.
 */
 #include "UnitType.h"
@@ -69,6 +69,8 @@ UnitType::UnitType(const rapidjson::Value &json)
     reverseAnimRanged{},
     rangedFrames{},
     projectile{},
+    sndAttack{},
+    sndRanged{},
     imgDefend{},
     reverseImgDefend{},
     animDie{},
@@ -123,6 +125,12 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());
+    }
+    if (json.HasMember("sound-attack")) {
+        sndAttack = sdlLoadSound(json["sound-attack"].GetString());
+    }
+    if (json.HasMember("sound-ranged")) {
+        sndRanged = sdlLoadSound(json["sound-ranged"].GetString());
     }
     if (json.HasMember("anim-die") && json.HasMember("die-frames")) {
         loadAnimation(json, "anim-die", animDie, reverseAnimDie, "die-frames",
