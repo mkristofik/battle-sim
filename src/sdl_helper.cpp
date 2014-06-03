@@ -554,7 +554,7 @@ SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y)
 
 void sdlPlayMusic(const SdlMusic &music)
 {
-    if (Mix_PlayMusic(music.get(), 0) == -1) {
+    if (Mix_PlayMusic(music.get(), -1) == -1) {
         std::cerr << "Error playing music: " << Mix_GetError() << '\n';
         return;
     }
