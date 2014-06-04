@@ -108,6 +108,7 @@ private:
 
     Unit unit_;
     Uint32 hitTime_;
+    bool soundPlayed_;
 };
 
 

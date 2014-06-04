@@ -73,6 +73,7 @@ UnitType::UnitType(const rapidjson::Value &json)
     sndRanged{},
     imgDefend{},
     reverseImgDefend{},
+    sndDefend{},
     animDie{},
     reverseAnimDie{},
     dieFrames{}
@@ -131,6 +132,9 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("sound-ranged")) {
         sndRanged = sdlLoadSound(json["sound-ranged"].GetString());
+    }
+    if (json.HasMember("sound-defend")) {
+        sndDefend = sdlLoadSound(json["sound-defend"].GetString());
     }
     if (json.HasMember("anim-die") && json.HasMember("die-frames")) {
         loadAnimation(json, "anim-die", animDie, reverseAnimDie, "die-frames",

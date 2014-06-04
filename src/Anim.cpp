@@ -262,7 +262,8 @@ void AnimAttack::playSound(Uint32 elapsed)
 AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
-    hitTime_{hitsAt}
+    hitTime_{hitsAt},
+    soundPlayed_{false}
 {
     runTime_ = hitTime_ + 250;
 }
@@ -285,6 +286,11 @@ void AnimDefend::run(Uint32 elapsed)
         else {
             entity.img = unit_.type->baseImg[unit_.team];
         }
+    }
+
+    if (!soundPlayed_ && unit_.type->sndDefend && elapsed >= hitTime_) {
+        sdlPlaySound(unit_.type->sndDefend);
+        soundPlayed_ = true;
     }
 }
 

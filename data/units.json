@@ -14,6 +14,7 @@
         "ranged-frames": [65, 140, 215, 315, 445, 510],
         "sound-ranged": "bow.ogg",
         "img-defend": "bowman-defend-ranged.png",
+        "sound-defend": "female-defend.ogg",
         "projectile": "missile.png"
     },
     "cavalier": {
@@ -29,6 +30,7 @@
         "attack-frames": [25, 75, 375, 425, 450],
         "sound-attack": "sword.ogg",
         "img-defend": "cavalier-defend.png",
+        "sound-defend": "cavalier-defend.ogg",
         "img-move": "cavalier-move.png"
     },
     "dendroid": {
@@ -59,7 +61,8 @@
         "anim-attack": "drake-attack-melee.png",
         "attack-frames": [100, 200, 300, 400, 500, 600],
         "sound-attack": "sword.ogg",
-        "img-defend": "drake-defend.png"
+        "img-defend": "drake-defend.png",
+        "sound-defend": "drake-defend.ogg"
     },
     "druid": {
         "name": "Druid",
@@ -71,6 +74,7 @@
         "anim-ranged": "druid-attack-magic.png",
         "ranged-frames": [100, 200, 400, 500, 550],
         "img-defend": "druid-defend.png",
+        "sound-defend": "mage-defend.ogg",
         "spell": "lightning"
     },
     "dwarf": {
@@ -84,7 +88,8 @@
         "anim-attack": "dwarf-attack-melee.png",
         "attack-frames": [40, 100, 160, 220, 280, 340, 400, 460, 520, 540],
         "sound-attack": "axe.ogg",
-        "img-defend": "dwarf-defend.png"
+        "img-defend": "dwarf-defend.png",
+        "sound-defend": "dwarf-defend.ogg"
     },
     "elf": {
         "name": "Elf",
@@ -100,6 +105,7 @@
         "ranged-frames": [65, 140, 215, 315, 445, 510],
         "sound-ranged": "bow.ogg",
         "img-defend": "elf-defend.png",
+        "sound-defend": "elf-defend.ogg",
         "anim-die": "elf-die.png",
         "die-frames": [120, 240, 360, 480],
         "projectile": "missile.png"
@@ -117,6 +123,7 @@
         "attack-frames": [250, 500, 600],
         "sound-attack": "fire-melee.ogg",
         "img-defend": "fire-elemental-defend.png",
+        "sound-defend": "fire-elemental-defend.ogg",
         "anim-die": "fire-elemental-die.png",
         "die-frames": [50, 150, 250, 350, 450, 550, 650]
     },
@@ -131,7 +138,8 @@
         "anim-attack": "goblin-attack-melee.png",
         "attack-frames": [50, 150, 350, 450],
         "sound-attack": "spear.ogg",
-        "img-defend": "goblin-defend.png"
+        "img-defend": "goblin-defend.png",
+        "sound-defend": "goblin-defend.ogg"
     },
     "lich": {
         "name": "Lich",
@@ -145,6 +153,7 @@
         "ranged-frames": [100, 200, 300, 400],
         "sound-ranged": "magic-arrow-dark.ogg",
         "img-defend": "lich-defend.png",
+        "sound-defend": "lich-defend.ogg",
         "projectile": "missile-dark.png"
     },
     "mage": {
@@ -157,6 +166,7 @@
         "anim-ranged": "mage-attack-magic.png",
         "ranged-frames": [75, 150, 500, 550, 600],
         "img-defend": "mage-defend.png",
+        "sound-defend": "mage-defend.ogg",
         "anim-die": "mage-die.png",
         "die-frames": [120, 240, 360, 480],
         "spell": "cure"
@@ -172,7 +182,8 @@
         "anim-attack": "ogre-attack-melee.png",
         "attack-frames": [75, 175, 250, 425, 525],
         "sound-attack": "sword.ogg",
-        "img-defend": "ogre-defend.png"
+        "img-defend": "ogre-defend.png",
+        "sound-defend": "ogre-defend.ogg"
     },
     "orc1": {
         "name": "Orc",
@@ -186,6 +197,7 @@
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
         "sound-attack": "sword.ogg",
         "img-defend": "orc-grunt-defend.png",
+        "sound-defend": "orc-large-defend.ogg",
         "anim-die": "orc-grunt-die.png",
         "die-frames": [120, 240, 360, 480, 600, 720, 840, 960]
     },
@@ -204,6 +216,7 @@
         "ranged-frames": [65, 140, 215, 315, 445, 510],
         "sound-ranged": "bow.ogg",
         "img-defend": "orc-archer-defend.png",
+        "sound-defend": "orc-small-defend.ogg",
         "projectile": "missile.png"
     },
     "paladin": {
@@ -219,6 +232,7 @@
         "attack-frames": [50, 100, 200, 275, 375, 425, 500],
         "sound-attack": "sword.ogg",
         "img-defend": "marshal-defend.png",
+        "sound-defend": "human-defend.ogg",
         "anim-die": "marshal-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 875, 1000]
     },
@@ -233,7 +247,8 @@
         "anim-attack": "peasant-attack-melee.png",
         "attack-frames": [50, 300, 400, 450],
         "sound-attack": "spear.ogg",
-        "img-defend": "peasant-defend.png"
+        "img-defend": "peasant-defend.png",
+        "sound-defend": "human-defend.ogg"
     },
     "pikeman": {
         "name": "Pikeman",
@@ -248,6 +263,7 @@
         "attack-frames": [100, 350, 425],
         "sound-attack": "spear.ogg",
         "img-defend": "pikeman-defend.png",
+        "sound-defend": "human-defend.ogg",
         "anim-die": "pikeman-die.png",
         "die-frames": [80, 160, 240, 320, 400]
     },
@@ -263,6 +279,7 @@
         "attack-frames": [50, 100, 150, 200, 250, 325, 400, 475, 550, 600],
         "sound-attack": "axe.ogg",
         "img-defend": "revenant-defend.png",
+        "sound-defend": "revenant-defend.ogg",
         "anim-die": "revenant-die.png",
         "die-frames": [100, 200, 300, 400, 500, 600, 700]
     },
@@ -276,6 +293,7 @@
         "anim-ranged": "saurian-attack-magic.png",
         "ranged-frames": [150, 300, 450],
         "img-defend": "saurian-defend.png",
+        "sound-defend": "saurian-defend.wav",
         "anim-die": "saurian-die.png",
         "die-frames": [100, 200, 300, 400, 500, 600],
         "spell": "bloodlust"
@@ -292,7 +310,8 @@
         "anim-attack": "giant-spider-attack-melee.png",
         "attack-frames": [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650],
         "sound-attack": "pincers.ogg",
-        "img-defend": "giant-spider-defend.png"
+        "img-defend": "giant-spider-defend.png",
+        "sound-defend": "giant-spider-defend.wav"
     },
     "sprite": {
         "name": "Sprite",
@@ -306,7 +325,8 @@
         "anim-attack": "sprite-attack-melee.png",
         "attack-frames": [300, 500, 800],
         "sound-attack": "magic-melee.ogg",
-        "img-defend": "sprite-defend.png"
+        "img-defend": "sprite-defend.png",
+        "sound-defend": "female-defend.ogg"
     },
     "steel": {
         "name": "Steel Golem",
@@ -333,6 +353,7 @@
         "attack-frames": [75, 150, 300, 400],
         "sound-attack": "sword.ogg",
         "img-defend": "swordsman-defend.png",
+        "sound-defend": "human-defend.ogg",
         "anim-die": "swordsman-die.png",
         "die-frames": [75, 150, 225, 300, 375, 450, 525, 600, 675]
     },
@@ -352,6 +373,7 @@
         "ranged-frames": [300, 500, 600],
         "sound-ranged": "throw.wav",
         "img-defend": "troll-defend.png",
+        "sound-defend": "troll-defend.ogg",
         "projectile": "stone-large.png"
     },
     "vampire": {
@@ -366,7 +388,8 @@
         "anim-attack": "vampire-bat-attack-melee.png",
         "attack-frames": [30, 60, 90, 120, 150, 220, 270, 320, 360],
         "sound-attack": "bite.ogg",
-        "img-defend": "vampire-bat-defend.png"
+        "img-defend": "vampire-bat-defend.png",
+        "sound-defend": "vampire-bat-defend.ogg"
     },
     "wolf": {
         "name": "Wolf",
@@ -381,6 +404,7 @@
         "attack-frames": [100, 300, 550],
         "sound-attack": "growl.ogg",
         "img-defend": "wolf-defend.png",
+        "sound-defend": "wolf-defend.ogg",
         "img-move": "wolf-move.png"
     },
     "zombie": {
@@ -396,6 +420,7 @@
         "attack-frames": [400],
         "sound-attack": "zombie-attack.wav",
         "img-defend": "zombie-defend.png",
+        "sound-defend": "zombie-defend.ogg",
         "anim-die": "zombie-die.png",
         "die-frames": [150, 300, 450, 600]
     }

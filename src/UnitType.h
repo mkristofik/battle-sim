@@ -54,6 +54,7 @@ struct UnitType
     SdlSound sndRanged;
     ImageSet imgDefend;
     ImageSet reverseImgDefend;
+    SdlSound sndDefend;
     ImageSet animDie;
     ImageSet reverseAnimDie;
     FrameList dieFrames;
