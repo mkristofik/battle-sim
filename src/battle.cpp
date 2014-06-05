@@ -790,10 +790,12 @@ extern "C" int SDL_main(int argc, char *argv[])
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     auto music = sdlLoadMusic("battle-theme.ogg");
-    sdlPlayMusic(music);
+    auto endMusic = sdlLoadMusic("victory-theme.ogg");
+    sdlLoopMusic(music);
 
     bool isDone = false;
     bool needRedraw = false;
+    bool endMusicPlayed = false;
     SDL_Event event;
     while (!isDone) {
         while (SDL_PollEvent(&event)) {
@@ -860,6 +862,11 @@ extern "C" int SDL_main(int argc, char *argv[])
             }
             SDL_UpdateRect(screen, 0, 0, 0, 0);
             needRedraw = false;
+        }
+
+        if (gs->isGameOver() && anims.empty() && !endMusicPlayed) {
+            sdlPlayMusic(endMusic);
+            endMusicPlayed = true;
         }
 
         SDL_Delay(1);

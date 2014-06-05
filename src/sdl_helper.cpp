@@ -560,14 +560,19 @@ SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y)
     return {x, y, static_cast<Uint16>(surf->w), static_cast<Uint16>(surf->h)};
 }
 
-void sdlPlayMusic(const SdlMusic &music)
+void sdlPlayMusic(const SdlMusic &music, int numLoops)
 {
-    if (Mix_PlayMusic(music.get(), -1) == -1) {
+    if (Mix_PlayMusic(music.get(), numLoops) == -1) {
         std::cerr << "Error playing music: " << Mix_GetError() << '\n';
         return;
     }
 
     Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+}
+
+void sdlLoopMusic(const SdlMusic &music)
+{
+    sdlPlayMusic(music, -1);
 }
 
 void sdlPlaySound(const SdlSound &sound)

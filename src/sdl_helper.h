@@ -158,7 +158,8 @@ Dir8 nearEdge(Sint16 x, Sint16 y, const SDL_Rect &rect);
 SDL_Rect sdlGetBounds(const SdlSurface &surf, Sint16 x, Sint16 y);
 
 // Play sound files at a reasonable volume.
-void sdlPlayMusic(const SdlMusic &music);
+void sdlPlayMusic(const SdlMusic &music, int numLoops = 1);
+void sdlLoopMusic(const SdlMusic &music);
 void sdlPlaySound(const SdlSound &Sound);
 
 // Common colors.
