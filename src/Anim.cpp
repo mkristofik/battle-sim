@@ -72,6 +72,7 @@ void Anim::setBattlefield(Battlefield &b)
 
 Anim::Anim()
     : runTime_{0},
+    soundPlayed_{false},
     done_{false},
     startTime_{0}
 {
@@ -157,6 +158,11 @@ void AnimMove::run(Uint32 elapsed)
     auto frac = static_cast<double>(elapsed) / runTime_;
     auto dhex = pixelFromHex(destHex_) - pixelFromHex(entity.hex);
     entity.pOffset = dhex * frac;
+
+    if (!soundPlayed_ && unit_.type->sndMove) {
+        sdlPlaySound(unit_.type->sndMove);
+        soundPlayed_ = true;
+    }
 }
 
 void AnimMove::stop()
@@ -174,8 +180,7 @@ void AnimMove::stop()
 AnimAttack::AnimAttack(Unit unit, Point hTgt)
     : Anim(),
     unit_{std::move(unit)},
-    hTarget_{std::move(hTgt)},
-    soundPlayed_{false}
+    hTarget_{std::move(hTgt)}
 {
     runTime_ = 600;
 }
@@ -262,8 +267,7 @@ void AnimAttack::playSound(Uint32 elapsed)
 AnimDefend::AnimDefend(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
-    hitTime_{hitsAt},
-    soundPlayed_{false}
+    hitTime_{hitsAt}
 {
     runTime_ = hitTime_ + 250;
 }
@@ -303,8 +307,7 @@ void AnimDefend::stop()
 
 AnimRanged::AnimRanged(Unit unit)
     : Anim(),
-    unit_{std::move(unit)},
-    soundPlayed_{false}
+    unit_{std::move(unit)}
 {
     runTime_ = 600;
 }
@@ -416,8 +419,7 @@ AnimDie::AnimDie(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
     hitTime_{hitsAt},
-    fadeTime_{hitsAt},
-    soundPlayed_{false}
+    fadeTime_{hitsAt}
 {
     runTime_ = hitTime_ + fadeLength_;
     if (!unit_.type->dieFrames.empty()) {

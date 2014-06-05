@@ -39,6 +39,7 @@ public:
 
 protected:
     Uint32 runTime_;
+    bool soundPlayed_;
     static Battlefield *bf_;
 
 private:
@@ -89,7 +90,6 @@ private:
 
     Unit unit_;
     Point hTarget_;
-    bool soundPlayed_;
 };
 
 
@@ -108,7 +108,6 @@ private:
 
     Unit unit_;
     Uint32 hitTime_;
-    bool soundPlayed_;
 };
 
 
@@ -125,7 +124,6 @@ private:
     void playSound(Uint32 elapsed);
 
     Unit unit_;
-    bool soundPlayed_;
 };
 
 
@@ -161,7 +159,6 @@ private:
     Unit unit_;
     Uint32 hitTime_;
     Uint32 fadeTime_;
-    bool soundPlayed_;
     static const Uint32 fadeLength_ = 1000;
 };
 

@@ -62,6 +62,9 @@ UnitType::UnitType(const rapidjson::Value &json)
     spell{nullptr},
     baseImg{},
     reverseImg{},
+    imgMove{},
+    reverseImgMove{},
+    sndMove{},
     animAttack{},
     reverseAnimAttack{},
     attackFrames{},
@@ -127,6 +130,9 @@ UnitType::UnitType(const rapidjson::Value &json)
     }
     if (json.HasMember("projectile")) {
         projectile = sdlLoadImage(json["projectile"].GetString());
+    }
+    if (json.HasMember("sound-move")) {
+        sndMove = sdlLoadSound(json["sound-move"].GetString());
     }
     if (json.HasMember("sound-attack")) {
         sndAttack = sdlLoadSound(json["sound-attack"].GetString());

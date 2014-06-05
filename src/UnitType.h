@@ -43,6 +43,7 @@ struct UnitType
     ImageSet reverseImg;
     ImageSet imgMove;
     ImageSet reverseImgMove;
+    SdlSound sndMove;
     ImageSet animAttack;
     ImageSet reverseAnimAttack;
     FrameList attackFrames;

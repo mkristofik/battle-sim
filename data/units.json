@@ -33,7 +33,8 @@
         "img-defend": "cavalier-defend.png",
         "sound-defend": "cavalier-defend.ogg",
         "sound-die": "cavalier-die.ogg",
-        "img-move": "cavalier-move.png"
+        "img-move": "cavalier-move.png",
+        "sound-move": "cavalier-move.wav"
     },
     "dendroid": {
         "name": "Dendroid",
@@ -413,7 +414,8 @@
         "sound-attack": "bite.ogg",
         "img-defend": "vampire-bat-defend.png",
         "sound-defend": "vampire-bat-defend.ogg",
-        "sound-die": "vampire-bat-die.wav"
+        "sound-die": "vampire-bat-die.wav",
+        "sound-move": "vampire-bat-move.wav"
     },
     "wolf": {
         "name": "Wolf",
