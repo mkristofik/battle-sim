@@ -58,8 +58,12 @@ struct UnitType
     ImageSet animDie;
     ImageSet reverseAnimDie;
     FrameList dieFrames;
+    SdlSound sndDie;
 
     UnitType(const rapidjson::Value &json);
+
+    // Use the defend sound if no die sound is available.
+    SdlSound getDieSound() const;
 };
 
 using UnitTypeMap = std::unordered_map<std::string, UnitType>;

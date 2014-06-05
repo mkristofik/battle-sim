@@ -416,7 +416,8 @@ AnimDie::AnimDie(Unit unit, Uint32 hitsAt)
     : Anim(),
     unit_{std::move(unit)},
     hitTime_{hitsAt},
-    fadeTime_{hitsAt}
+    fadeTime_{hitsAt},
+    soundPlayed_{false}
 {
     runTime_ = hitTime_ + fadeLength_;
     if (!unit_.type->dieFrames.empty()) {
@@ -434,6 +435,11 @@ void AnimDie::run(Uint32 elapsed)
     auto &label = bf_->getEntity(unit_.labelId);
     label.visible = false;
     setFrame(elapsed);
+
+    if (elapsed > hitTime_ && !soundPlayed_ && unit_.type->getDieSound()) {
+        sdlPlaySound(unit_.type->getDieSound());
+        soundPlayed_ = true;
+    }
 
     // Fade out the unit until it disappears.
     if (elapsed > fadeTime_) {

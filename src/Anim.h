@@ -161,6 +161,7 @@ private:
     Unit unit_;
     Uint32 hitTime_;
     Uint32 fadeTime_;
+    bool soundPlayed_;
     static const Uint32 fadeLength_ = 1000;
 };
 
