@@ -134,7 +134,8 @@
         "sound-defend": "fire-elemental-defend.ogg",
         "anim-die": "fire-elemental-die.png",
         "die-frames": [50, 150, 250, 350, 450, 550, 650],
-        "sound-die": "fire-elemental-die.ogg"
+        "sound-die": "fire-elemental-die.ogg",
+        "sound-move": "fire-elemental-move.ogg"
     },
     "goblin": {
         "name": "Goblin",
