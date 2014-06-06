@@ -3,23 +3,27 @@
         "text": "bound to current hex",
         "duration": "until_att_moves",
         "anim": "web.png",
-        "anim-frames": [1200]
+        "anim-frames": [1200],
+        "sound": "entangle.wav"
     },
     "enraged": {
         "text": "enraged",
         "duration": "standard",
-        "anim-frames": [700, 1400]
+        "anim-frames": [700, 1400],
+        "sound": "horn.ogg"
     },
     "heal": {
         "text": "healed",
         "duration": "instant",
         "anim": "regeneration.png",
-        "anim-frames": [75, 150, 225, 300, 375, 450, 525, 600]
+        "anim-frames": [75, 150, 225, 300, 375, 450, 525, 600],
+        "sound": "heal.wav"
     },
     "lightning": {
         "text": "hit by lightning",
         "duration": "instant",
         "anim": "lightning.png",
-        "anim-frames": [100, 200, 300, 400]
+        "anim-frames": [100, 200, 300, 400],
+        "sound": "lightning.ogg"
     }
 }

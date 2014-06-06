@@ -574,6 +574,8 @@ void AnimEffect::run(Uint32 elapsed)
     else if (id_ >= 0) {
         runOther(elapsed - startTime_);
     }
+
+    playSound();
 }
 
 void AnimEffect::runEnraged(Uint32 timeSinceStart)
@@ -602,6 +604,14 @@ void AnimEffect::runOther(Uint32 timeSinceStart)
     auto &entity = bf_->getEntity(id_);
     entity.visible = true;
     entity.frame = getFrame(effect_.getFrames(), timeSinceStart);
+}
+
+void AnimEffect::playSound()
+{
+    if (!soundPlayed_ && effect_.getSound()) {
+        sdlPlaySound(effect_.getSound());
+        soundPlayed_ = true;
+    }
 }
 
 void AnimEffect::stop()
