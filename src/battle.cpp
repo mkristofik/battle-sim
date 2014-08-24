@@ -472,6 +472,10 @@ void handleMouseMotion(const SDL_MouseMotionEvent &event)
 
 void handleMouseDown(const SDL_MouseButtonEvent &event)
 {
+	if (unitPopup) {
+		hideUnitPopup();
+	}
+
     if (event.button == SDL_BUTTON_LEFT &&
         insideRect(event.x, event.y, logWindow))
     {
@@ -510,8 +514,6 @@ void handleMouseUp(const SDL_MouseButtonEvent &event)
             actionTaken = true;
         }
     }
-
-    hideUnitPopup();
 }
 
 void handleKeyPress(const SDL_KeyboardEvent &event)
